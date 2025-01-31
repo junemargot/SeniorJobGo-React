@@ -1,0 +1,204 @@
+// pages/auth/signup/styles/signup.module.scss
+@use '@assets/styles/_variables' as *;
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  background-color: $color-background;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  
+  &__title {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0;
+    position: absolute;
+    top: 25%;
+    left: 20px;
+    transform: translateY(-50%);
+    z-index: 1;
+    
+    span {
+      position: relative;
+      display: inline-block;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 2px;
+        width: 100%;
+        height: 8px;
+        background-color: $color-primary;
+        z-index: -1;
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+// 위치 수정하기
+.circles {
+  position: relative;
+  height: 50vh;
+  width: 100%;
+  margin: 20px 0;
+  
+  &__item1 {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    right: -65px;
+    top: 0;
+    background-color: $color-primary;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  &__item2 {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    left: -60px;
+    bottom: 80px;
+    background-color: $color-primary;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 7s ease-in-out infinite;
+  }
+  
+  &__item3 {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    right: -50px;
+    bottom: 20px;
+    background-color: $color-primary;
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: float 7s ease-in-out infinite;
+  }
+}
+
+.buttons {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px auto 0;
+  margin-top: 20px;
+  align-self: center;
+  
+  &__social {
+    width: 100%;
+    height: 48px;
+    background: $color-background;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    
+    &:hover {
+      border-color: $color-primary;
+      background: $color-white;
+      color: $color-primary;
+    }
+  }
+  
+  &__icon {
+    font-size: 20px;
+
+    i {
+      font-size: 18px;
+    }
+  }
+}
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: $color-text-secondary;
+  
+  &__link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 14px;
+    color: $color-text-secondary;
+    text-decoration: underline;
+    cursor: pointer;
+    
+    &:hover {
+      color: $color-text-point;
+    }
+  }
+}
+
+.terms {
+  text-align: center;
+  font-size: 12px;
+  color: $color-text-secondary;
+  margin-top: auto;
+  padding-top: 2rem;
+  
+  p {
+    margin: 0 0 4px 0;
+  }
+  
+  &__links {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    
+    a {
+      color: $color-text-secondary;
+      text-decoration: none;
+      
+      &:hover {
+        color: $color-text;
+      }
+    }
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-15px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
