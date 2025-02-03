@@ -16,50 +16,40 @@
 
 ## Backend (FastAPI)
 
-### 프로젝트 구조
-```markdown
 ## 프로젝트 디렉토리 구조
 
-mermaid
-graph TD
-    A[FastApi_SeniorJobGo] --> B[app/]
-    A --> C[documents/]
-    A --> D[jobs_collection/]
-    A --> E[requirements.txt]
-    A --> F[.env]
-    A --> G[README.md]
-    
-    B --> B1[__init__.py]
-    B --> B2[main.py]
-    B --> B3[routes/]
-    B --> B4[services/]
-    B --> B5[agents/]
-    B --> B6[models/]
-    B --> B7[core/]
-    B --> B8[utils/]
-    
-    B3 --> B31[__init__.py]
-    B3 --> B32[chat_router.py]
-    
-    B4 --> B41[__init__.py]
-    B4 --> B42[vector_store.py]
-    B4 --> B43[conversation.py]
-    
-    B5 --> B51[__init__.py]
-    B5 --> B52[job_advisor.py]
-    
-    B6 --> B61[__init__.py]
-    B6 --> B62[schemas.py]
-    
-    B7 --> B71[__init__.py]
-    B7 --> B72[config.py]
-    B7 --> B73[prompts.py]
-    
-    B8 --> B81[__init__.py]
-    B8 --> B82[constants.py]
-    
-    C --> C1[jobs.json]
-
+```plaintext
+FastApi_SeniorJobGo/
+├── app/                           # 백엔드 애플리케이션 핵심 로직
+│   ├── __init__.py                # 패키지 초기화 파일
+│   ├── main.py                    # FastAPI 앱 설정 및 실행 파일
+│   ├── routes/                    # API 엔드포인트 정의
+│   │   ├── __init__.py            # 패키지 초기화 파일
+│   │   └── chat_router.py         # 채팅 관련 엔드포인트 (/api/v1/chat/)
+│   ├── services/                  # 비즈니스 로직 및 서비스 레이어
+│   │   ├── __init__.py            # 패키지 초기화 파일
+│   │   ├── vector_store.py        # 벡터 스토어 설정 및 관리 (RAG 검색)
+│   │   └── conversation.py        # 대화 기록 관리 및 컨텍스트 처리
+│   ├── agents/                    # LangGraph 에이전트 및 워크플로우
+│   │   ├── __init__.py            # 패키지 초기화 파일
+│   │   └── job_advisor.py         # LangGraph 기반 채용 조언 에이전트
+│   ├── models/                    # 데이터 모델 및 스키마 정의
+│   │   ├── __init__.py            # 패키지 초기화 파일
+│   │   └── schemas.py             # Pydantic 모델 (ChatRequest, ChatResponse 등)
+│   ├── core/                      # 애플리케이션 설정 및 공통 기능
+│   │   ├── __init__.py            # 패키지 초기화 파일
+│   │   ├── config.py              # 환경 변수 및 설정 관리
+│   │   └── prompts.py             # LLM 프롬프트 템플릿 모음
+│   └── utils/                     # 유틸리티 함수 및 상수
+│       ├── __init__.py            # 패키지 초기화 파일
+│       └── constants.py           # 상수 정의 (예: 딕셔너리, 고정값)
+├── documents/                     # 초기 데이터 파일 저장소
+│   └── jobs.json                  # 채용 정보 JSON 파일
+├── jobs_collection/               # 벡터 DB 저장소 (FAISS 인덱스 등)
+├── requirements.txt               # 프로젝트 의존성 패키지 목록
+├── .env                           # 환경 변수 파일
+└── README.md                      # 프로젝트 설명 문서
+```
 ### 디렉토리 설명
 
 - `app/`: 메인 애플리케이션 코드
