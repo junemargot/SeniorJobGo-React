@@ -17,42 +17,48 @@
 ## Backend (FastAPI)
 
 ### 프로젝트 구조
+```markdown
+## 프로젝트 디렉토리 구조
+
 mermaid
 graph TD
-A[FastApi_SeniorJobGo/] --> B[app/]
-A --> C[documents/]
-A --> D[jobs_collection/]
-A --> E[requirements.txt]
-A --> F[.env]
-A --> G[README.md]
-B --> B1[init.py]
-B --> B2[main.py]
-B --> H[routes/]
-H --> H1[init.py]
-H --> H2[chat_router.py]
-B --> I[services/]
-I --> I1[init.py]
-I --> I2[vector_store.py]
-I --> I3[conversation.py]
-B --> J[agents/]
-J --> J1[init.py]
-J --> J2[job_advisor.py]
-B --> K[models/]
-K --> K1[init.py]
-K --> K2[schemas.py]
-B --> L[core/]
-L --> L1[init.py]
-L --> L2[config.py]
-L --> L3[prompts.py]
-B --> M[utils/]
-M --> M1[init.py]
-M --> M2[constants.py]
-C --> C1[jobs.json]
-style A fill:#f9f9f9,stroke:#333,stroke-width:2px
-style B,H,I,J,K,L,M fill:#e1f5fe,stroke:#333,stroke-width:2px
-style C,D fill:#fff3e0,stroke:#333,stroke-width:2px
-style E,F,G fill:#f5f5f5,stroke:#333,stroke-width:2px
-style B1,B2,H1,H2,I1,I2,I3,J1,J2,K1,K2,L1,L2,L3,M1,M2,C1 fill:#ffffff,stroke:#333,stroke-width:1px
+    A[FastApi_SeniorJobGo] --> B[app/]
+    A --> C[documents/]
+    A --> D[jobs_collection/]
+    A --> E[requirements.txt]
+    A --> F[.env]
+    A --> G[README.md]
+    
+    B --> B1[__init__.py]
+    B --> B2[main.py]
+    B --> B3[routes/]
+    B --> B4[services/]
+    B --> B5[agents/]
+    B --> B6[models/]
+    B --> B7[core/]
+    B --> B8[utils/]
+    
+    B3 --> B31[__init__.py]
+    B3 --> B32[chat_router.py]
+    
+    B4 --> B41[__init__.py]
+    B4 --> B42[vector_store.py]
+    B4 --> B43[conversation.py]
+    
+    B5 --> B51[__init__.py]
+    B5 --> B52[job_advisor.py]
+    
+    B6 --> B61[__init__.py]
+    B6 --> B62[schemas.py]
+    
+    B7 --> B71[__init__.py]
+    B7 --> B72[config.py]
+    B7 --> B73[prompts.py]
+    
+    B8 --> B81[__init__.py]
+    B8 --> B82[constants.py]
+    
+    C --> C1[jobs.json]
 
 ### 디렉토리 설명
 
