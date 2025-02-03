@@ -288,7 +288,6 @@ const Main = () => {
                         className={styles.options__button}
                         onClick={() => handleOptionClick(option.id)}
                       >
-                        <span className={styles.options__number}>{option.id}</span>
                         <span className={styles.options__text}>{option.text}</span>
                       </button>
                     ))}
