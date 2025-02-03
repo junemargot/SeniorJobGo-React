@@ -164,17 +164,15 @@
   }
   
   &__content {
+    padding: 0.75rem 1rem;
     border-radius: 12px;
     max-width: 60%;
     line-height: 1.4;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    font-size: 15px;
     
     .message__bot & {
       padding: 0.65rem 0.75rem 0.75rem 0.55rem;
       background: $color-white;
-      padding: 11px;
+      // padding: 11px;
       border-radius: 12px;
       // max-width: 600px;
       // width: 100%;
@@ -190,7 +188,7 @@
     }
 
     @media (max-width: 768px) {
-      max-width: 85%; // 모바일에서의 메세지 너비 확장
+      max-width: 60%; // 모바일에서의 메세지 너비 확장
     }
   }
 }
