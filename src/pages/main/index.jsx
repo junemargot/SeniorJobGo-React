@@ -6,7 +6,33 @@ import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
 // import ChatbotIcon from '@assets/images/chatbot-icon.png';
-import ChatbotIcon from '@assets/images/my-notion-face-transparent.png'
+import ChatbotIcon from '@assets/images/icon-robot.png'
+
+const API_BASE_URL = "http://localhost:8000/api/v1";
+
+const JobCard = ({ job }) => (
+  <div className={styles.jobCard}>
+    <div className={styles.jobCard__header}>
+      <div className={styles.jobCard__location}>
+        <span className={styles.icon}>📍</span>
+        {job.location}
+      </div>
+      <div className={styles.jobCard__company}>{job.company}</div>
+    </div>
+    <h3 className={styles.jobCard__title}>{job.title}</h3>
+    <div className={styles.jobCard__details}>
+      <div className={styles.jobCard__detail}>
+        <span className={styles.icon}>💰</span>
+        {job.salary}
+      </div>
+      <div className={styles.jobCard__detail}>
+        <span className={styles.icon}>⏰</span>
+        {job.workingHours}
+      </div>
+    </div>
+    <p className={styles.jobCard__description}>{job.description}</p>
+  </div>
+);
 
 const Main = () => {
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
@@ -34,16 +60,6 @@ const Main = () => {
   ]);
 
   const [sessionId, setSessionId] = useState('');
-
-  // 컴포넌트가 마운트될 때 세션 ID 설정
-  // useEffect(() => {
-  //   let storedSessionId = localStorage.getItem('session_id');
-  //   if (!storedSessionId) {
-  //     storedSessionId = uuidv4();
-  //     localStorage.setItem('session_id', storedSessionId);
-  //   }
-  //   setSessionId(storedSessionId);
-  // }, []);
 
   const handleInputChange = (e) => {
     const text = e.target.value;
@@ -90,33 +106,32 @@ const Main = () => {
 
     try {
       // 메시지를 백엔드 API로 전송
-      const response = await axios.post('http://localhost:8000/chat/', {
+      const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: trimmedText,
-        user_profile: userInfo, // 현재 사용자 정보 전송
-        session_id: sessionId // 세션 ID 포함
+        user_profile: userInfo,
+        session_id: sessionId 
       });
 
-      console.log('Received response:', response.data);
+      const { message, jobPostings, type } = response.data;
 
-      const { responses, user_profile } = response.data;
-
+      setMessages(prevMessages => [
+        ...prevMessages,
+        {
+          type: 'user',
+          text: trimmedText,
+        },
+        {
+          type: 'bot',
+          text: message,
+          jobPostings: jobPostings
+        },
+      ]);
+      
       // 백엔드에서 업데이트된 userInfo 반영
       setUserInfo(user_profile);
 
-      // 챗봇 응답을 채팅에 추가
-      responses.forEach(botResponse => {
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            type: 'bot',
-            text: botResponse,
-          },
-        ]);
-        console.log(`Received bot response: ${botResponse}`);
-      });
-
       // 백엔드 응답에 따라 사용자 정보 입력 폼 표시
-      if (responses.some(response => response.includes("프로필 정보"))) {
+      if (jobPostings > 0) {
         setShowUserInfoForm(true);
       }
 
@@ -148,49 +163,50 @@ const Main = () => {
   const handleUserInfoSubmit = async (e) => {
     e.preventDefault();
 
+    const ageValue = userInfo.age ? parseInt(userInfo.age, 10) : undefined;
+    const updatedUserInfo = {
+      ...userInfo,
+      age: ageValue,
+    };
+
     const userInfoText = `입력하신 정보:\n나이: ${userInfo.age}\n희망근무지역: ${userInfo.location}\n희망직무: ${userInfo.jobType}\n\n이 정보를 바탕으로 채용 정보를 검색하겠습니다.`;
 
     setMessages(prevMessages => [
       ...prevMessages,
-      {
-        type: 'bot',
-        text: userInfoText
-      }
+      { type: 'bot', text: userInfoText }
     ]);
 
     setShowUserInfoForm(false);
 
-    // 사용자 정보를 기반으로 일자리 검색 트리거
     try {
       const searchQuery = `${userInfo.jobType} ${userInfo.location}`;
-      const response = await axios.post('http://localhost:8000/chat/', {
+      const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: searchQuery,
-        user_profile: userInfo,
-        session_id: sessionId
+        user_profile: updatedUserInfo,
+        session_id: sessionId || "default_session"
       });
 
-      const { responses, user_profile } = response.data;
+      const { message, jobPostings, user_profile, type } = response.data;
 
-      setUserInfo(user_profile);
+      if(user_profile) {
+        setUserInfo(user_profile);
+      }
 
-      responses.forEach(botResponse => {
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            type: 'bot',
-            text: botResponse,
-          },
-        ]);
-      });
+      
+      setMessages(prevMessages => [
+        ...prevMessages,
+        {
+          type: 'bot',
+          text: message,
+          jobPostings: jobPostings
+        }
+      ]);
 
     } catch (error) {
       console.error("일자리 검색 중 오류:", error);
       setMessages(prevMessages => [
         ...prevMessages,
-        {
-          type: 'bot',
-          text: "죄송합니다. 일자리 검색 중 오류가 발생했습니다.",
-        },
+        { type: 'bot', text: "죄송합니다. 일자리 검색 중 오류가 발생했습니다."},
       ]);
     }
   };
@@ -240,16 +256,10 @@ const Main = () => {
                       본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.
                     </div>
                     <div className={styles.notice__buttons}>
-                    <button 
-                      className={styles.notice__hideButton}
-                      onClick={() => setHideNotice(true)}
-                    >
+                    <button className={styles.notice__hideButton} onClick={() => setHideNotice(true)}>
                       다시 열지 않음
                     </button>
-                    <button 
-                      className={styles.notice__hideButton}
-                      onClick={() => setIsNoticeOpen(false)}
-                    >
+                    <button className={styles.notice__hideButton} onClick={() => setIsNoticeOpen(false)}>
                       접어두기
                     </button>
                     </div>
@@ -270,6 +280,13 @@ const Main = () => {
                           {i < message.text.split('\n').length - 1 && <br />}
                         </React.Fragment>
                       ))}
+                      {message.jobPostings && message.jobPostings.length > 0 && (
+                        <div className={styles.jobList}>
+                          {message.jobPostings.map(job => (
+                            <JobCard key={job.id} job={job} />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -283,12 +300,7 @@ const Main = () => {
                 {message.options && (
                   <div className={styles.options}>
                     {message.options.map((option) => (
-                      <button
-                        key={option.id}
-                        className={styles.options__button}
-                        onClick={() => handleOptionClick(option.id)}
-                      >
-                        <span className={styles.options__number}>{option.id}</span>
+                      <button key={option.id} className={styles.options__button} onClick={() => handleOptionClick(option.id)}>
                         <span className={styles.options__text}>{option.text}</span>
                       </button>
                     ))}
@@ -300,30 +312,9 @@ const Main = () => {
             {showUserInfoForm && (
               <div className={styles.userForm}>
                 <form onSubmit={handleUserInfoSubmit}>
-                  <input
-                    type="number"
-                    name="age"
-                    value={userInfo.age}
-                    onChange={handleUserInfoChange}
-                    placeholder="나이"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="location"
-                    value={userInfo.location}
-                    onChange={handleUserInfoChange}
-                    placeholder="희망근무지역"
-                    required
-                  />
-                  <input
-                    type="text"
-                    name="jobType"
-                    value={userInfo.jobType}
-                    onChange={handleUserInfoChange}
-                    placeholder="희망직무"
-                    required
-                  />
+                  <input type="number" name="age" value={userInfo.age} onChange={handleUserInfoChange} placeholder="나이" required />
+                  <input type="text" name="location" value={userInfo.location} onChange={handleUserInfoChange} placeholder="희망근무지역" required />
+                  <input type="text" name="jobType" value={userInfo.jobType} onChange={handleUserInfoChange} placeholder="희망직무" required />
                   <button type="submit">입력</button>
                 </form>
               </div>
@@ -331,15 +322,8 @@ const Main = () => {
           </div>
 
           <div className={styles.chat__input}>
-            <textarea
-              placeholder="메시지를 입력해주세요"
-              value={inputText}
-              onChange={handleInputChange}
-              onKeyUp={handleKeyPress}
-              onPaste={handlePaste}
-              rows="1"
-            />
-            <button onClick={handleSubmit}>전송</button>
+            <textarea placeholder="메시지를 입력해주세요" value={inputText} onChange={handleInputChange} onKeyUp={handleKeyPress} onPaste={handlePaste} rows="1" />
+            <button onClick={handleSubmit}>입력</button>
           </div>
         </div>
       </main>
