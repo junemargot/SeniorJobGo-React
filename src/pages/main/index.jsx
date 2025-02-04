@@ -148,13 +148,30 @@ const Main = () => {
   }
 
   const handleOptionClick = (optionId) => {
+    let selectedMenu = '';
+    switch(optionId) {
+      case 1:
+        selectedMenu = '채용 정보';
+        break;
+        
+      case 2:
+        selectedMenu = '훈련 정보';
+        break;
+
+      case 3:
+        selectedMenu = '이력서 관리';
+        break
+    }
+
     setMessages((prevMessages) => [
       ...prevMessages,
       {
         type: 'user',
-        text: `옵션 ${optionId}번을 선택했습니다.`,
+        text: selectedMenu,
       },
     ]);
+
+    // 채용정보 메뉴 클릭 시
     if(optionId === 1) {
       setShowUserInfoForm(true);
     }
@@ -169,7 +186,7 @@ const Main = () => {
       age: ageValue,
     };
 
-    const userInfoText = `입력하신 정보:\n나이: ${userInfo.age}\n희망근무지역: ${userInfo.location}\n희망직무: ${userInfo.jobType}\n\n이 정보를 바탕으로 채용 정보를 검색하겠습니다.`;
+    const userInfoText = `입력하신 정보는 다음과 같습니다.\n\n나이 : ${userInfo.age}세\n희망 근무 지역 : ${userInfo.location}\n희망 직무 : ${userInfo.jobType}\n\n🔍 이 정보를 바탕으로 채용 정보를 검색하겠습니다!`;
 
     setMessages(prevMessages => [
       ...prevMessages,
@@ -243,7 +260,7 @@ const Main = () => {
                 <div className={styles.notice__header} onClick={() => setIsNoticeOpen(!isNoticeOpen)}>
                   <div className={styles.notice__title}>
                     <span className={styles.notice__icon}>📢</span>
-                    <span>안녕하세요. 시니어잡고입니다.</span>
+                    <span>안녕하세요. 시니어JobGo입니다.</span>
                   </div>
                   <span className={`${styles.notice__arrow} ${isNoticeOpen ? styles.open : ''}`}>
                     <i className='bx bx-chevron-down'></i>
@@ -253,7 +270,8 @@ const Main = () => {
                 {isNoticeOpen && (
                   <>
                     <div className={styles.notice__content}>
-                      본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.
+                      본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
+                      AI 채용도우미와 함께 대화하며 나에게 맞는 채용 정보 서비스를 받아보세요! 😊<br />
                     </div>
                     <div className={styles.notice__buttons}>
                     <button className={styles.notice__hideButton} onClick={() => setHideNotice(true)}>
@@ -312,9 +330,9 @@ const Main = () => {
             {showUserInfoForm && (
               <div className={styles.userForm}>
                 <form onSubmit={handleUserInfoSubmit}>
-                  <input type="number" name="age" value={userInfo.age} onChange={handleUserInfoChange} placeholder="나이" required />
-                  <input type="text" name="location" value={userInfo.location} onChange={handleUserInfoChange} placeholder="희망근무지역" required />
-                  <input type="text" name="jobType" value={userInfo.jobType} onChange={handleUserInfoChange} placeholder="희망직무" required />
+                  <input type="number" name="age" value={userInfo.age} onChange={handleUserInfoChange} placeholder="나이 (숫자로만 입력가능)" required />
+                  <input type="text" name="location" value={userInfo.location} onChange={handleUserInfoChange} placeholder="희망근무지역 (예: 서울 강남구)" required />
+                  <input type="text" name="jobType" value={userInfo.jobType} onChange={handleUserInfoChange} placeholder="희망직무 (예: 사무직, 경비)" required />
                   <button type="submit">입력</button>
                 </form>
               </div>
