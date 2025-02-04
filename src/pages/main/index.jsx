@@ -36,7 +36,9 @@ const JobCard = ({ job }) => (
 
 const Main = () => {
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
-  const [userInfo, setUserInfo] = useState({ age: '', location: '', jobType: '' });
+  const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isKeywordFormExpanded, setIsKeywordFormExpanded] = useState(false);
 
   const chatContainerRef = useRef(null);
 
@@ -84,68 +86,76 @@ const Main = () => {
     if(e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
-      handleSubmit();
+      handleSubmit(e);
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     const trimmedText = inputText.trim();
-    if(trimmedText === '') return;
+    if (trimmedText === '' || isLoading) return;
+
+    // 입력창 초기화를 메시지 추가 전에 수행
+    setInputText('');
+    setIsLoading(true);
 
     // 사용자의 메시지를 채팅에 추가
-    setMessages(prevMessages => [
-      ...prevMessages,
-      {
-        type: 'user',
-        text: trimmedText,
-      },
-    ]);
-    setInputText('');
+    const userMessage = {
+      type: 'user',
+      text: trimmedText,
+    };
+    setMessages(prevMessages => [...prevMessages, userMessage]);
 
-    console.log(`Sending message to session ${sessionId}: ${trimmedText}`);
+    // 로딩 메시지 추가
+    setMessages(prevMessages => [...prevMessages, {
+      type: 'bot',
+      text: '답변을 준비중입니다...',
+      isLoading: true
+    }]);
 
     try {
-      // 메시지를 백엔드 API로 전송
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: trimmedText,
         user_profile: userInfo,
-        session_id: sessionId 
+        session_id: sessionId
       });
 
       const { message, jobPostings, type } = response.data;
 
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          type: 'user',
-          text: trimmedText,
-        },
-        {
+      // 로딩 메시지 제거 후 실제 응답 추가
+      setMessages(prevMessages => {
+        const filtered = prevMessages.filter(msg => !msg.isLoading);
+        return [...filtered, {
           type: 'bot',
           text: message,
           jobPostings: jobPostings
-        },
-      ]);
-      
-      // 백엔드에서 업데이트된 userInfo 반영
-      setUserInfo(user_profile);
+        }];
+      });
+
+      // 백엔드에서 업데이트된 사용자 정보 반영
+      setUserInfo(userInfo);
 
       // 백엔드 응답에 따라 사용자 정보 입력 폼 표시
-      if (jobPostings > 0) {
+      if (jobPostings && jobPostings.length > 0) {
         setShowUserInfoForm(true);
       }
 
     } catch (error) {
       console.error("메시지 전송 오류:", error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
+      setMessages(prevMessages => {
+        const filtered = prevMessages.filter(msg => !msg.isLoading);
+        return [...filtered, {
           type: 'bot',
           text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.",
-        },
-      ]);
+        }];
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleOptionClick = (optionId) => {
     let selectedMenu = '';
@@ -182,49 +192,47 @@ const Main = () => {
 
     const ageValue = userInfo.age ? parseInt(userInfo.age, 10) : undefined;
     const updatedUserInfo = {
-      ...userInfo,
-      age: ageValue,
+        ...userInfo,
+        age: ageValue,
     };
 
     const userInfoText = `입력하신 정보는 다음과 같습니다.\n\n나이 : ${userInfo.age}세\n희망 근무 지역 : ${userInfo.location}\n희망 직무 : ${userInfo.jobType}\n\n🔍 이 정보를 바탕으로 채용 정보를 검색하겠습니다!`;
 
     setMessages(prevMessages => [
-      ...prevMessages,
-      { type: 'bot', text: userInfoText }
+        ...prevMessages,
+        { type: 'bot', text: userInfoText }
     ]);
-
     setShowUserInfoForm(false);
 
     try {
-      const searchQuery = `${userInfo.jobType} ${userInfo.location}`;
-      const response = await axios.post(`${API_BASE_URL}/chat/`, {
-        user_message: searchQuery,
-        user_profile: updatedUserInfo,
-        session_id: sessionId || "default_session"
-      });
+        const searchQuery = `${userInfo.jobType} ${userInfo.location}`;
+        const response = await axios.post(`${API_BASE_URL}/chat/`, {
+            user_message: searchQuery,
+            user_profile: updatedUserInfo,
+            session_id: sessionId || "default_session"
+        });
 
-      const { message, jobPostings, user_profile, type } = response.data;
+        const { message, jobPostings, user_profile, type } = response.data;
 
-      if(user_profile) {
-        setUserInfo(user_profile);
-      }
-
-      
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          type: 'bot',
-          text: message,
-          jobPostings: jobPostings
+        if (user_profile) {
+            setUserInfo(user_profile);
         }
-      ]);
+
+        setMessages(prevMessages => [
+            ...prevMessages,
+            {
+                type: 'bot',
+                text: message,
+                jobPostings: jobPostings
+            }
+        ]);
 
     } catch (error) {
-      console.error("일자리 검색 중 오류:", error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        { type: 'bot', text: "죄송합니다. 일자리 검색 중 오류가 발생했습니다."},
-      ]);
+        console.error("일자리 검색 중 오류:", error);
+        setMessages(prevMessages => [
+            ...prevMessages,
+            { type: 'bot', text: "죄송합니다. 일자리 검색 중 오류가 발생했습니다." }
+        ]);
     }
   };
 
@@ -330,9 +338,9 @@ const Main = () => {
             {showUserInfoForm && (
               <div className={styles.userForm}>
                 <form onSubmit={handleUserInfoSubmit}>
-                  <input type="number" name="age" value={userInfo.age} onChange={handleUserInfoChange} placeholder="나이 (숫자로만 입력가능)" required />
-                  <input type="text" name="location" value={userInfo.location} onChange={handleUserInfoChange} placeholder="희망근무지역 (예: 서울 강남구)" required />
-                  <input type="text" name="jobType" value={userInfo.jobType} onChange={handleUserInfoChange} placeholder="희망직무 (예: 사무직, 경비)" required />
+                  <input type="number" name="age" value={userInfo.age} onChange={handleUserInfoChange} placeholder="나이" required />
+                  <input type="text" name="location" value={userInfo.location} onChange={handleUserInfoChange} placeholder="희망근무지역" required />
+                  <input type="text" name="jobType" value={userInfo.jobType} onChange={handleUserInfoChange} placeholder="희망직무" required />
                   <button type="submit">입력</button>
                 </form>
               </div>
@@ -340,10 +348,61 @@ const Main = () => {
           </div>
 
           <div className={styles.chat__input}>
-            <textarea placeholder="메시지를 입력해주세요" value={inputText} onChange={handleInputChange} onKeyUp={handleKeyPress} onPaste={handlePaste} rows="1" />
-            <button onClick={handleSubmit}>입력</button>
+            <textarea
+              placeholder="메시지를 입력해주세요"
+              value={inputText}
+              onChange={handleInputChange}
+              onKeyUp={handleKeyPress}
+              onPaste={handlePaste}
+              rows="1"
+              disabled={isLoading}
+            />
+            <button onClick={handleSubmit} disabled={isLoading}>
+              {isLoading ? '답변 준비중...' : '전송'}
+            </button>
           </div>
         </div>
+
+        {showUserInfoForm && (
+          <div className={`${styles.userForm} ${showUserInfoForm ? styles.expanded : ''}`}>
+            <div className={styles.userForm__header}>
+              <span>구직 조건 입력</span>
+              <button 
+                className={styles.userForm__toggle}
+                onClick={() => setShowUserInfoForm(false)}
+              >
+                접기 ▼
+              </button>
+            </div>
+            <form onSubmit={handleUserInfoSubmit}>
+              <input
+                type="number"
+                name="age"
+                value={userInfo.age}
+                onChange={handleUserInfoChange}
+                placeholder="나이"
+                required
+              />
+              <input
+                type="text"
+                name="location"
+                value={userInfo.location}
+                onChange={handleUserInfoChange}
+                placeholder="희망근무지역"
+                required
+              />
+              <input
+                type="text"
+                name="jobType"
+                value={userInfo.jobType}
+                onChange={handleUserInfoChange}
+                placeholder="희망직무"
+                required
+              />
+              <button type="submit">검색</button>
+            </form>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
