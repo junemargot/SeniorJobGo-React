@@ -37,6 +37,13 @@
   overflow: hidden;
   max-height: calc(100vh - 80px); // 채팅 헤더와 입력창 높이를 제외
   
+  @media (max-width: 768px) {
+    height: 100%; // 모바일에서 전체 높이 사용
+    max-height: none; // max-height 제거
+    border-radius: 0; // 모바일에서는 모서리 둥글게 처리 제거
+    box-shadow: none; // 모바일에서는 그림자 제거
+  }
+  
   &__header {
     display: flex;
     justify-content: space-between;
@@ -86,15 +93,20 @@
   &__messages {
     position: relative;
     flex: 1;
-    // background: darkslategray;
     overflow-y: auto;
     padding: 1.5rem;
     padding-top: calc(1.5rem + 70px); // 공지사항 높이만큼 상단 패딩 추가
     scroll-behavior: smooth;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 80px); // 채팅 헤더와 입력창 높이를 제외
   
+    // 스크롤바 숨기기 및 스타일링
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
     @media (max-width: 768px) {
       padding: 1rem;
       padding-top: calc(1rem + 70px);
@@ -102,13 +114,29 @@
   }
   
   &__input {
+    position: relative;
+    z-index: 101;
     display: flex;
     gap: 0.55rem;
     padding: 0.8rem;
     border-top: 1px solid $color-border;
+    background: $color-background;
 
     @media (max-width: 768px) {
-      padding: 0.5rem;
+      padding: 0.8rem 1rem;
+      position: sticky;
+      bottom: 0;
+      
+      textarea {
+        height: 40px;
+        padding: 0.5rem 0.75rem;
+        font-size: 16px;
+      }
+      
+      button {
+        padding: 0 1.25rem;
+        min-width: 64px;
+      }
     }
     
     textarea {
@@ -119,8 +147,6 @@
       border-radius: 8px;
       resize: none;
       font-size: 14px;
-      // max-height: 120px;
-      // overflow-y: auto;
       
       &:focus {
         border-color: $color-primary;
@@ -129,12 +155,13 @@
     }
     
     button {
-      padding: 0 1.5rem;
+      padding: 0 1.25rem;
       background: $color-primary;
       color: $color-text;
       border: none;
       border-radius: 8px;
       font-weight: 500;
+      min-width: 64px;
       
       &:hover {
         background: $color-primary-hover;
@@ -146,21 +173,26 @@
 
 .message {
   margin-bottom: 1.5rem;
+  width: 100%;
   
   &__bot {
     background: $color-background;
     display: flex;
     gap: 0.75rem;
+    width: 100%;
+    padding-right: 12px;
   }
   
   &__user {
     display: flex;
     justify-content: flex-end;
+    width: 100%; // 전체 너비 사용
   }
   
   &__icon {
     width: 32px;
     height: 32px;
+    flex-shrink: 0; // 아이콘 크기 고정
   }
   
   &__content {
@@ -168,6 +200,7 @@
     border-radius: 12px;
     max-width: 60%;
     line-height: 1.4;
+    word-break: break-word;
     
     .message__bot & {
       padding: 0.65rem 0.75rem 0.75rem 0.55rem;
@@ -254,6 +287,7 @@
   padding-left: 42px;
 
   form {
+    padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -289,6 +323,11 @@
         background: $color-primary-hover;
         cursor: pointer;
         color: $color-white;
+      }
+      
+      &:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
       }
     }
   }
