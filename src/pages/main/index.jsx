@@ -34,32 +34,6 @@ const JobCard = ({ job }) => (
   </div>
 );
 
-const API_BASE_URL = "http://localhost:8000/api/v1";
-
-const JobCard = ({ job }) => (
-  <div className={styles.jobCard}>
-    <div className={styles.jobCard__header}>
-      <div className={styles.jobCard__location}>
-        <span className={styles.icon}>📍</span>
-        {job.location}
-      </div>
-      <div className={styles.jobCard__company}>{job.company}</div>
-    </div>
-    <h3 className={styles.jobCard__title}>{job.title}</h3>
-    <div className={styles.jobCard__details}>
-      <div className={styles.jobCard__detail}>
-        <span className={styles.icon}>💰</span>
-        {job.salary}
-      </div>
-      <div className={styles.jobCard__detail}>
-        <span className={styles.icon}>⏰</span>
-        {job.workingHours}
-      </div>
-    </div>
-    <p className={styles.jobCard__description}>{job.description}</p>
-  </div>
-);
-
 const Main = () => {
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
