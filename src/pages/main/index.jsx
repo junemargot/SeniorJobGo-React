@@ -329,7 +329,6 @@ const Main = () => {
                               />
                               {selectedJob && selectedJob.id === job.id && isDetailsVisible && (
                                 <div className={styles.selectedJobCard}>
-                                  <h3>상세</h3>
                                   <h4>{selectedJob.title}</h4>
                                   <p>{selectedJob.description}</p>
                                   <button className={styles.closeButton} onClick={toggleDetails}>
