@@ -9,9 +9,8 @@ import ChatbotIcon from '@assets/images/icon-robot.png'
 // API 기본 URL 설정
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
-// 채용 정보 카드 component
-const JobCard = ({ job }) => (
-  <div className={styles.jobCard}>
+const JobCard = ({ job, onClick, isSelected, isGrayscale }) => (
+  <div className={`${styles.jobCard} ${isGrayscale ? styles.grayscale : ''}`} onClick={() => onClick(job)}>
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
         <span className={styles.icon}>📍</span>
@@ -30,7 +29,6 @@ const JobCard = ({ job }) => (
         {job.workingHours}
       </div>
     </div>
-    <p className={styles.jobCard__description}>{job.description}</p>
   </div>
 );
 
@@ -98,6 +96,8 @@ const Main = () => {
   ]);
 
   const [sessionId, setSessionId] = useState('');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   // 입력창 관련 핸들러
   const handleInputChange = (e) => {
@@ -274,6 +274,30 @@ const Main = () => {
     setUserInfo(prevInfo => ({ ...prevInfo, [name]: value }));
   };
 
+  const handleJobClick = (job) => {
+    setSelectedJob(job);
+    setIsDetailsVisible(true);
+  };
+
+  const toggleDetails = () => {
+    setIsDetailsVisible(!isDetailsVisible);
+    if (isDetailsVisible) {
+      setSelectedJob(null); // 상세 정보 숨길 때 선택된 공고 초기화
+    }
+  };
+
+  const handleJobClick = (job) => {
+    setSelectedJob(job);
+    setIsDetailsVisible(true);
+  };
+
+  const toggleDetails = () => {
+    setIsDetailsVisible(!isDetailsVisible);
+    if (isDetailsVisible) {
+      setSelectedJob(null); // 상세 정보 숨길 때 선택된 공고 초기화
+    }
+  };
+
   // 스크롤 관련 useEffect 통합
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -354,7 +378,23 @@ const Main = () => {
                       {message.jobPostings && message.jobPostings.length > 0 && (
                         <div className={styles.jobList}>
                           {message.jobPostings.map(job => (
-                            <JobCard key={job.id} job={job} />
+                            <div key={job.id}>
+                              <JobCard 
+                                job={job} 
+                                onClick={handleJobClick} 
+                                isSelected={selectedJob && selectedJob.id === job.id} 
+                                isGrayscale={selectedJob && selectedJob.id !== job.id && isDetailsVisible} 
+                              />
+                              {selectedJob && selectedJob.id === job.id && isDetailsVisible && (
+                                <div className={styles.selectedJobCard}>
+                                  <h4>{selectedJob.title}</h4>
+                                  <p>{selectedJob.description}</p>
+                                  <button className={styles.closeButton} onClick={toggleDetails}>
+                                    닫기
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
