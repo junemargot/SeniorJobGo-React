@@ -286,18 +286,6 @@ const Main = () => {
     }
   };
 
-  const handleJobClick = (job) => {
-    setSelectedJob(job);
-    setIsDetailsVisible(true);
-  };
-
-  const toggleDetails = () => {
-    setIsDetailsVisible(!isDetailsVisible);
-    if (isDetailsVisible) {
-      setSelectedJob(null); // 상세 정보 숨길 때 선택된 공고 초기화
-    }
-  };
-
   // 스크롤 관련 useEffect 통합
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
