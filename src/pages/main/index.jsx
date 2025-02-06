@@ -10,8 +10,8 @@ import ChatbotIcon from '@assets/images/my-notion-face-transparent.png'
 
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
-const JobCard = ({ job }) => (
-  <div className={styles.jobCard}>
+const JobCard = ({ job, onClick, isSelected, isGrayscale }) => (
+  <div className={`${styles.jobCard} ${isGrayscale ? styles.grayscale : ''}`} onClick={() => onClick(job)}>
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
         <span className={styles.icon}>📍</span>
@@ -30,7 +30,6 @@ const JobCard = ({ job }) => (
         {job.workingHours}
       </div>
     </div>
-    <p className={styles.jobCard__description}>{job.description}</p>
   </div>
 );
 
@@ -62,6 +61,8 @@ const Main = () => {
   ]);
 
   const [sessionId, setSessionId] = useState('');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   // 컴포넌트가 마운트될 때 세션 ID 설정
   // useEffect(() => {
@@ -234,6 +235,18 @@ const Main = () => {
     setUserInfo(prevInfo => ({ ...prevInfo, [name]: value }));
   };
 
+  const handleJobClick = (job) => {
+    setSelectedJob(job);
+    setIsDetailsVisible(true);
+  };
+
+  const toggleDetails = () => {
+    setIsDetailsVisible(!isDetailsVisible);
+    if (isDetailsVisible) {
+      setSelectedJob(null); // 상세 정보 숨길 때 선택된 공고 초기화
+    }
+  };
+
   // 메시지가 업데이트될 때마다 최신 메시지로 스크롤 이동
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -307,7 +320,24 @@ const Main = () => {
                       {message.jobPostings && message.jobPostings.length > 0 && (
                         <div className={styles.jobList}>
                           {message.jobPostings.map(job => (
-                            <JobCard key={job.id} job={job} />
+                            <div key={job.id}>
+                              <JobCard 
+                                job={job} 
+                                onClick={handleJobClick} 
+                                isSelected={selectedJob && selectedJob.id === job.id} 
+                                isGrayscale={selectedJob && selectedJob.id !== job.id && isDetailsVisible} 
+                              />
+                              {selectedJob && selectedJob.id === job.id && isDetailsVisible && (
+                                <div className={styles.selectedJobCard}>
+                                  <h3>상세</h3>
+                                  <h4>{selectedJob.title}</h4>
+                                  <p>{selectedJob.description}</p>
+                                  <button className={styles.closeButton} onClick={toggleDetails}>
+                                    닫기
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
