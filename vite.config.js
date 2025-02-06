@@ -4,6 +4,9 @@ import { fileURLToPath, URL } from 'url'
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.API_BASE_URL': JSON.stringify('http://localhost:8000/api/v1'),
+  },
   plugins: [react()],
   resolve: {
     alias: {
