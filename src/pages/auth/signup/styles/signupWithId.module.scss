@@ -124,6 +124,13 @@
   margin-left: 2px;
 }
 
+.errorMessage {
+  color: $color-primary-hover;
+  margin-top: 2px;
+  display: none;
+  font-size: 12px;
+}
+
 .agreement {
   margin-top: 2rem;
   

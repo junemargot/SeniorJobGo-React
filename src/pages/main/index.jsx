@@ -99,6 +99,28 @@ const Main = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
+  // fetch가 중복되지 않도록 useRef를 사용합니다.
+  const historyFetchedRef = useRef(false);
+
+  // 채팅 기록 가져오기
+  const fetchChatHistory = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/chat/get/local/test`);
+      console.log(response.data);
+      if (response.data.length > 0) {
+        const historyMessages = response.data.map(msg => ({
+          type: msg.role,
+          text: msg.content,
+          created_at: msg.created_at,
+        }));
+        // 기존의 초기 메시지를 유지하고 fetch한 기록을 추가합니다.
+        setMessages(prevMessages => [...prevMessages, ...historyMessages]);
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+    }
+  };
+
   // 입력창 관련 핸들러
   const handleInputChange = (e) => {
     const text = e.target.value;
@@ -303,6 +325,13 @@ const Main = () => {
     }
   }, [messages]);
 
+  // 컴포넌트 마운트 시 채팅 기록을 한 번만 가져옵니다.
+  useEffect(() => {
+    if (!historyFetchedRef.current) {
+      fetchChatHistory();
+      historyFetchedRef.current = true;
+    }
+  }, []);
 
   return (
     <div className={styles.page}>
