@@ -159,10 +159,6 @@ const Main = () => {
       setMessages(prevMessages => [
         ...prevMessages,
         {
-          type: 'user',
-          text: trimmedText,
-        },
-        {
           type: 'bot',
           text: message,
           jobPostings: jobPostings
@@ -170,7 +166,9 @@ const Main = () => {
       ]);
       
       // 백엔드에서 업데이트된 userInfo 반영
-      setUserInfo(user_profile);
+      if(response.data.user_profile) {
+        setUserInfo(response.data.user_profile);
+      }
 
       // 백엔드 응답에 따라 사용자 정보 입력 폼 표시
       if (jobPostings > 0) {
