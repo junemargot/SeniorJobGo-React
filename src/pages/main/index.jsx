@@ -419,11 +419,11 @@ const Main = () => {
             )}
           </div>
           {showScrollButton && (
-              <button className={`${styles.scrollButton} ${styles.visible}`} onClick={scrollToBottom}>
-                <i className='bx bx-down-arrow-alt'></i>
-                최신 메세지 보기
-              </button>
-            )}
+            <button className={`${styles.scrollButton} ${styles.visible}`} onClick={scrollToBottom}>
+              <i className='bx bx-down-arrow-alt'></i>
+              최신 메세지 보기
+            </button>
+          )}
           <div className={styles.chat__input}>
             <textarea placeholder="메시지를 입력해주세요" value={inputText} onChange={handleInputChange} onKeyUp={handleKeyPress} onPaste={handlePaste} rows="1" disabled={isLoading} />
             <button onClick={handleSubmit} disabled={isLoading}>
@@ -432,7 +432,6 @@ const Main = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };
