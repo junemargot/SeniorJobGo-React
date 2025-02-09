@@ -311,7 +311,7 @@ const Main = () => {
         <div className={styles.chat}>
           <div className={styles.chat__header}>
             <div className={styles.chat__info}>
-              <img src={ChatbotIcon} alt="챗봇 아이콘" />
+              {/* <img src={ChatbotIcon} alt="챗봇 아이콘" /> */}
               <span>시니어잡봇과 채팅하기</span>
             </div>
             <button className={styles.chat__mypage}>마이페이지</button>
