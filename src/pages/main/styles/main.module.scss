@@ -17,8 +17,9 @@
   width: 80%;
   margin: 0 auto;
   padding: 1.5rem;
-  padding-bottom: calc(1.5rem + 80px); // 푸터 영역 고려한 패딩
+  // padding-bottom: calc(1.5rem + 80px); // 푸터 영역 고려한 패딩
   min-height: calc(90vh - 60px); // 헤더 높이만 제외
+
 
   @media (max-width: 768px) {
     // padding: 1rem;
@@ -40,7 +41,7 @@
   height: calc(100vh - 100px);
 
   @media (max-width: 768px) {
-    min-height: calc(100vh - 100px);
+    // min-height: calc(100vh - 100px);
   }
   
   &__header {
@@ -95,7 +96,7 @@
     overflow-y: auto;
     padding: 1.5rem;
     padding-top: calc(1.5rem + 70px); // 공지사항 높이만큼 상단 패딩 추가
-    padding-bottom: 60px;
+    padding-bottom: 20px;
     scroll-behavior: smooth;
     display: flex;
     flex-direction: column;
@@ -193,7 +194,7 @@
     button {
       padding: 0 1.25rem;
       background: $color-primary;
-      color: $color-text;
+      color: $text-color;
       border: none;
       border-radius: 8px;
       font-weight: 500;
@@ -250,7 +251,7 @@
     .message__user & {
       padding: 0.65rem 0.75rem 0.75rem 0.65rem;
       background: $color-primary;
-      color: $color-text;
+      color: $text-color;
       border-radius: 12px;
       background: rgb(252, 241, 217)
     }
@@ -347,7 +348,7 @@
       // width: 100%;
       height: 48px;
       background: $color-primary;
-      color: $color-text;
+      color: $text-color;
       border: none;
       border-radius: 8px;
       font-weight: 500;
@@ -434,7 +435,7 @@
   &__arrow {
     font-size: 22px;
     transition: transform .3s ease;
-    color: $color-text;
+    color: $text-color;
     
     &.open {
       transform: rotate(180deg);
@@ -445,7 +446,7 @@
     padding: 0 16px 12px 20px;
     font-size: 15px;
     line-height: 1.4;
-    color: $color-text;
+    color: $text-color;
     background: $message-color;
   }
 }

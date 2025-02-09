@@ -1,0 +1,266 @@
+@use '@assets/styles/_variables' as *;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;&display=swap');
+
+.container {
+  overflow-y: auto;
+  padding: 32px 0 60px;
+  max-height: calc(100vh - 127px);
+  scrollbar-color: var(--scrollbar-color) transparent;
+}
+
+.appHeader,
+.suggestions,
+.message,
+.promptWrapper,
+.disclaimerText {
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 20px;
+  max-width: 980px;
+}
+
+.appHeader {
+  margin-top: 4vh;
+}
+
+.heading {
+  font-size: 3rem;
+  width: fit-content;
+  background: linear-gradient(to right, #1d7efd, #8f6fff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subHeading {
+  font-size: 2.6rem;
+  margin-top: -5px;
+  color: var(--subheading-color);
+}
+
+.suggestions {
+  display: flex;
+  gap: 15px;
+  margin-top: 9.5vh;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.suggestionsItem {
+  width: 228px;
+  padding: 18px;
+  flex-shrink: 0;
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-radius: 12px;
+  background: var(--secondary-color);
+
+  &:hover {
+    background: var(--secondary-hover-color);
+  }
+
+  .text {
+    font-size: 1.1rem;
+  }
+
+  span {
+    height: 45px;
+    width: 45px;
+    margin-top: 35px;
+    display: flex;
+    align-self: flex-end;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #1d7efd;
+    background: var(--primary-color);
+  }
+
+  &:nth-child(2) span { color: #28a745; }
+  &:nth-child(3) span { color: #ffc107; }
+  &:nth-child(4) span { color: #6f42c1; }
+}
+
+.chatsContainer {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+}
+
+.message {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+}
+
+.botMessage {
+  margin: 9px auto;
+
+  .avatar {
+    height: 43px;
+    width: 43px;
+    flex-shrink: 0;
+    padding: 6px;
+    align-self: flex-start;
+    margin-right: -7px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    border: 1px solid var(--secondary-color);
+  }
+
+  &.loading .avatar {
+    animation: rotate 3s linear infinite;
+  }
+}
+
+.userMessage {
+  flex-direction: column;
+  align-items: flex-end;
+
+  .messageText {
+    padding: 12px 16px;
+    max-width: 75%;
+    border-radius: 13px 13px 3px 13px;
+    background: var(--secondary-color);
+  }
+}
+
+.messageText {
+  padding: 3px 16px;
+  word-wrap: break-word;
+  white-space: pre-line;
+}
+
+.promptContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 9px;
+  background: var(--primary-color);
+}
+
+.promptWrapper,
+.promptForm,
+.promptActions {
+  display: flex;
+  gap: 12px;
+  height: 56px;
+  align-items: center;
+}
+
+.promptForm {
+  width: 100%;
+  height: 100%;
+  border-radius: 130px;
+  background: var(--secondary-color);
+}
+
+.promptInput {
+  height: 100%;
+  width: 100%;
+  background: none;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+  padding-left: 24px;
+  color: var(--text-color);
+
+  &::placeholder {
+    color: var(--placeholder-color);
+  }
+}
+
+.promptActions {
+  gap: 5px;
+  margin-right: 7px;
+
+  button {
+    height: 45px;
+    width: 45px;
+  }
+}
+
+#stopResponseBtn {
+  display: none;
+
+  &:hover {
+    color: #d62939;
+  }
+}
+
+#sendPromptBtn {
+  color: #fff;
+  display: none;
+  background: #1d7efd;
+
+  &:hover {
+    background: #0264e3;
+  }
+}
+
+.promptInput:valid ~ .promptActions #sendPromptBtn {
+  display: block;
+}
+
+.promptWrapper button {
+  width: 56px;
+  height: 100%;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  color: var(--text-color);
+  background: var(--secondary-color);
+  transition: .3s ease;
+
+  &:hover {
+    background: var(--secondary-hover-color);
+  }
+}
+
+.disclaimerText {
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 16px 20px 16px;
+  color: var(--placeholder-color);
+}
+
+:global {
+  body.botResponding {
+    .promptForm {
+      .promptInput {
+        color: transparent;
+      }
+
+      #sendPromptBtn {
+        display: none;
+      }
+
+      #stopResponseBtn {
+        display: block;
+      }
+    }
+  }
+}
+
+.dark {
+  background-color: #101623;
+  color: #edf3ff;
+}
+
+.light {
+  background-color: #f3f7ff;
+  color: #090c13;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}

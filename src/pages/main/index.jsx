@@ -159,10 +159,6 @@ const Main = () => {
       setMessages(prevMessages => [
         ...prevMessages,
         {
-          type: 'user',
-          text: trimmedText,
-        },
-        {
           type: 'bot',
           text: message,
           jobPostings: jobPostings
@@ -434,7 +430,7 @@ const Main = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };
