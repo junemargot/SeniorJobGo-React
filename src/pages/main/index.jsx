@@ -433,47 +433,6 @@ const Main = () => {
             </button>
           </div>
         </div>
-
-        {showUserInfoForm && (
-          <div className={`${styles.userForm} ${showUserInfoForm ? styles.expanded : ''}`}>
-            <div className={styles.userForm__header}>
-              <span>구직 조건 입력</span>
-              <button 
-                className={styles.userForm__toggle}
-                onClick={() => setShowUserInfoForm(false)}
-              >
-                접기 ▼
-              </button>
-            </div>
-            <form onSubmit={handleUserInfoSubmit}>
-              <input
-                type="number"
-                name="age"
-                value={userInfo.age}
-                onChange={handleUserInfoChange}
-                placeholder="나이"
-                required
-              />
-              <input
-                type="text"
-                name="location"
-                value={userInfo.location}
-                onChange={handleUserInfoChange}
-                placeholder="희망근무지역"
-                required
-              />
-              <input
-                type="text"
-                name="jobType"
-                value={userInfo.jobType}
-                onChange={handleUserInfoChange}
-                placeholder="희망직무"
-                required
-              />
-              <button type="submit">검색</button>
-            </form>
-          </div>
-        )}
       </main>
     </div>
   );
