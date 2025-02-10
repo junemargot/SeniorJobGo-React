@@ -5,9 +5,14 @@ import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
 import ChatbotIcon from '@assets/images/icon-robot.png'
+import VoiceRecorder from '@components/Voice/VoiceRecorder';
+import VoiceChatbot from '@components/Voice/VoiceChatbot';
 
 // API 기본 URL 설정
 const API_BASE_URL = "http://localhost:8000/api/v1";
+
+// welcome.mp3 파일 import
+import welcomeAudio from '@assets/audio/welcome.mp3';
 
 const JobCard = ({ job, onClick, isSelected, isGrayscale }) => (
   <div className={`${styles.jobCard} ${isGrayscale ? styles.grayscale : ''}`} onClick={() => onClick(job)}>
@@ -40,9 +45,6 @@ const Main = () => {
   const [isKeywordFormExpanded, setIsKeywordFormExpanded] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  // 음성 인식 객체 생성
-  const [recognition, setRecognition] = useState(null);
-
   // 스크롤 관련 상태 관리
   const chatContainerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -52,6 +54,14 @@ const Main = () => {
   // 상태 추가
   const [processingTime, setProcessingTime] = useState(0);
   const [startTime, setStartTime] = useState(null);
+
+  // 컴포넌트 마운트 시 웰컴 오디오 재생
+  useEffect(() => {
+    const audio = new Audio(welcomeAudio);
+    audio.play().catch(error => {
+      console.error('웰컴 오디오 재생 실패:', error);
+    });
+  }, []); // 빈 배열을 넣어 마운트 시에만 실행
 
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {
@@ -107,46 +117,9 @@ const Main = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
-  // 음성 인식 초기화
-  useEffect(() => {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'ko-KR';
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInputText(transcript);
-        setIsRecording(false);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('음성 인식 오류:', event.error);
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-
-      setRecognition(recognition);
-    }
-  }, []);
-
   // 음성 입력 토글 함수
   const toggleVoiceInput = () => {
-    if (!recognition) {
-      alert('죄송합니다. 음성 인식이 지원되지 않는 브라우저입니다.');
-      return;
-    }
-
-    if (isRecording) {
-      recognition.stop();
-    } else {
-      recognition.start();
-      setIsRecording(true);
-    }
+    // 음성 인식 관련 코드 제거
   };
 
   // 입력창 관련 핸들러
@@ -186,58 +159,68 @@ const Main = () => {
     if(trimmedText === '') return;
 
     setIsLoading(true);
-    setStartTime(Date.now());  // 시작 시간 기록
+    setStartTime(Date.now());
     setProcessingTime(0);
     
     // 사용자 메시지 추가
     setMessages(prevMessages => [
-        ...prevMessages,
-        { type: 'user', text: trimmedText },
-        { type: 'bot', text: '', isLoading: true }  // 로딩 메시지 추가
+      ...prevMessages,
+      { type: 'user', text: trimmedText },
+      { type: 'bot', text: '', isLoading: true }
     ]);
     setInputText('');
 
     try {
-        // 처리 시간 업데이트를 위한 인터벌
-        const timer = setInterval(() => {
-            setProcessingTime(prev => prev + 1);
-        }, 1000);
+      const timer = setInterval(() => {
+        setProcessingTime(prev => prev + 1);
+      }, 1000);
 
-        const response = await axios.post(`${API_BASE_URL}/chat/`, {
-            user_message: trimmedText,
-            user_profile: userInfo,
-            session_id: sessionId 
-        });
+      const response = await axios.post(`${API_BASE_URL}/chat/`, {
+        user_message: trimmedText,
+        user_profile: userInfo,
+        session_id: sessionId 
+      });
 
-        clearInterval(timer);  // 타이머 정지
+      clearInterval(timer);
 
-        const { message, jobPostings, type } = response.data;
+      const { message, jobPostings, type } = response.data;
 
-        // 로딩 메시지를 실제 응답으로 교체
-        setMessages(prevMessages => 
-            prevMessages.map((msg, idx) => 
-                idx === prevMessages.length - 1 
-                    ? { type: 'bot', text: message, jobPostings: jobPostings }
-                    : msg
-            )
-        );
+      // 챗봇 응답을 TTS로 변환
+      if (voiceChatbotRef.current) {
+        await voiceChatbotRef.current.speak(message);
+      }
 
-        if(response.data.user_profile) {
-            setUserInfo(response.data.user_profile);
-        }
+      setMessages(prevMessages => 
+        prevMessages.map((msg, idx) => 
+          idx === prevMessages.length - 1 
+            ? { type: 'bot', text: message, jobPostings: jobPostings }
+            : msg
+        )
+      );
+
+      if(response.data.user_profile) {
+        setUserInfo(response.data.user_profile);
+      }
 
     } catch (error) {
-        console.error("메시지 전송 오류:", error);
-        setMessages(prevMessages => 
-            prevMessages.map((msg, idx) => 
-                idx === prevMessages.length - 1 
-                    ? { type: 'bot', text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다." }
-                    : msg
-            )
-        );
+      console.error("메시지 전송 오류:", error);
+      const errorMessage = "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.";
+      
+      // 에러 메시지도 TTS로 변환
+      if (voiceChatbotRef.current) {
+        await voiceChatbotRef.current.speak(errorMessage);
+      }
+
+      setMessages(prevMessages => 
+        prevMessages.map((msg, idx) => 
+          idx === prevMessages.length - 1 
+            ? { type: 'bot', text: errorMessage }
+            : msg
+        )
+      );
     } finally {
-        setIsLoading(false);
-        setStartTime(null);
+      setIsLoading(false);
+      setStartTime(null);
     }
   };
 
@@ -357,6 +340,18 @@ const Main = () => {
     }
   }, [messages]);
 
+  // 음성 인식 최종 결과 처리
+  const handleTranscript = (text) => {
+    setInputText(text);
+    handleSubmit();  // 음성 인식이 끝나면 자동으로 메시지 전송
+  };
+
+  // 중간 음성 인식 결과 처리
+  const handleInterimTranscript = (text) => {
+    setInputText(text);
+  };
+
+  const voiceChatbotRef = useRef();
 
   return (
     <div className={styles.page}>
@@ -490,13 +485,12 @@ const Main = () => {
                 rows="1" 
                 disabled={isLoading || isRecording} 
               />
-              <button 
-                className={`${styles.mic__button} ${isRecording ? styles.recording : ''}`}
-                onClick={toggleVoiceInput}
-                disabled={isLoading}
-              >
-                <i className={`bx ${isRecording ? 'bxs-microphone' : 'bx-microphone'}`}></i>
-              </button>
+              <VoiceRecorder
+                onTranscript={handleTranscript}
+                onInterimTranscript={handleInterimTranscript}
+                isLoading={isLoading}
+                buttonClassName={styles.mic__button}
+              />
             </div>
             <button onClick={handleSubmit} disabled={isLoading}>
               {isLoading ? '답변 준비중...' : '입력'}
@@ -504,6 +498,7 @@ const Main = () => {
           </div>
         </div>
       </main>
+      <VoiceChatbot ref={voiceChatbotRef} />
     </div>
   );
 };

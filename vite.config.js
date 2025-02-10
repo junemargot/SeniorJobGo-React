@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
-import { fileURLToPath, URL } from 'url'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,13 +10,13 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)), // @를 입력했을 때 경로에서 src 폴더로 바로 접근이 가능하다.
-      '@assets': fileURLToPath(new URL('./src/assets', import.meta.url)),
-      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
-      '@pages': fileURLToPath(new URL('./src/pages', import.meta.url)),
-      '@recoil': fileURLToPath(new URL('./src/recoil', import.meta.url)),
-      '@types': fileURLToPath(new URL('./src/types', import.meta.url)),
-      '@apis': fileURLToPath(new URL('./src/apis', import.meta.url)),
+      '@': path.resolve(__dirname, './src'),
+      '@assets': path.resolve(__dirname, './src/assets'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@pages': path.resolve(__dirname, './src/pages'),
+      '@recoil': path.resolve(__dirname, './src/recoil'),
+      '@types': path.resolve(__dirname, './src/types'),
+      '@apis': path.resolve(__dirname, './src/apis'),
     },
   },
   // SCSS 전역 사용 설정
