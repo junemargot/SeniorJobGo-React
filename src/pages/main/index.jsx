@@ -44,6 +44,8 @@ const Main = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [chatHistoryIndex, setChatHistoryIndex] = useState(-1);
+  const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
 
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {
@@ -58,8 +60,15 @@ const Main = () => {
       // 스크롤이 위로 올라갔을 때 버튼 표시
       const isScrolledUp = element.scrollTop < element.scrollHeight - element.clientHeight - 100;
       setShowScrollButton(isScrolledUp);
+
+      // 스크롤이 맨 위로 올라갔을 때 채팅 기록 가져오기
+      const isScrolledTop = element.scrollTop === 0;
+      if(isScrolledTop) {
+        fetchChatHistory();
+      }
     }
   };
+
 
   // 스크롤 다운 이벤트
   const scrollToBottom = () => {
@@ -100,22 +109,85 @@ const Main = () => {
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   // fetch가 중복되지 않도록 useRef를 사용합니다.
+  const guestLoginRef = useRef(false);
   const historyFetchedRef = useRef(false);
+
+  // 쿠키가 없다면 비회원 로그인
+  const handleGuestLogin = async () => {
+    if (!guestLoginRef.current) {
+      guestLoginRef.current = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login/guest`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          guestLoginRef.current = false;
+        } else {
+          window.location.href = '/';
+          guestLoginRef.current = false;
+        }
+      } catch (error) {
+        window.location.href = '/';
+        guestLoginRef.current = false;
+      }
+    }
+  }
 
   // 채팅 기록 가져오기
   const fetchChatHistory = async () => {
+    if (chatHistoryIndex === 0) {
+      console.log("chatHistoryIndex is 0");
+      return;
+    }
+
     try {
-      const response = await axios.get(`${API_BASE_URL}/chat/get/local/test`);
-      console.log(response.data);
-      if (response.data.length > 0) {
-        const historyMessages = response.data.map(msg => ({
-          type: msg.role,
-          text: msg.content,
-          created_at: msg.created_at,
-        }));
-        // 기존의 초기 메시지를 유지하고 fetch한 기록을 추가합니다.
-        setMessages(prevMessages => [...prevMessages, ...historyMessages]);
+      const cookies = document.cookie;
+      if (cookies === '') {
+
+        handleGuestLogin();
+        return;
       }
+
+      const sjgid = cookies.split(';').find(row => row.trim().startsWith('sjgid='))
+      if (!sjgid) {
+        handleGuestLogin();
+        return;
+      }
+
+      const limit = 4;
+      const _id = sjgid.split('=')[1];
+
+      if (_id) {
+        const response = await axios.get(`${API_BASE_URL}/chat/get/${_id}`,
+          {
+            params: {
+              end: chatHistoryIndex,
+              limit: limit
+            }
+          }
+        );
+
+        setChatHistoryIndex(response.data.index);
+
+        if (response.data.messages.length > 0) {
+          const historyMessages = response.data.messages.map(msg => ({
+            type: msg.role,
+            text: msg.content,
+            created_at: msg.created_at,
+            options: msg.options
+          }));
+          setMessages(historyMessages);
+        }
+
+        // 현재 높이에서 기존 높이 뺀 값을 현재 스크롤 위치로 설정
+        setCurrentScrollPosition(chatContainerRef.current.scrollHeight - currentScrollPosition);
+      } else {
+        handleGuestLogin();
+        return;
+      }
+
     } catch (error) {
       console.error("Error fetching chat history:", error);
     }
@@ -173,8 +245,9 @@ const Main = () => {
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: trimmedText,
         user_profile: userInfo,
-        session_id: sessionId 
-      });
+        session_id: sessionId
+      },
+      {withCredentials: true});
 
       const { message, jobPostings, type } = response.data;
 
@@ -306,32 +379,37 @@ const Main = () => {
     }
   };
 
-  // 스크롤 관련 useEffect 통합
-  useEffect(() => {
-    const chatContainer = chatContainerRef.current;
-    if (chatContainer) {
-      setIsAutoScrolling(true);
-      setShowScrollButton(false);
+  // // 스크롤 관련 useEffect 통합
+  // useEffect(() => {
+  //   const chatContainer = chatContainerRef.current;
+  //   if (chatContainer) {
+  //     setIsAutoScrolling(true);
+  //     setShowScrollButton(false);
       
-      chatContainer.scrollTo({
-        top: chatContainer.scrollHeight,
-        behavior: 'smooth'
-      });
+  //     chatContainer.scrollTo({
+  //       top: chatContainer.scrollHeight,
+  //       behavior: 'smooth'
+  //     });
 
-      // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
-      setTimeout(() => {
-        setIsAutoScrolling(false);
-      }, 500);
-    }
-  }, [messages]);
+  //     // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
+  //     setTimeout(() => {
+  //       setIsAutoScrolling(false);
+  //     }, 500);
+  //   }
+  // }, [messages]);
 
   // 컴포넌트 마운트 시 채팅 기록을 한 번만 가져옵니다.
   useEffect(() => {
-    if (!historyFetchedRef.current) {
-      fetchChatHistory();
-      historyFetchedRef.current = true;
-    }
+    const fetchHistory = async () => {
+      if (!historyFetchedRef.current) {
+        await fetchChatHistory();
+        historyFetchedRef.current = true;
+        scrollToBottom();
+      }
+    };
+    fetchHistory();
   }, []);
+
 
   return (
     <div className={styles.page}>

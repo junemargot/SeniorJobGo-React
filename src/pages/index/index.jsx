@@ -25,6 +25,13 @@ const Index = () => {
   ]
 
   useEffect(() => {
+    const cookie = document.cookie;
+    if (cookie.includes("sjgid")) {
+      navigate('/main');
+    }
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(false); // fadeout 시작
 

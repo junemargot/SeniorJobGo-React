@@ -49,6 +49,7 @@ const Signin = () => {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({
                 user_id: formData.userId,
                 password: formData.password,
