@@ -38,6 +38,10 @@ const Main = () => {
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isKeywordFormExpanded, setIsKeywordFormExpanded] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+
+  // 음성 인식 객체 생성
+  const [recognition, setRecognition] = useState(null);
 
   // 스크롤 관련 상태 관리
   const chatContainerRef = useRef(null);
@@ -102,6 +106,48 @@ const Main = () => {
   const [sessionId, setSessionId] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+
+  // 음성 인식 초기화
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'ko-KR';
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(transcript);
+        setIsRecording(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('음성 인식 오류:', event.error);
+        setIsRecording(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      setRecognition(recognition);
+    }
+  }, []);
+
+  // 음성 입력 토글 함수
+  const toggleVoiceInput = () => {
+    if (!recognition) {
+      alert('죄송합니다. 음성 인식이 지원되지 않는 브라우저입니다.');
+      return;
+    }
+
+    if (isRecording) {
+      recognition.stop();
+    } else {
+      recognition.start();
+      setIsRecording(true);
+    }
+  };
 
   // 입력창 관련 핸들러
   const handleInputChange = (e) => {
@@ -434,7 +480,24 @@ const Main = () => {
             </button>
           )}
           <div className={styles.chat__input}>
-            <textarea placeholder="메시지를 입력해주세요" value={inputText} onChange={handleInputChange} onKeyUp={handleKeyPress} onPaste={handlePaste} rows="1" disabled={isLoading} />
+            <div className={styles.input__container}>
+              <textarea 
+                placeholder="메시지를 입력해주세요" 
+                value={inputText} 
+                onChange={handleInputChange} 
+                onKeyUp={handleKeyPress} 
+                onPaste={handlePaste} 
+                rows="1" 
+                disabled={isLoading || isRecording} 
+              />
+              <button 
+                className={`${styles.mic__button} ${isRecording ? styles.recording : ''}`}
+                onClick={toggleVoiceInput}
+                disabled={isLoading}
+              >
+                <i className={`bx ${isRecording ? 'bxs-microphone' : 'bx-microphone'}`}></i>
+              </button>
+            </div>
             <button onClick={handleSubmit} disabled={isLoading}>
               {isLoading ? '답변 준비중...' : '입력'}
             </button>
