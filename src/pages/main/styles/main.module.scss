@@ -182,7 +182,7 @@
 
   textarea {
     width: 100%;
-    height: 32px;
+    height: 50px;
     padding: 0.75rem;
     padding-right: 3rem; // 마이크 아이콘을 위한 공간 증가
     border: 1px solid $color-border;
@@ -252,7 +252,7 @@
       font-size: 20px;
 
       @media (max-width: 768px) {
-        font-size: 18px; // 모바일에서 아이콘 크기 조정
+        font-size: 30px; // 모바일에서 아이콘 크기 조정
       }
     }
   }
@@ -555,8 +555,83 @@
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover {
-    transform: translateY(-2px);
+  &.selected {
+    border-color: $color-primary;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  // 상세 정보 영역
+  &__description {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid $color-border;
+    
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: $color-text;
+      margin-bottom: 16px;
+      padding: 0 4px;
+
+      // 구분된 정보 영역
+      &:not(:last-child) {
+        position: relative;
+        padding-left: 80px;
+        min-height: 24px;
+
+        // 정보 레이블
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 4px;
+          color: $color-text-secondary;
+          font-weight: 500;
+          width: 70px;
+        }
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid $color-border;
+    
+    &.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+  }
+
+  &__button {
+    padding: 8px 20px;
+    border: 1px solid $color-primary;
+    border-radius: 6px;
+    background: $color-primary;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: color.adjust($color-primary, $lightness: -5%);
+      transform: translateY(-1px);
+    }
   }
 
   &__header {
@@ -588,12 +663,6 @@
     line-height: 1.4;
   }
 
-  &__details {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-
   &__detail {
     display: flex;
     align-items: center;
@@ -605,70 +674,100 @@
       color: $icon-color;
     }
   }
+}
 
-  &__description {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 /* 채용 공고 상세보기 시 선택된 카드 */
 .selectedJobCard {
+  position: fixed; // 화면에 고정
+  bottom: 52px; // 채팅 입력바 위에 위치
+  left: 0;
+  right: 0;
   background-color: #ffffff;
-  border: 3px solid #f0ad4e;
-  border-radius: 8px;
+  border-top: 1px solid $color-border;
   padding: 16px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 10px;
-  transition: transform 0.3s;
-
-
-  &:hover {
-    transform: scale(1.02);
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
   }
 
-  h4 {
-
-    font-size: 18px;
-    font-weight: normal;
-    color: #333;
-
-    margin-bottom: 8px;
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $color-text;
   }
 
-  p {
+  &__close {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: $color-text-secondary;
+    cursor: pointer;
 
+    &:hover {
+      color: $color-text;
+    }
+  }
+
+  &__content {
     font-size: 14px;
-    color: #666;
-
+    line-height: 1.5;
+    color: $color-text;
+    margin-bottom: 12px;
   }
-}
 
-.selectedJobCard .closeButton {
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
 
-  all: unset;
-  background-color: #f0ad4e;
-  color: white;
-  border-radius: 8px;
-  padding: 4px 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  &__button {
+    padding: 6px 12px;
+    border: 1px solid $color-primary;
+    border-radius: 6px;
+    background: #fff;
+    color: $color-primary;
+    font-size: 14px;
+    cursor: pointer;
 
-  &:hover {
-    background-color: #ec971f;
-
+    &:hover {
+      background: $color-primary;
+      color: #fff;
+    }
   }
 }
 
 /* 선택된 채용공고 외 카드 흐리게(그레이스케일) */
 .grayscale {
-  opacity: 0.03;
+  opacity: 0.5;
   pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 /* 닫기 버튼 공통 스타일 */

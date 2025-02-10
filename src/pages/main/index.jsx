@@ -9,8 +9,12 @@ import ChatbotIcon from '@assets/images/icon-robot.svg'
 // API 기본 URL 설정
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
-const JobCard = ({ job, onClick, isSelected, isGrayscale }) => (
-  <div className={`${styles.jobCard} ${isGrayscale ? styles.grayscale : ''}`} onClick={() => onClick(job)}>
+const JobCard = ({ job, onClick, isSelected, cardRef }) => (
+  <div 
+    ref={cardRef}
+    className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
+    onClick={() => onClick(job)}
+  >
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
         <span className={styles.icon}>📍</span>
@@ -28,6 +32,22 @@ const JobCard = ({ job, onClick, isSelected, isGrayscale }) => (
         <span className={styles.icon}>⏰</span>
         {job.workingHours}
       </div>
+    </div>
+    
+    {/* 상세 정보 영역 */}
+    <div className={`${styles.jobCard__description} ${isSelected ? styles.visible : ''}`}>
+      <p data-label="고용형태">{job.employmentType}</p>
+      <p data-label="근무시간">{job.workingHours}</p>
+      <p data-label="급여">{job.salary}</p>
+      <p data-label="복리후생">{job.benefits}</p>
+      <p data-label="상세내용">{job.description}</p>
+    </div>
+    
+    {/* 버튼 영역 */}
+    <div className={`${styles.jobCard__footer} ${isSelected ? styles.visible : ''}`}>
+      <button className={styles.jobCard__button}>
+        지원하기
+      </button>
     </div>
   </div>
 );
@@ -106,6 +126,7 @@ const Main = () => {
   const [sessionId, setSessionId] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  const selectedCardRef = useRef(null);
 
   // 음성 인식 초기화
   useEffect(() => {
@@ -330,6 +351,16 @@ const Main = () => {
   const handleJobClick = (job) => {
     setSelectedJob(job);
     setIsDetailsVisible(true);
+
+    // 약간의 지연을 주어 애니메이션이 시작된 후 스크롤
+    setTimeout(() => {
+      if (selectedCardRef.current) {
+        selectedCardRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 100);
   };
 
   const toggleDetails = () => {
@@ -433,7 +464,7 @@ const Main = () => {
                                   job={job} 
                                   onClick={handleJobClick}
                                   isSelected={selectedJob && selectedJob.id === job.id}
-                                  isGrayscale={selectedJob && selectedJob.id !== job.id && isDetailsVisible}
+                                  cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
                                 />
                               ))}
                             </div>
@@ -504,6 +535,7 @@ const Main = () => {
             </button>
           </div>
         </div>
+        
       </main>
     </div>
   );
