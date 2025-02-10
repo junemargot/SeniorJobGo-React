@@ -1,201 +1,362 @@
 // pages/chat/index.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
 import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
+import Avatar from '@assets/images/icon-robot.svg'
+
+// API 셋업
+const API_KEY = "AIzaSyAHuX7olxy-r1zX5SvXSz7rWgJ5WN4KbmA";
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState([]); // { role: 'user' | 'model', text: string, loading?: boolean }
   const [isBotResponding, setIsBotResponding] = useState(false);
-  const [theme, setTheme] = useState(
-    localStorage.getItem("themeColor") === "light_mode" ? "light" : "dark"
-  );
+  const [typingIntervalId, setTypingIntervalId] = useState(null); // 추가된 상태
   const chatsContainerRef = useRef(null);
-  const API_KEY = "AIzaSyAHuX7olxy-r1zX5SvXSz7rWgJ5WN4KbmA";
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-  let typingInterval;
+  const promptInputRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const typingIntervalRef = useRef(null);
 
-  // Scroll to the bottom of the chat container
+  // 녹음 관련 상태 및 ref
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  // 메뉴
+  const suggestions = [
+    { text: "시니어JobGo 이용안내 가이드", icon: "search" },
+    { text: "AI 맞춤 채용정보 검색", icon: "work" },
+    { text: "맞춤 훈련정보 검색", icon: "explore" },
+    { text: "이력서 관리", icon: "description" },
+  ];
+
+  // 채팅 컨테이너 스크롤 하단으로 이동
   const scrollToBottom = () => {
-    chatsContainerRef.current?.scrollTo({
-      top: chatsContainerRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  };
+    if(chatsContainerRef.current) {
+      const { current } = chatsContainerRef;
 
-  // Simulate typing effect for bot responses
-  const typingEffect = (text, callback) => {
-    const words = text.split(" ");
-    let wordIndex = 0;
-    let typedText = "";
-
-    typingInterval = setInterval(() => {
-      if (wordIndex < words.length) {
-        typedText += (wordIndex === 0 ? "" : " ") + words[wordIndex++];
-        callback(typedText);
-        scrollToBottom();
-      } else {
-        clearInterval(typingInterval);
-        setIsBotResponding(false);
-      }
-    }, 40);
-  };
-
-  // Generate bot response
-  const generateResponse = async () => {
-    setIsBotResponding(true);
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: chatHistory }),
+      // 애니메이션 프레임을 사용하여 DOM 업데이트 후 스크롤
+      requestAnimationFrame(() => {
+        current.scrollTop = current.scrollHeight;
       });
-
-      if (!response.ok) throw new Error("Failed to fetch response");
-
-      const data = await response.json();
-      const responseText =
-        data.candidates[0].content.parts[0].text.replace(
-          /\*\*([^*]+)\*\*/g,
-          "$1"
-        ).trim();
-
-      setChatHistory((prev) => [
-        ...prev,
-        { role: "bot", text: responseText },
-      ]);
-
-      typingEffect(responseText, (typedText) => {
-        setChatHistory((prev) =>
-          prev.map((msg, idx) =>
-            idx === prev.length - 1 ? { ...msg, text: typedText } : msg
-          )
-        );
-      });
-    } catch (error) {
-      console.error(error);
-      setChatHistory((prev) => [
-        ...prev,
-        { role: "bot", text: error.message || "Error occurred" },
-      ]);
-      setIsBotResponding(false);
     }
   };
 
-  // Handle form submission
+  // 채팅 내역 변경 시 스크롤 하단 이동
+  useEffect(() => {
+    // 더 안정적이니 스크롤 로직 추가
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [chatHistory]);
+
+  // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
+  const typingEffect = (text, updateCallback, onComplete) => {
+    // 기존 인터벌 있으면 정리
+    if(typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    const words = text.split(" ");
+    let wordIndex = 0;
+    let currentText = "";
+    
+    const intervalId = setInterval(() => {
+      if (wordIndex < words.length) {
+        currentText += (currentText ? " " : "") + words[wordIndex];
+        updateCallback(currentText);
+        wordIndex++;
+        scrollToBottom();
+      } else {
+        clearInterval(intervalId);
+        typingIntervalRef.current = null;
+        if (onComplete) onComplete();
+      }
+    }, 40);
+    typingIntervalRef.current = intervalId;
+  };
+
+
+  // 봇 응답 생성 함수  
+  const generateResponse = async () => {
+    setIsBotResponding(true);
+    // AbortController를 생성해서 요청 중단 기능 구현
+    abortControllerRef.current = new AbortController();
+    // const newUserMessage = { role: "user", text: userMessage };
+
+    setChatHistory((prev) => 
+      [...prev, 
+      { role: "model", text: "답변을 작성중입니다...", loading: true }
+    ]);
+    scrollToBottom();
+
+    // 사용자 메시지는 이미 채팅 내역에 추가되었으므로, 600ms 딜레이 후 봇 메시지 생성
+    setTimeout(async () => {
+      try {
+        // Gemini API 호출 시 현재 채팅 내역 + 방금 추가된 사용자 메시지를 포함
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            contents: [{
+              parts: [{
+                text: userMessage // 현재 사용자 메세지만 전송
+              }]
+            }]
+          }),
+          signal: abortControllerRef.current.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("죄송합니다. 응답을 받아오지 못했습니다.");
+        }
+
+        const data = await response.json();
+        const responseText = data.candidates[0]?.content?.parts[0]?.text?.replace(/\*\*([^*]+)\*\*/g, "$1").trim() || "오류 발생";
+
+        // 봇 메시지의 텍스트를 빈 문자열로 바꾸고 타이핑 효과 적용
+        setChatHistory((prev) => {
+          const updatedHistory = [...prev];
+          updatedHistory[updatedHistory.length - 1] = { role: "model", text: "", loading: true };
+          return updatedHistory;
+        });
+
+        // 점진적으로 텍스트 업데이트
+        const cleanup = typingEffect(
+          responseText,
+          (partialText) => {
+            setChatHistory((prev) => {
+              const updatedHistory = [...prev];
+              const lastIndex = updatedHistory.length - 1;
+              updatedHistory[lastIndex] = {
+                role: "model",
+                text: partialText,
+                loading: true
+              };
+              return updatedHistory;
+            });
+          },
+          () => {
+            // 타이핑 효과 완료 후 loading 상태 해제
+            setChatHistory((prev) => {
+              const updatedHistory = [...prev];
+              const lastIndex = updatedHistory.length - 1;
+              updatedHistory[lastIndex] = { 
+                role: "model", 
+                text: responseText, 
+                loading: false 
+              };
+              return updatedHistory;
+            });
+            setIsBotResponding(false);
+          }
+        );
+
+        // cleanup 함수를 실행하기 위한 useEffect 추가 필요
+        return cleanup;
+
+      } catch (error) {
+        console.error(error);
+        setChatHistory((prev) => [
+          ...prev,
+          { role: "model", text: error.message || "오류가 발생했습니다.", loading: false }
+        ]);
+        setIsBotResponding(false);
+      }
+    }, 600);
+  };
+
+  // 응답 중단 핸들러 수정
+  const handleStopResponse = () => {
+    if(typingIntervalId) {
+      clearInterval(typingIntervalId);
+      setTypingIntervalId(null);
+    }
+
+    if(abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsBotResponding(false);
+
+    // 채팅 내역 중 loading 중인 봇 메시지는 loading 해제
+    setChatHistory((prev) =>
+      prev.map((msg) =>
+        msg.role === "model" && msg.loading ? { ...msg, loading: false } : msg
+      )
+    );
+  };
+
+  // 컴포넌트 cleanup을 위한 useEffect 추가
+  useEffect(() => {
+    return () => {
+      if(typingIntervalId) {
+        clearInterval(typingIntervalId);
+      }
+
+      if(abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [typingIntervalId]);
+
+  // 폼 제출 핸들러 (사용자 메시지 전송)
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (!userMessage || isBotResponding) return;
+    if (!userMessage.trim() || isBotResponding) return;
 
-    setChatHistory((prev) => [
-      ...prev,
-      { role: "user", text: userMessage },
-    ]);
+    // 사용자 메시지를 채팅 내역에 추가
+    setChatHistory(prev => [...prev, { role: "user", text: userMessage }]);
+    // 입력 필드 초기화
     setUserMessage("");
+    // 포커스 설정
+    setTimeout(() => promptInputRef.current?.focus(), 0);
+    // scrollToBottom();
     generateResponse();
   };
 
-  // Handle theme toggle
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("themeColor", newTheme === "light" ? "light_mode" : "dark_mode");
+  // 추천 문구 클릭 시 처리 (문구 입력 후 즉시 전송)
+  const handleSuggestionClick = (text) => {
+    setUserMessage(text);
+    // 약간의 딜레이 후 폼 제출 호출 (synthetic event로 호출)
+    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+  };
+
+  // 채팅 내역 모두 삭제
+  const handleDeleteChats = () => {
+    setChatHistory([]);
+    setIsBotResponding(false);
+  };
+
+
+
+  // 녹음 시작/중지 핸들러
+  const handleRecord = async () => {
+    if (!recording) {
+      // 녹음 시작
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        mediaRecorderRef.current.onstop = () => {
+          // 녹음 종료 후 Blob 생성 등 처리 (예: 서버 전송, 다운로드 링크 생성 등)
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          console.log("녹음 완료:", audioBlob);
+          audioChunksRef.current = [];
+        };
+        mediaRecorderRef.current.start();
+        setRecording(true);
+      } catch (error) {
+        console.error("녹음 기능 사용 불가", error);
+      }
+    } else {
+      // 녹음 중지
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    }
   };
 
   return (
-    <div className={`${styles.container} ${styles[theme]}`}>
-      {/* Header */}
-      <header className={styles.appHeader}>
-        <h1 className={styles.heading}>Hello, there</h1>
-        <h2 className={styles.subHeading}>How can I help you?</h2>
-      </header>
+    <>
+    <Header />
+      <div className={styles.container} ref={chatsContainerRef}>
+        {chatHistory.length === 0 && (
+          <>
+          {/* 앱 헤더 */}
+          <div className={styles.appHeader}>
+            <h1 className={styles.heading}>안녕하세요!</h1>
+            <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
+          </div>
 
-      {/* Suggestions */}
-      <ul className={styles.suggestions}>
-        {[
-          "Design a home office setup for remote work under $500.",
-          "How can I level up my web development expertise in 2025?",
-          "Suggest some useful tools for debugging JavaScript code.",
-          "Create a React JS component for the simple todo list app.",
-        ].map((text, index) => (
-          <li
-            key={index}
-            className={styles.suggestionsItem}
-            onClick={() => setUserMessage(text)}
-          >
-            <p className={styles.text}>{text}</p>
-            <span className={`${styles.materialSymbolsRounded} material-symbols-rounded`}>lightbulb</span>
-          </li>
-        ))}
-      </ul>
+          {/* 추천 문구 */}
+          <ul className={styles.suggestions}>
+            {suggestions.map((item, index) => (
+              <li
+                key={index}
+                className={styles.suggestionsItem}
+                onClick={() => handleSuggestionClick(item.text)}
+              >
+                <p className={styles.text}>{item.text}</p>
+                <span className={`material-symbols-rounded`}>{item.icon}</span>
+              </li>
+            ))}
+          </ul>
+          </>
+        )}
 
-      {/* Chat Container */}
-      <div className={styles.chatsContainer} ref={chatsContainerRef}>
-        {chatHistory.map((msg, index) => (
-          <div key={index} className={`${styles.message} ${styles[`${msg.role}Message`]}`}>
-            {msg.role === "bot" && (
-              <img
-                src="/assets/images/gemini.svg"
-                alt="logo"
-                className={styles.avatar}
+        {/* 채팅 내역 */}
+        <div className={styles.chatsContainer}>
+          {chatHistory.map((msg, index) => (
+            <div key={index} className={`${styles.message} ${msg.role === "model" ? styles.botMessage : styles.userMessage} ${msg.loading ? "loading" : ""}`}>
+              {msg.role === "model" && <img src={Avatar} alt="avatar" className={styles.avatar} />}
+              <p className={styles.messageText}>{msg.text}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* 프롬프트 영역 */}
+        <div className={styles.promptContainer}>
+          <div className={styles.promptWrapper}>
+            <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
+              <input
+                ref={promptInputRef}
+                type="text"
+                className={styles.promptInput}
+                placeholder="궁금하신 내용을 입력해주세요"
+                value={userMessage}
+                onChange={(e) => setUserMessage(e.target.value)}
+                required
+                disabled={isBotResponding}
               />
-            )}
-            <p className={styles.messageText}>{msg.text}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Prompt Container */}
-      <div className={styles.promptContainer}>
-        <form onSubmit={handleFormSubmit} className={styles.promptForm}>
-          <input
-            type="text"
-            className={styles.promptInput}
-            placeholder="메세지를 입력해주세요."
-            value={userMessage}
-            onChange={(e) => setUserMessage(e.target.value)}
-            disabled={isBotResponding}
-          />
-          <div className={styles.promptActions}>
+              <div className={styles.promptActions}>
+                <button
+                  id="stop-response-btn"
+                  type="button"
+                  onClick={handleStopResponse}
+                  disabled={!isBotResponding}
+                  className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+                >
+                  stop_circle
+                </button>
+                <button
+                  id="send-prompt-btn"
+                  type="submit"
+                  disabled={!userMessage.trim()}
+                  className={`material-symbols-rounded ${styles.sendPromptBtn}`}
+                >
+                  arrow_upward
+                </button>
+              </div>
+            </form>
             <button
-              id="stop-response-btn"
+              id="record-btn"
               type="button"
-              onClick={() => clearInterval(typingInterval)}
-              disabled={!isBotResponding}
-              className={`${styles.materialSymbolsRounded} material-symbols-rounded`}
+              onClick={handleRecord}
+              className={`material-symbols-rounded ${styles.recordBtn}`}
             >
-              stop_circle
+              {recording ? "stop" : "mic"}
             </button>
             <button
-              id="send-prompt-btn"
-              type="submit"
-              disabled={!userMessage}
-              className={`${styles.materialSymbolsRounded} material-symbols-rounded`}
+              id="delete-chats-btn"
+              type="button"
+              onClick={handleDeleteChats}
+              className={`material-symbols-rounded ${styles.deleteChatsBtn}`}
             >
-              arrow_upward
+              delete
             </button>
           </div>
-        </form>
-        <button
-          id="theme-toggle-btn"
-          type="button"
-          onClick={toggleTheme}
-          className={`${styles.materialSymbolsRounded} material-symbols-rounded`}
-        >
-          {theme === "light" ? "dark_mode" : "light_mode"}
-        </button>
-        <button
-          id="delete-chats-btn"
-          type="button"
-          onClick={() => setChatHistory([])}
-          className={`${styles.materialSymbolsRounded} material-symbols-rounded`}
-        >
-          delete
-        </button>
+          <p className={styles.disclaimerText}>
+            {/* AIX-II © 2025 SeniorJobGo. All Rights Reserved. */}
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
