@@ -4,7 +4,7 @@ import axios from 'axios';
 import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
-import ChatbotIcon from '@assets/images/icon-robot.png'
+import ChatbotIcon from '@assets/images/icon-robot.svg'
 
 // API 기본 URL 설정
 const API_BASE_URL = "http://localhost:8000/api/v1";
@@ -158,10 +158,6 @@ const Main = () => {
 
       setMessages(prevMessages => [
         ...prevMessages,
-        {
-          type: 'user',
-          text: trimmedText,
-        },
         {
           type: 'bot',
           text: message,

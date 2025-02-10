@@ -15,7 +15,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  background-color: $color-background;
+  background-color: $background-color;
 }
 
 .intro {
@@ -25,8 +25,8 @@
   position: relative;
   
   &__title {
-    font-size: 30px;
-    font-weight: 700;
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
     line-height: 1.4;
     margin: 0;
     position: absolute;
@@ -46,7 +46,7 @@
         bottom: 2px;
         width: 100%;
         height: 8px;
-        background-color: $color-primary;
+        background-color: $primary-color;
         z-index: -1;
         opacity: 0.8;
       }
@@ -67,8 +67,8 @@
     height: 110px;
     right: -65px;
     top: 0;
-    background-color: $color-primary;
-    border-radius: 50%;
+    background-color: $primary-color;
+    border-radius: $radius-round;
     opacity: 0.3;
     animation: float 6s ease-in-out infinite;
   }
@@ -79,8 +79,8 @@
     height: 100px;
     left: -60px;
     bottom: 80px;
-    background-color: $color-primary;
-    border-radius: 50%;
+    background-color: $primary-color;
+    border-radius: $radius-round;
     opacity: 0.3;
     animation: float 7s ease-in-out infinite;
   }
@@ -91,8 +91,8 @@
     height: 160px;
     right: -50px;
     bottom: 20px;
-    background-color: $color-primary;
-    border-radius: 50%;
+    background-color: $primary-color;
+    border-radius: $radius-round;
     opacity: 0.3;
     animation: float 7s ease-in-out infinite;
   }
@@ -111,11 +111,11 @@
   &__social {
     width: 100%;
     height: 48px;
-    background: $color-background;
-    border: 1px solid $color-border;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 500;
+    background: $background-color;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -123,17 +123,17 @@
     gap: 8px;
     
     &:hover {
-      border-color: $color-primary;
-      background: $color-white;
-      color: $color-primary;
+      border-color: $primary-color;
+      background: $white-color;
+      color: $primary-color;
     }
   }
   
   &__icon {
-    font-size: 20px;
+    font-size: 20px; // 수정
 
     i {
-      font-size: 18px;
+      font-size: $font-icon-xs;
     }
   }
 }
@@ -144,28 +144,28 @@
   align-items: center;
   gap: 8px;
   margin-top: 20px;
-  font-size: 14px;
-  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  color: $secondary-text-color;
   
   &__link {
     background: none;
     border: none;
     padding: 0;
-    font-size: 14px;
-    color: $color-text-secondary;
+    font-size: $font-size-sm;
+    color: $secondary-text-color;
     text-decoration: underline;
     cursor: pointer;
     
     &:hover {
-      color: $color-text-point;
+      color: $primary-hover-color;
     }
   }
 }
 
 .terms {
   text-align: center;
-  font-size: 12px;
-  color: $color-text-secondary;
+  font-size: $font-size-xs;
+  color: $secondary-text-color;
   margin-top: auto;
   padding-top: 2rem;
   
@@ -179,11 +179,11 @@
     gap: 4px;
     
     a {
-      color: $color-text-secondary;
+      color: $secondary-text-color;
       text-decoration: none;
       
       &:hover {
-        color: $color-text;
+        color: $text-color;
       }
     }
   }
