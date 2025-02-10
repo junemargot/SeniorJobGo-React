@@ -45,6 +45,10 @@ const Main = () => {
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
 
+  // 상태 추가
+  const [processingTime, setProcessingTime] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {
     const element = chatContainerRef.current;
@@ -135,57 +139,61 @@ const Main = () => {
     const trimmedText = inputText.trim();
     if(trimmedText === '') return;
 
+    setIsLoading(true);
+    setStartTime(Date.now());  // 시작 시간 기록
+    setProcessingTime(0);
+    
+    // 사용자 메시지 추가
     setMessages(prevMessages => [
-      ...prevMessages,
-      {
-        type: 'user',
-        text: trimmedText,
-      },
+        ...prevMessages,
+        { type: 'user', text: trimmedText },
+        { type: 'bot', text: '', isLoading: true }  // 로딩 메시지 추가
     ]);
     setInputText('');
 
-    console.log(`Sending message to session ${sessionId}: ${trimmedText}`);
-
     try {
-      // 메시지를 백엔드 API로 전송
-      const response = await axios.post(`${API_BASE_URL}/chat/`, {
-        user_message: trimmedText,
-        user_profile: userInfo,
-        session_id: sessionId 
-      });
+        // 처리 시간 업데이트를 위한 인터벌
+        const timer = setInterval(() => {
+            setProcessingTime(prev => prev + 1);
+        }, 1000);
 
-      const { message, jobPostings, type } = response.data;
+        const response = await axios.post(`${API_BASE_URL}/chat/`, {
+            user_message: trimmedText,
+            user_profile: userInfo,
+            session_id: sessionId 
+        });
 
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          type: 'bot',
-          text: message,
-          jobPostings: jobPostings
-        },
-      ]);
-      
-      // 백엔드에서 업데이트된 userInfo 반영
-      if(response.data.user_profile) {
-        setUserInfo(response.data.user_profile);
-      }
+        clearInterval(timer);  // 타이머 정지
 
-      // 백엔드 응답에 따라 사용자 정보 입력 폼 표시
-      if (jobPostings > 0) {
-        setShowUserInfoForm(true);
-      }
+        const { message, jobPostings, type } = response.data;
+
+        // 로딩 메시지를 실제 응답으로 교체
+        setMessages(prevMessages => 
+            prevMessages.map((msg, idx) => 
+                idx === prevMessages.length - 1 
+                    ? { type: 'bot', text: message, jobPostings: jobPostings }
+                    : msg
+            )
+        );
+
+        if(response.data.user_profile) {
+            setUserInfo(response.data.user_profile);
+        }
 
     } catch (error) {
-      console.error("메시지 전송 오류:", error);
-      setMessages(prevMessages => [
-        ...prevMessages,
-        {
-          type: 'bot',
-          text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.",
-        },
-      ]);
+        console.error("메시지 전송 오류:", error);
+        setMessages(prevMessages => 
+            prevMessages.map((msg, idx) => 
+                idx === prevMessages.length - 1 
+                    ? { type: 'bot', text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다." }
+                    : msg
+            )
+        );
+    } finally {
+        setIsLoading(false);
+        setStartTime(null);
     }
-  }
+  };
 
   const handleOptionClick = (optionId) => {
     let selectedMenu = '';
@@ -355,34 +363,35 @@ const Main = () => {
                   <div className={styles.message__bot}>
                     <img src={ChatbotIcon} alt="챗봇 아이콘" className={styles.message__icon} />
                     <div className={styles.message__content}>
-                      {message.text.split('\n').map((line, i) => (
-                        <React.Fragment key={i}>
-                          {line}
-                          {i < message.text.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
-                      {message.jobPostings && message.jobPostings.length > 0 && (
-                        <div className={styles.jobList}>
-                          {message.jobPostings.map(job => (
-                            <div key={job.id}>
-                              <JobCard 
-                                job={job} 
-                                onClick={handleJobClick} 
-                                isSelected={selectedJob && selectedJob.id === job.id} 
-                                isGrayscale={selectedJob && selectedJob.id !== job.id && isDetailsVisible} 
-                              />
-                              {selectedJob && selectedJob.id === job.id && isDetailsVisible && (
-                                <div className={styles.selectedJobCard}>
-                                  <h4>{selectedJob.title}</h4>
-                                  <p>{selectedJob.description}</p>
-                                  <button className={styles.closeButton} onClick={toggleDetails}>
-                                    닫기
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                      {message.isLoading ? (
+                        <>
+                          <div className={styles.loadingBar} />
+                          <div className={styles.processingTime}>
+                            답변 생성 중... {processingTime}초
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {message.text.split('\n').map((line, i) => (
+                            <React.Fragment key={i}>
+                              {line}
+                              {i < message.text.split('\n').length - 1 && <br />}
+                            </React.Fragment>
                           ))}
-                        </div>
+                          {message.jobPostings && message.jobPostings.length > 0 && (
+                            <div className={styles.jobList}>
+                              {message.jobPostings.map(job => (
+                                <JobCard 
+                                  key={job.id}
+                                  job={job} 
+                                  onClick={handleJobClick}
+                                  isSelected={selectedJob && selectedJob.id === job.id}
+                                  isGrayscale={selectedJob && selectedJob.id !== job.id && isDetailsVisible}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
