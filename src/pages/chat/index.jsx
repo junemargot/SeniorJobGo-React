@@ -3,10 +3,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
+import { API_URL } from '../../config'; // API URL 환경변수 불러오기
 
-// API 셋업
-const API_KEY = "AIzaSyAHuX7olxy-r1zX5SvXSz7rWgJ5WN4KbmA";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
