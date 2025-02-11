@@ -16,7 +16,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  background-color: $color-background;
+  background-color: $background-color;
 }
 
 .find {
@@ -29,14 +29,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    font-weight: 600;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
     margin-bottom: 2rem;
 
     i {
       position: absolute;
       left: 0;
-      font-size: 28px;
+      font-size: $font-icon-base;
       cursor: pointer;
     }
   }
@@ -46,16 +46,16 @@
   display: flex;
   position: relative;
   margin-bottom: 2rem;
-  border-bottom: 1px solid $color-border;
+  border-bottom: 1px solid $border-color;
   
   &__button {
     flex: 1;
     height: 42px;
     border: none;
-    background: $color-background;
-    color: $color-text-secondary;
-    font-size: 15px;
-    font-weight: 500;
+    background: $background-color;
+    color: $secondary-text-color;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     position: relative;
     transition: all .3s ease;
@@ -68,13 +68,13 @@
       top: 25%;
       // height: 50%;
       width: 1px;
-      background-color: $color-border;
+      background-color: $border-color;
     }
     
      // 활성화된 탭 스타일
     &.active {
-      color: $color-primary;
-      font-weight: 600;
+      color: $primary-color;
+      font-weight: $font-weight-semibold;
       
       &::before {
         content: '';
@@ -83,7 +83,7 @@
         left: 0;
         width: 100%;
         height: 3px;
-        background-color: $color-primary;
+        background-color: $primary-color;
         transition: all .4s cubic-bezier(0.4, 0, 0.2, 1);
       }
     }
@@ -115,17 +115,17 @@
   width: 100%;
   
   label {
-    font-size: 14px;
-    font-weight: 500;
-    color: $color-text;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-color;
   }
   
   input {
     height: 48px;
     padding: 0 1rem;
-    border: 1px solid $color-border;
-    border-radius: 8px;
-    font-size: 14px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
     
     &::placeholder {
       color: $color-text-placeholder;
@@ -133,7 +133,7 @@
 
     &:focus {
       outline: none;
-      border-color: $color-primary;
+      border-color: $primary-color;
     }
   }
 }
@@ -141,12 +141,12 @@
 .submitButton {
   width: 100%;
   height: 48px;
-  background: $color-primary;
-  border: 1px solid $color-primary;
+  background: $primary-color;
+  border: 1px solid $primary-color;
   border-radius: 8px;
-  color: $color-text;
-  font-size: 15px;
-  font-weight: 500;
+  color: $text-color;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
   cursor: pointer;
   
   &:hover {

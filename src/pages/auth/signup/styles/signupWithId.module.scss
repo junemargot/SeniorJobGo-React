@@ -15,7 +15,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  background-color: $color-background;
+  background-color: $background-color;
 }
 
 .form {
@@ -28,14 +28,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    font-weight: 600;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
     margin-bottom: 2rem;
 
     i {
       position: absolute;
       left: 0;
-      font-size: 28px;
+      font-size: $font-icon-base;
       cursor: pointer;
     }
   }
@@ -60,17 +60,17 @@
   width: 100%;
   
   label {
-    font-size: 14px;
-    font-weight: 500;
-    color: $color-text;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-color;
   }
   
   input {
     height: 48px;
     padding: 0 1rem;
-    border: 1px solid $color-border;
-    border-radius: 8px;
-    font-size: 14px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
     
     &::placeholder {
       color: $color-text-placeholder;
@@ -78,7 +78,7 @@
 
     &:focus {
       outline: none;
-      border-color: $color-primary;
+      border-color: $primary-color;
     }
   }
 }
@@ -98,29 +98,29 @@
     flex-shrink: 0;
     min-width: 80px;
     height: 48px;
-    background: $color-white;
-    border: 1px solid $color-primary;
-    border-radius: 8px;
-    color: $color-text;
-    font-size: 14px;
-    font-weight: 500;
+    background: $white-color;
+    border: 1px solid $primary-color;
+    border-radius: $radius-md;
+    color: $text-color;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     
     &:hover {
-      background: $color-primary;
-      border: 1px solid $color-primary;
+      background: $primary-color;
+      border: 1px solid $primary-color;
     }
   }
 }
 
 .inputHint {
-  font-size: 12px;
-  color: $color-primary;
+  font-size: $font-size-xs;
+  color: $primary-color;
   margin-top: 0.25rem;
 }
 
 .required {
-  color: $color-primary-hover;
+  color: $primary-hover-color;
   margin-left: 2px;
 }
 
@@ -135,13 +135,13 @@
   margin-top: 2rem;
   
   &__title {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
     line-height: 1.4;
     margin-bottom: 0.5rem;
     
     span {
-      color: $color-primary;
+      color: $primary-color;
     }
   }
   
@@ -159,26 +159,26 @@
     gap: 6px;
     
     label {
-      font-size: 14px;
-      color: $color-text;
+      font-size: $font-size-sm;
+      color: $text-color;
     }
     
     input[type="checkbox"] {
       width: 16px;
       height: 16px;
-      border: 1px solid $color-border;
-      border-radius: 50%;
+      border: 1px solid $border-color;
+      border-radius: $radius-round;
       cursor: pointer;
       appearance: none;
       
       &:checked {
-        background-color: $color-primary;
-        border-color: $color-primary;
+        background-color: $primary-color;
+        border-color: $primary-color;
         
         &::after {
           content: '✓';
           display: block;
-          color: white;
+          color: $white-color;
           text-align: center;
           line-height: 18px;
         }
@@ -191,19 +191,19 @@
   width: 100%;
   height: 48px;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  background: $color-border;
-  color: $color-text-secondary;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  background: $border-color;
+  color: $secondary-text-color;
   
   &:enabled {
-    background: $color-primary;
-    color: $color-text;
+    background: $primary-color;
+    color: $text-color;
     cursor: pointer;
     
     &:hover {
-      background: $color-primary-hover;
+      background: $primary-hover-color;
     }
   }
 }
