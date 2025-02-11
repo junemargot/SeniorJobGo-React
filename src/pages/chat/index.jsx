@@ -5,7 +5,8 @@ import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
 import { API_URL } from '../../config'; // API URL 환경변수 불러오기
 
-
+// API 기본 URL 설정
+const API_BASE_URL = "http://localhost:8000/api/v1";
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -351,7 +352,8 @@ const Chat = () => {
             </button>
           </div>
           <p className={styles.disclaimerText}>
-            {/* AIX-II © 2025 SeniorJobGo. All Rights Reserved. */}
+            본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
+            AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
           </p>
         </div>
       </div>
