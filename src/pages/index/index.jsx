@@ -74,7 +74,7 @@ const Index = () => {
             <button className={styles.auth__signinBtn} onClick={() => navigate('/signin')}>
               로그인하기
             </button>
-            <button className={styles.auth__guestBtn} onClick={() => navigate('/main')}>
+            <button className={styles.auth__guestBtn} onClick={() => navigate('/chat')}>
               비회원으로 시작하기
             </button>
           </div>
