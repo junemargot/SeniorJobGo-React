@@ -115,11 +115,11 @@ body {
 
     .message {
       display: flex;
-      gap: 11px;
+      gap: 10px;
       align-items: center;
 
       .messageText {
-        padding: 3px 10px; // 3px 16px
+        padding: 3px 16px 3px 1px;
         line-height: 1.5rem;
         word-wrap: break-word;
         white-space: pre-line;
@@ -139,9 +139,10 @@ body {
         border-radius: 50%;
         background: $background-color;
         border: 1px solid $background-color;
+        // animation: rotate 3s linear infinite;
       }
 
-      &.loading {
+      .loading {
         .avatar {
           animation: rotate 3s linear infinite;
         }

@@ -124,7 +124,7 @@ const Chat = () => {
         typingIntervalRef.current = null;
         if (onComplete) onComplete();
       }
-    }, 40);
+    }, 50);
     typingIntervalRef.current = intervalId;
   };
 
