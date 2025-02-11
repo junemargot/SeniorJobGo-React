@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
-import Footer from '@components/Footer/Footer';
 import ChatbotIcon from '@assets/images/icon-robot.svg'
 
 // API 기본 URL 설정

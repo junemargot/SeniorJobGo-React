@@ -1,4 +1,5 @@
 @use '@assets/styles/_variables' as *;
+@use "sass:color";
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;&display=swap');
 
 * {
@@ -153,7 +154,7 @@ body {
 
       .messageText {
         padding: 12px 16px;
-        max-width: 75%;
+        // max-width: 75%;
         border-radius: 13px 13px 3px 13px;
         background: linear-gradient(to right, #f2c765, #eccd81, #e5d39d);
         color: $light-text-color;
@@ -272,10 +273,21 @@ body {
       flex-shrink: 0;
       color: $light-text-color;
       background: $light-secondary-color;
-      transition: 0.3s ease;
+      transition: all 0.3s ease;
 
-      &:hover {
+      &:hover:not(:disabled) {
         background: $light-placeholder-color;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &.recording {
+        color: #fff;
+        background: $primary-color;
+        animation: pulse 1.5s infinite;
       }
     }
   }
@@ -306,5 +318,275 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 @keyframes rotate {
   100% {
     transform: rotate(360deg);
+  }
+}
+
+/* 채용 공고 리스트 */
+.jobList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+/* 채용 공고 카드 */
+.jobCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e1e1e1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.selected {
+    border-color: $primary-color;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $primary-color;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &__company {
+    color: #666;
+    font-size: 14px;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    font-size: 14px;
+
+    .icon {
+      color: #888;
+    }
+  }
+
+  &__description {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e1e1e1;
+    
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 16px;
+      padding: 0 4px;
+
+      &:not(:last-child) {
+        position: relative;
+        padding-left: 80px;
+        min-height: 24px;
+
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 4px;
+          color: #666;
+          font-weight: 500;
+          width: 70px;
+        }
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e1e1e1;
+    
+    &.visible {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+  }
+
+  &__button {
+    padding: 8px 20px;
+    border: 1px solid $primary-color;
+    border-radius: 6px;
+    background: $primary-color;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba($primary-color, 0.8);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* 사용자 정보 입력 폼 */
+.userForm {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  position: relative;
+  margin-top: 12px;
+
+  form {
+    padding: 16px;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: white;
+    border-radius: 13px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+
+    .closeButton {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: white;
+      color: $light-text-color;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
+        transform: scale(1.1);
+      }
+
+      i {
+        font-size: 20px;
+      }
+    }
+
+    input {
+      height: 48px;
+      padding: 0 16px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+
+      &:focus {
+        border-color: $primary-color;
+        outline: none;
+      }
+
+      &::placeholder {
+        color: $light-placeholder-color;
+      }
+    }
+
+    button[type="submit"] {
+      height: 48px;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba($primary-color, 0.8);
+      }
+
+      &:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba($primary-color, 0.7);
+  }
+  
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba($primary-color, 0);
+  }
+  
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba($primary-color, 0);
   }
 }
