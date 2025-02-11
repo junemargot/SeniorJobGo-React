@@ -51,6 +51,160 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   </div>
 );
 
+// TrainingCard 컴포넌트 수정
+const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
+  <div 
+    ref={cardRef}
+    className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
+    onClick={() => onClick(training)}
+  >
+    <div className={styles.trainingCard__header}>
+      <div className={styles.trainingCard__institute}>
+        <span className={styles.icon}>🏫</span>
+        {training.institute}
+      </div>
+      <div className={styles.trainingCard__location}>{training.location}</div>
+    </div>
+    <h3 className={styles.trainingCard__title}>{training.title}</h3>
+    <div className={styles.trainingCard__details}>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>📅</span>
+        {training.period}
+      </div>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>💰</span>
+        {training.cost}
+      </div>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>👥</span>
+        정원 {training.yardMan}명
+      </div>
+    </div>
+    
+    <div className={`${styles.trainingCard__description} ${isSelected ? styles.visible : ''}`}>
+      <p data-label="훈련기관">{training.institute}</p>
+      <p data-label="훈련대상">{training.target}</p>
+      <p data-label="훈련기간">{training.period}</p>
+      <p data-label="시작일">{training.startDate}</p>
+      <p data-label="종료일">{training.endDate}</p>
+      <p data-label="수강료">{training.cost}</p>
+      <p data-label="정원">{training.yardMan}명</p>
+      <p data-label="문의전화">{training.telNo}</p>
+      <p data-label="훈련내용">{training.description}</p>
+    </div>
+    
+    <div className={`${styles.trainingCard__footer} ${isSelected ? styles.visible : ''}`}>
+      <a 
+        href={training.titleLink} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className={styles.trainingCard__button}
+      >
+        상세정보 보기
+      </a>
+    </div>
+  </div>
+);
+
+// 훈련정보 확인 대화상자
+const TrainingConfirmDialog = ({ onConfirm, onCancel }) => (
+  <div className={styles.confirmDialog}>
+    <p>훈련정보를 알려드릴까요?</p>
+    <div className={styles.confirmDialog__buttons}>
+      <button onClick={onConfirm} className={styles.confirmButton}>예</button>
+      <button onClick={onCancel} className={styles.cancelButton}>아니오</button>
+    </div>
+  </div>
+);
+
+// 채용정보 입력 폼 컴포넌트
+const UserInfoForm = ({ onSubmit, onCancel }) => (
+  <div className={styles.userForm}>
+    <form onSubmit={onSubmit}>
+      <button 
+        type="button" 
+        className={styles.closeButton}
+        onClick={onCancel}
+      >
+        <i className='bx bx-x'></i>
+      </button>
+      <h3>맞춤 채용정보 제공을 위한 기본정보</h3>
+      <input 
+        type="number" 
+        name="age" 
+        placeholder="나이 (숫자만 입력)" 
+        required 
+      />
+      <input 
+        type="text" 
+        name="gender" 
+        placeholder="성별 (예: 남성)" 
+        required 
+      />
+      <input 
+        type="text" 
+        name="location" 
+        placeholder="희망 근무지역 (예: 서울 강남구)" 
+        required 
+      />
+      <input 
+        type="text" 
+        name="jobType" 
+        placeholder="희망 직종 (예: 경비)" 
+        required 
+      />
+      <button type="submit">맞춤 채용정보 검색</button>
+    </form>
+  </div>
+);
+
+// 훈련정보 입력 폼 컴포넌트
+const TrainingInfoForm = ({ onSubmit, onCancel, initialData }) => (
+  <div className={styles.userForm}>
+    <form onSubmit={onSubmit}>
+      <button 
+        type="button" 
+        className={styles.closeButton}
+        onClick={onCancel}
+      >
+        <i className='bx bx-x'></i>
+      </button>
+      <h3>맞춤 훈련정보 제공을 위한 기본정보</h3>
+      <input 
+        type="number" 
+        name="age" 
+        placeholder="나이 (숫자만 입력)" 
+        defaultValue={initialData?.age || ""}
+      />
+      <input 
+        type="text" 
+        name="gender" 
+        placeholder="성별 (예: 남성)" 
+        defaultValue={initialData?.gender || ""}
+      />
+      <input 
+        type="text" 
+        name="education" 
+        placeholder="최종학력 (예: 고졸)" 
+        defaultValue={initialData?.education || ""}
+      />
+      <input 
+        type="text" 
+        name="location" 
+        placeholder="거주지역 (예: 서울 강남구)" 
+        defaultValue={initialData?.location || ""}
+      />
+      <input 
+        type="text" 
+        name="interests" 
+        placeholder="관심분야 (예: IT, 요양, 조리)" 
+        defaultValue={initialData?.interests || ""}
+      />
+      <button type="submit">맞춤 훈련정보 검색</button>
+    </form>
+  </div>
+);
+
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]); // { role: 'user' | 'model', text: string, loading?: boolean }
@@ -71,6 +225,18 @@ const Chat = () => {
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
   const [selectedJob, setSelectedJob] = useState(null);
   const selectedCardRef = useRef(null);
+
+  // 훈련정보 관련 상태 추가
+  const [showTrainingConfirm, setShowTrainingConfirm] = useState(false);
+  const [selectedTraining, setSelectedTraining] = useState(null);
+  const [showTrainingInfoForm, setShowTrainingInfoForm] = useState(false);
+  const [trainingUserInfo, setTrainingUserInfo] = useState({
+    age: '',
+    gender: '',
+    education: '',
+    location: '',
+    interests: ''
+  });
 
   // 메뉴
   const suggestions = [
@@ -147,7 +313,7 @@ const Chat = () => {
           user_message: userMessage,
           user_profile: userInfo,
           session_id: "default_session"
-        });
+        },{ withCredentials: true });
 
         const { message, jobPostings, type } = response.data;
 
@@ -237,19 +403,86 @@ const Chat = () => {
     };
   }, [typingIntervalId]);
 
-  // 폼 제출 핸들러 (사용자 메시지 전송)
-  const handleFormSubmit = (e) => {
+  // 훈련 관련 키워드 체크 및 키워드 추출
+  const isTrainingRelated = (message) => {
+    const keywords = ['훈련', '교육', '배움', '학습', '자격증', '국비지원', '내일배움카드'];
+    const found = keywords.find(keyword => message.includes(keyword));
+    return found ? found : null;
+  };
+
+  // 메시지 스타일 결정
+  const getMessageStyle = (msg) => {
+    const baseStyle = styles.message;
+    if (msg.role === "user") return `${baseStyle} ${styles.userMessage}`;
+    
+    // 봇 메시지 타입에 따른 스타일
+    const botStyle = `${baseStyle} ${styles.botMessage}`;
+    if (msg.type === "training") return `${botStyle} ${styles.trainingMessage}`;
+    return botStyle;
+  };
+
+  // 훈련정보 확인 처리
+  const handleTrainingConfirm = async () => {
+    setShowTrainingConfirm(false);
+    setShowTrainingInfoForm(true);
+    setChatHistory(prev => [...prev,
+      { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
+    ]);
+  };
+
+  // 폼 제출 핸들러 수정
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!userMessage.trim() || isBotResponding) return;
 
     // 사용자 메시지를 채팅 내역에 추가
     setChatHistory(prev => [...prev, { role: "user", text: userMessage }]);
-    // 입력 필드 초기화
+    
+    // 이전 메시지가 "다른 조건으로 찾아보시겠어요?"이고 훈련 관련 키워드가 있는 경우
+    const prevMessage = chatHistory[chatHistory.length - 1]?.text;
+    const isRetry = prevMessage === "현재 조건에 맞는 훈련과정이 없습니다. 다른 조건으로 찾아보시겠어요?";
+    const trainingKeyword = isTrainingRelated(userMessage);
+
+    if (isRetry && trainingKeyword) {
+      // 기존 훈련정보에 새로운 관심분야만 업데이트
+      const updatedUserInfo = {
+        ...trainingUserInfo,
+        interests: userMessage
+      };
+      setTrainingUserInfo(updatedUserInfo);
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/training/search`, {
+          user_message: userMessage,
+          user_profile: updatedUserInfo,
+          session_id: "default_session"
+        });
+
+        const { message, trainingCourses, type } = response.data;
+        
+        setChatHistory(prev => [...prev, {
+          role: "model",
+          text: message,
+          trainingCourses: trainingCourses,
+          type: "training"
+        }]);
+      } catch (error) {
+        console.error("훈련정보 검색 중 오류:", error);
+        setChatHistory(prev => [...prev, {
+          role: "model",
+          text: "죄송합니다. 훈련정보 검색 중 오류가 발생했습니다.",
+          type: "error"
+        }]);
+      }
+    } else if (trainingKeyword) {
+      // 일반적인 훈련 관련 검색
+      setShowTrainingConfirm(true);
+    } else {
+      // 기존 채팅 처리 로직
+      generateResponse();
+    }
+
     setUserMessage("");
-    // 포커스 설정
-    setTimeout(() => promptInputRef.current?.focus(), 0);
-    // scrollToBottom();
-    generateResponse();
   };
 
   // 사용자 정보 입력 핸들러
@@ -321,6 +554,12 @@ const Chat = () => {
       setChatHistory(prev => [...prev, 
         { role: "user", text: "채용 정보 검색" },
         { role: "model", text: "채용 정보 검색을 위해 기본 정보를 입력해주세요." }
+      ]);
+    } else if (suggestion.id === 3) {  // 맞춤 훈련정보 검색
+      setShowTrainingInfoForm(true);
+      setChatHistory(prev => [...prev,
+        { role: "user", text: "훈련 정보 검색" },
+        { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
       ]);
     } else {
       setUserMessage(suggestion.text);
@@ -398,6 +637,45 @@ const Chat = () => {
     }
   };
 
+  // 훈련정보 입력 폼 제출 핸들러
+  const handleTrainingInfoSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const userInfo = {
+      age: formData.get('age') || trainingUserInfo.age,
+      gender: formData.get('gender') || trainingUserInfo.gender,
+      education: formData.get('education') || trainingUserInfo.education,
+      location: formData.get('location') || trainingUserInfo.location,
+      interests: formData.get('interests') || trainingUserInfo.interests
+    };
+    setTrainingUserInfo(userInfo);  // 입력 데이터 저장
+    setShowTrainingInfoForm(false);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/training/search`, {
+        user_message: `${userInfo.interests || ""} 훈련과정 검색`,
+        user_profile: userInfo,
+        session_id: "default_session"
+      });
+
+      const { message, trainingCourses, type } = response.data;
+      
+      setChatHistory(prev => [...prev, {
+        role: "model",
+        text: message,
+        trainingCourses: trainingCourses,
+        type: "training"
+      }]);
+    } catch (error) {
+      console.error("훈련정보 검색 중 오류:", error);
+      setChatHistory(prev => [...prev, {
+        role: "model",
+        text: "죄송합니다. 훈련정보 검색 중 오류가 발생했습니다.",
+        type: "error"
+      }]);
+    }
+  };
+
   return (
     <>
     <Header />
@@ -429,7 +707,7 @@ const Chat = () => {
         {/* 채팅 내역 */}
         <div className={styles.chatsContainer}>
           {chatHistory.map((msg, index) => (
-            <div key={index} className={`${styles.message} ${msg.role === "model" ? styles.botMessage : styles.userMessage} ${msg.loading ? "loading" : ""}`}>
+            <div key={index} className={getMessageStyle(msg)}>
               {msg.role === "model" && <img src={Avatar} alt="avatar" className={styles.avatar} />}
               <div className={styles.messageContent}>
                 {msg.loading ? (
@@ -447,58 +725,60 @@ const Chat = () => {
                         </React.Fragment>
                       ))}
                     </p>
+                    
+                    {/* 훈련정보 확인 대화상자 */}
+                    {showTrainingConfirm && msg.role === "user" && isTrainingRelated(msg.text) && (
+                      <TrainingConfirmDialog
+                        onConfirm={handleTrainingConfirm}
+                        onCancel={() => {
+                          setShowTrainingConfirm(false);
+                          setShowTrainingInfoForm(true);
+                          setChatHistory(prev => [...prev,
+                            { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
+                          ]);
+                        }}
+                      />
+                    )}
+                    
+                    {/* 채용정보 입력 폼 */}
                     {showUserInfoForm && msg.text === "채용 정보 검색을 위해 기본 정보를 입력해주세요." && (
-                      <div className={styles.userForm}>
-                        <form onSubmit={handleUserInfoSubmit}>
-                          <button 
-                            type="button" 
-                            className={styles.closeButton}
-                            onClick={() => setShowUserInfoForm(false)}
-                          >
-                            <i className='bx bx-x'></i>
-                          </button>
-                          <input 
-                            type="number" 
-                            name="age" 
-                            value={userInfo.age} 
-                            onChange={handleUserInfoChange} 
-                            placeholder="나이 (숫자만 입력 가능)" 
-                            required 
+                      <UserInfoForm
+                        onSubmit={handleUserInfoSubmit}
+                        onCancel={() => setShowUserInfoForm(false)}
+                      />
+                    )}
+                    
+                    {/* 훈련정보 입력 폼 */}
+                    {showTrainingInfoForm && msg.text === "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." && (
+                      <TrainingInfoForm
+                        onSubmit={handleTrainingInfoSubmit}
+                        onCancel={() => setShowTrainingInfoForm(false)}
+                        initialData={trainingUserInfo}  // 저장된 데이터 전달
+                      />
+                    )}
+                    
+                    {/* 훈련과정 목록 */}
+                    {msg.trainingCourses && msg.trainingCourses.length > 0 && (
+                      <div className={styles.trainingList}>
+                        {msg.trainingCourses.map(course => (
+                          <TrainingCard
+                            key={course.id}
+                            training={course}
+                            onClick={setSelectedTraining}
+                            isSelected={selectedTraining && selectedTraining.id === course.id}
+                            cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
                           />
-                          <input 
-                            type="text" 
-                            name="gender" 
-                            value={userInfo.gender} 
-                            onChange={handleUserInfoChange} 
-                            placeholder="성별 (예: 남성)" 
-                            required 
-                          />
-                          <input 
-                            type="text" 
-                            name="location" 
-                            value={userInfo.location} 
-                            onChange={handleUserInfoChange} 
-                            placeholder="희망근무지역 (예: 서울 강남구)" 
-                            required 
-                          />
-                          <input 
-                            type="text" 
-                            name="jobType" 
-                            value={userInfo.jobType} 
-                            onChange={handleUserInfoChange} 
-                            placeholder="희망직무 (예: 사무직)" 
-                            required 
-                          />
-                          <button type="submit">입력</button>
-                        </form>
+                        ))}
                       </div>
                     )}
+                    
+                    {/* 기존 채용정보 목록 */}
                     {msg.jobPostings && msg.jobPostings.length > 0 && (
                       <div className={styles.jobList}>
                         {msg.jobPostings.map(job => (
-                          <JobCard 
+                          <JobCard
                             key={job.id}
-                            job={job} 
+                            job={job}
                             onClick={handleJobClick}
                             isSelected={selectedJob && selectedJob.id === job.id}
                             cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
