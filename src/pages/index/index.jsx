@@ -6,6 +6,8 @@ import IntroImage from '@assets/images/intro-illust.png';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = "http://localhost:8000/api/v1";
+
 const Index = () => {
   const navigate = useNavigate();
   const [textIndex, setTextIndex] = useState(0);
@@ -25,13 +27,6 @@ const Index = () => {
   ]
 
   useEffect(() => {
-    const cookie = document.cookie;
-    if (cookie.includes("sjgid")) {
-      navigate('/main');
-    }
-  }, []);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       setIsAnimating(false); // fadeout 시작
 
@@ -44,6 +39,22 @@ const Index = () => {
 
     return () => clearInterval(interval)
   }, []);
+
+  const GuestLogin = async () => {
+    const cookie = document.cookie;
+    if (cookie.includes("sjgid")) {
+      navigate('/chat');
+    } else {
+      const response = await fetch(`${API_BASE_URL}/auth/login/guest`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        navigate('/chat');
+      }
+    }
+  }
 
   return (
     <div className={styles.page}>
@@ -81,7 +92,7 @@ const Index = () => {
             <button className={styles.auth__signinBtn} onClick={() => navigate('/signin')}>
               로그인하기
             </button>
-            <button className={styles.auth__guestBtn} onClick={() => navigate('/main')}>
+            <button className={styles.auth__guestBtn} onClick={GuestLogin}>
               비회원으로 시작하기
             </button>
           </div>

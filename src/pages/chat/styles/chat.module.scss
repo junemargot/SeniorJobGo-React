@@ -66,6 +66,7 @@ body {
       justify-content: space-between;
       border-radius: 12px;
       background: $light-secondary-color;
+      user-select: none;
 
       &:hover {
         // background: $light-secondary-hover-color;

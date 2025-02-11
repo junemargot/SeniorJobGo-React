@@ -62,7 +62,7 @@ const Signin = () => {
             if (saveId) {
                 localStorage.setItem('savedUserId', user.id);
             }
-            navigate('/main'); // 로그인 성공 시 메인 페이지로 이동
+            navigate('/chat'); // 로그인 성공 시 메인 페이지로 이동
         } else {
             setErrorMessage('아이디 또는 비밀번호가 일치하지 않습니다.');
         }

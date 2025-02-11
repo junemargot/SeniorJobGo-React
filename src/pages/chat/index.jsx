@@ -1,11 +1,13 @@
 // pages/chat/index.jsx
 import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
 import { API_URL } from '../../config'; // API URL 환경변수 불러오기
 
-
+// API 기본 URL 설정
+const API_BASE_URL = "http://localhost:8000/api/v1";
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -78,6 +80,43 @@ const Chat = () => {
     typingIntervalRef.current = intervalId;
   };
 
+  // 임시로 응답받는 함수 구현 - main 페이지의 handleSubmit 함수처럼 작동하도록 수정
+  const tempGenerateResponse = async () => {
+    const trimmedMessage = userMessage.trim();
+    if (!trimmedMessage) return;
+
+    // 사용자 메시지를 채팅 내역에 추가
+    setChatHistory(prev => [...prev, { role: "user", text: trimmedMessage }]);
+    // 입력 필드 초기화
+    setUserMessage("");
+    // 로딩 메시지 추가
+    setChatHistory(prev => [...prev, { role: "model", text: "", loading: true }]);
+    setIsBotResponding(true);
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/chat/`, {
+        user_message: trimmedMessage
+      }, { withCredentials: true });
+
+      const { message, jobPostings } = response.data;
+
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[newHistory.length - 1] = { role: "model", text: message, loading: false };
+        return newHistory;
+      });
+    } catch (error) {
+      console.error("메시지 전송 오류:", error);
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[newHistory.length - 1] = { role: "model", text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.", loading: false };
+        return newHistory;
+      });
+    } finally {
+      setIsBotResponding(false);
+      scrollToBottom();
+    }
+  };
 
   // 봇 응답 생성 함수  
   const generateResponse = async () => {
@@ -213,7 +252,10 @@ const Chat = () => {
     // 포커스 설정
     setTimeout(() => promptInputRef.current?.focus(), 0);
     // scrollToBottom();
-    generateResponse();
+    // generateResponse();
+    
+    // 임시로 응답받는 함수 구현
+    tempGenerateResponse();
   };
 
   // 추천 문구 클릭 시 처리 (문구 입력 후 즉시 전송)
@@ -224,9 +266,35 @@ const Chat = () => {
   };
 
   // 채팅 내역 모두 삭제
-  const handleDeleteChats = () => {
-    setChatHistory([]);
-    setIsBotResponding(false);
+  const handleDeleteChats = async () => {
+    const cookies = document?.cookie;
+
+    if (cookies === undefined) {
+      console.error("쿠키가 없습니다.");
+      return;
+    }
+
+    const _id = cookies?.split("; ")?.find(row => row.trim().startsWith("sjgid="))?.split("=")[1];
+
+    if (!_id) {
+      console.error("쿠키에 _id가 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/chat/delete/all/${_id}`, {
+        method: "DELETE"
+      });
+
+      if (!response.ok) {
+        throw new Error("채팅 삭제 실패");
+      }
+
+      setChatHistory([]);
+      setIsBotResponding(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
 
@@ -351,7 +419,8 @@ const Chat = () => {
             </button>
           </div>
           <p className={styles.disclaimerText}>
-            {/* AIX-II © 2025 SeniorJobGo. All Rights Reserved. */}
+            본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
+            AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
           </p>
         </div>
       </div>

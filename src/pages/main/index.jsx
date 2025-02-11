@@ -188,7 +188,7 @@ const Main = () => {
       const _id = sjgid.split('=')[1];
 
       if (_id) {
-        const response = await axios.get(`${API_BASE_URL}/chat/get/${_id}`,
+        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${_id}`,
           {
             params: {
               end: chatHistoryIndex,
