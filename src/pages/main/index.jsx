@@ -14,12 +14,6 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
     className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
     onClick={() => onClick(job)}
   >
-const JobCard = ({ job, onClick, isSelected, cardRef }) => (
-  <div 
-    ref={cardRef}
-    className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
-    onClick={() => onClick(job)}
-  >
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
         <span className={styles.icon}>📍</span>
@@ -54,22 +48,6 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
         지원하기
       </button>
     </div>
-    
-    {/* 상세 정보 영역 */}
-    <div className={`${styles.jobCard__description} ${isSelected ? styles.visible : ''}`}>
-      <p data-label="고용형태">{job.employmentType}</p>
-      <p data-label="근무시간">{job.workingHours}</p>
-      <p data-label="급여">{job.salary}</p>
-      <p data-label="복리후생">{job.benefits}</p>
-      <p data-label="상세내용">{job.description}</p>
-    </div>
-    
-    {/* 버튼 영역 */}
-    <div className={`${styles.jobCard__footer} ${isSelected ? styles.visible : ''}`}>
-      <button className={styles.jobCard__button}>
-        지원하기
-      </button>
-    </div>
   </div>
 );
 
@@ -79,10 +57,6 @@ const Main = () => {
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isKeywordFormExpanded, setIsKeywordFormExpanded] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-
-  // 음성 인식 객체 생성
-  const [recognition, setRecognition] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
 
   // 음성 인식 객체 생성
@@ -111,15 +85,8 @@ const Main = () => {
       // 스크롤이 위로 올라갔을 때 버튼 표시
       const isScrolledUp = element.scrollTop < element.scrollHeight - element.clientHeight - 100;
       setShowScrollButton(isScrolledUp);
-
-      // 스크롤이 맨 위로 올라갔을 때 채팅 기록 가져오기
-      const isScrolledTop = element.scrollTop === 0;
-      if(isScrolledTop) {
-        fetchChatHistory();
-      }
     }
   };
-
 
   // 스크롤 다운 이벤트
   const scrollToBottom = () => {
@@ -243,15 +210,7 @@ const Main = () => {
     setProcessingTime(0);
     
     // 사용자 메시지 추가
-    setIsLoading(true);
-    setStartTime(Date.now());  // 시작 시간 기록
-    setProcessingTime(0);
-    
-    // 사용자 메시지 추가
     setMessages(prevMessages => [
-        ...prevMessages,
-        { type: 'user', text: trimmedText },
-        { type: 'bot', text: '', isLoading: true }  // 로딩 메시지 추가
         ...prevMessages,
         { type: 'user', text: trimmedText },
         { type: 'bot', text: '', isLoading: true }  // 로딩 메시지 추가
@@ -273,20 +232,7 @@ const Main = () => {
         clearInterval(timer);  // 타이머 정지
 
         const { message, jobPostings, type } = response.data;
-        const { message, jobPostings, type } = response.data;
 
-        // 로딩 메시지를 실제 응답으로 교체
-        setMessages(prevMessages => 
-            prevMessages.map((msg, idx) => 
-                idx === prevMessages.length - 1 
-                    ? { type: 'bot', text: message, jobPostings: jobPostings }
-                    : msg
-            )
-        );
-
-        if(response.data.user_profile) {
-            setUserInfo(response.data.user_profile);
-        }
         // 로딩 메시지를 실제 응답으로 교체
         setMessages(prevMessages => 
             prevMessages.map((msg, idx) => 
@@ -313,19 +259,7 @@ const Main = () => {
     } finally {
         setIsLoading(false);
         setStartTime(null);
-        console.error("메시지 전송 오류:", error);
-        setMessages(prevMessages => 
-            prevMessages.map((msg, idx) => 
-                idx === prevMessages.length - 1 
-                    ? { type: 'bot', text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다." }
-                    : msg
-            )
-        );
-    } finally {
-        setIsLoading(false);
-        setStartTime(null);
     }
-  };
   };
 
   const handleOptionClick = (optionId) => {
@@ -426,16 +360,6 @@ const Main = () => {
         });
       }
     }, 100);
-
-    // 약간의 지연을 주어 애니메이션이 시작된 후 스크롤
-    setTimeout(() => {
-      if (selectedCardRef.current) {
-        selectedCardRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }
-    }, 100);
   };
 
   const toggleDetails = () => {
@@ -445,36 +369,24 @@ const Main = () => {
     }
   };
 
-  // // 스크롤 관련 useEffect 통합
-  // useEffect(() => {
-  //   const chatContainer = chatContainerRef.current;
-  //   if (chatContainer) {
-  //     setIsAutoScrolling(true);
-  //     setShowScrollButton(false);
-      
-  //     chatContainer.scrollTo({
-  //       top: chatContainer.scrollHeight,
-  //       behavior: 'smooth'
-  //     });
-
-  //     // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
-  //     setTimeout(() => {
-  //       setIsAutoScrolling(false);
-  //     }, 500);
-  //   }
-  // }, [messages]);
-
-  // 컴포넌트 마운트 시 채팅 기록을 한 번만 가져옵니다.
+  // 스크롤 관련 useEffect 통합
   useEffect(() => {
-    const fetchHistory = async () => {
-      if (!historyFetchedRef.current) {
-        await fetchChatHistory();
-        historyFetchedRef.current = true;
-        scrollToBottom();
-      }
-    };
-    fetchHistory();
-  }, []);
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      setIsAutoScrolling(true);
+      setShowScrollButton(false);
+      
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+
+      // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
+      setTimeout(() => {
+        setIsAutoScrolling(false);
+      }, 500);
+    }
+  }, [messages]);
 
 
   return (
@@ -484,7 +396,6 @@ const Main = () => {
         <div className={styles.chat}>
           <div className={styles.chat__header}>
             <div className={styles.chat__info}>
-              {/* <img src={ChatbotIcon} alt="챗봇 아이콘" /> */}
               {/* <img src={ChatbotIcon} alt="챗봇 아이콘" /> */}
               <span>시니어잡봇과 채팅하기</span>
             </div>
@@ -555,35 +466,7 @@ const Main = () => {
                                   cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
                                 />
                               ))}
-                      {message.isLoading ? (
-                        <>
-                          <div className={styles.loadingBar} />
-                          <div className={styles.processingTime}>
-                            답변 생성 중... {processingTime}초
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {message.text.split('\n').map((line, i) => (
-                            <React.Fragment key={i}>
-                              {line}
-                              {i < message.text.split('\n').length - 1 && <br />}
-                            </React.Fragment>
-                          ))}
-                          {message.jobPostings && message.jobPostings.length > 0 && (
-                            <div className={styles.jobList}>
-                              {message.jobPostings.map(job => (
-                                <JobCard 
-                                  key={job.id}
-                                  job={job} 
-                                  onClick={handleJobClick}
-                                  isSelected={selectedJob && selectedJob.id === job.id}
-                                  cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
-                                />
-                              ))}
                             </div>
-                          )}
-                        </>
                           )}
                         </>
                       )}
@@ -627,30 +510,7 @@ const Main = () => {
               최신 메세지 보기
             </button>
           )}
-            <button className={`${styles.scrollButton} ${styles.visible}`} onClick={scrollToBottom}>
-              <i className='bx bx-down-arrow-alt'></i>
-              최신 메세지 보기
-            </button>
-          )}
           <div className={styles.chat__input}>
-            <div className={styles.input__container}>
-              <textarea 
-                placeholder="메시지를 입력해주세요" 
-                value={inputText} 
-                onChange={handleInputChange} 
-                onKeyUp={handleKeyPress} 
-                onPaste={handlePaste} 
-                rows="1" 
-                disabled={isLoading || isRecording} 
-              />
-              <button 
-                className={`${styles.mic__button} ${isRecording ? styles.recording : ''}`}
-                onClick={toggleVoiceInput}
-                disabled={isLoading}
-              >
-                <i className={`bx ${isRecording ? 'bxs-microphone' : 'bx-microphone'}`}></i>
-              </button>
-            </div>
             <div className={styles.input__container}>
               <textarea 
                 placeholder="메시지를 입력해주세요" 
@@ -674,7 +534,6 @@ const Main = () => {
             </button>
           </div>
         </div>
-        
         
       </main>
     </div>
