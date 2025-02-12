@@ -36,6 +36,46 @@ const SignupWithId = () => {
     }));
   };
 
+  const handleSubmit = async () => {
+    console.log(formData);
+    const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+    });
+
+    if (response.ok) {
+      navigate('/chat');
+    } else {
+      const data = await response.json();
+      alert(data.detail);
+    }
+  };
+
+  function idCheckMessage(message, color) {
+    const messageElement = document.getElementById('userId').querySelector('p');
+    messageElement.textContent = message;
+    messageElement.style.color = color;
+    messageElement.style.display = 'block';
+  }
+
+  const handleCheckId = async () => {
+    if (formData.userId.length < 5 || formData.userId.length > 20) {
+      idCheckMessage('아이디는 5~20자 이어야 합니다.', 'red');
+      return;
+    }
+
+    const response = await fetch('http://localhost:8000/api/v1/auth/check-id', {
+      method: 'POST',
+      body: JSON.stringify({ id: formData.userId }),
+    });
+    const data = await response.json();
+    console.log(data);
+    if (data.is_duplicate) {
+      idCheckMessage('중복된 아이디입니다.', 'red');
+    } else {
+      idCheckMessage('사용 가능한 아이디입니다.', 'green');
+    }
+  };
 
   useEffect(() => {
     const isValid =
@@ -54,17 +94,18 @@ const SignupWithId = () => {
       <main className={styles.content}>
         <div className={styles.form}>
           <div className={styles.form__title}>
-          <i className='bx bx-chevron-left' onClick={() => navigate(-1)}></i>
+            <i className='bx bx-chevron-left' onClick={() => navigate(-1)}></i>
             <span>회원가입</span>
           </div>
 
           <div className={styles.form__content}>
-            <div className={styles.inputGroup}>
+            <div id="userId" className={styles.inputGroup}>
               <label>아이디<span className={styles.required}>*</span></label>
               <div className={styles.inputWithButton}>
                 <input type="text" name="userId" value={formData.userId} onChange={handleInputChange} placeholder="5~20자 영문 혹은 영문+숫자 조합" />
-                <button type="button">중복확인</button>
+                <button type="button" onClick={handleCheckId}>중복확인</button>
               </div>
+              <p className={styles.errorMessage}>중복된 아이디입니다.</p>
             </div>
 
             <div className={styles.inputGroup}>
@@ -103,7 +144,7 @@ const SignupWithId = () => {
             </div>
           </div>
           <div className={styles.form__footer}>
-            <button type="submit" className={styles.submitButton} disabled={!isFormValid}>
+            <button type="submit" className={styles.submitButton} disabled={!isFormValid} onClick={handleSubmit}>
               가입하기
             </button>
           </div>

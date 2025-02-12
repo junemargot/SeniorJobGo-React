@@ -39,19 +39,50 @@ const Signin = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 이하 실제 로그인 로직
+    try {
+        const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                user_id: formData.userId,
+                password: formData.password,
+                provider: 'local'
+            })
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            if (saveId) {
+                localStorage.setItem('savedUserId', user.id);
+            }
+            navigate('/chat'); // 로그인 성공 시 메인 페이지로 이동
+        } else {
+            setErrorMessage('아이디 또는 비밀번호가 일치하지 않습니다.');
+        }
+    } catch (error) {
+        console.error('로그인 요청 중 오류 발생:', error);
+        setErrorMessage('로그인 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    }
+
     
+    // 이하 기존 코드
     // 여기에 실제 로그인 로직 구현
     // 임시 검증 로직
-    if (formData.userId === 'test' && formData.password === 'test123') {
-      if (saveId) {
-          localStorage.setItem('savedUserId', formData.userId);
-      }
-      navigate('/main'); // 로그인 성공 시 메인 페이지로 이동
-    } else {
-      setErrorMessage('아이디 또는 비밀번호가 일치하지 않습니다.');
-    }
+    // if (formData.userId === 'test' && formData.password === 'test123') {
+    //   if (saveId) {
+    //       localStorage.setItem('savedUserId', formData.userId);
+    //   }
+    //   navigate('/main'); // 로그인 성공 시 메인 페이지로 이동
+    // } else {
+    //   setErrorMessage('아이디 또는 비밀번호가 일치하지 않습니다.');
+    // }
   };
 
   return (

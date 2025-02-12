@@ -51,6 +51,46 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   </div>
 );
 
+// TrainingCard 컴포넌트 추가
+const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
+  <div 
+    ref={cardRef}
+    className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
+    onClick={() => onClick(training)}
+  >
+    <div className={styles.trainingCard__header}>
+      <div className={styles.trainingCard__institute}>
+        <span className={styles.icon}>🏫</span>
+        {training.institute}
+      </div>
+      <div className={styles.trainingCard__location}>{training.location}</div>
+    </div>
+    <h3 className={styles.trainingCard__title}>{training.title}</h3>
+    <div className={styles.trainingCard__details}>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>📅</span>
+        {training.period}
+      </div>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>💰</span>
+        {training.cost}
+      </div>
+      {training.target && (
+        <div className={styles.trainingCard__detail}>
+          <span className={styles.icon}>👥</span>
+          {training.target}
+        </div>
+      )}
+    </div>
+    
+    <div className={`${styles.trainingCard__description} ${isSelected ? styles.visible : ''}`}>
+      {training.description && (
+        <p data-label="교육내용">{training.description}</p>
+      )}
+    </div>
+  </div>
+);
+
 const Main = () => {
   // 상태 관리
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
@@ -369,6 +409,20 @@ const Main = () => {
     }
   };
 
+  // 훈련정보 관련 상태 추가
+  const [selectedTraining, setSelectedTraining] = useState(null);
+  
+  // 훈련과정 클릭 핸들러 추가
+  const handleTrainingClick = (training) => {
+    setSelectedTraining(prev => prev?.id === training.id ? null : training);
+    if (selectedCardRef.current) {
+      selectedCardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
+
   // 스크롤 관련 useEffect 통합
   useEffect(() => {
     const chatContainer = chatContainerRef.current;
@@ -464,6 +518,19 @@ const Main = () => {
                                   onClick={handleJobClick}
                                   isSelected={selectedJob && selectedJob.id === job.id}
                                   cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          {message.trainingCourses && message.trainingCourses.length > 0 && (
+                            <div className={styles.trainingList}>
+                              {message.trainingCourses.map(course => (
+                                <TrainingCard
+                                  key={course.id}
+                                  training={course}
+                                  onClick={handleTrainingClick}
+                                  isSelected={selectedTraining && selectedTraining.id === course.id}
+                                  cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
                                 />
                               ))}
                             </div>
