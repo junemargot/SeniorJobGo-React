@@ -114,52 +114,54 @@ body {
     // overscroll-behavior-y: contain; // 모바일에서 스크롤 바운스 방지
 
     .message {
+      margin-bottom: 1.5rem;
+      width: 100%;
       display: flex;
       gap: 10px;
-      align-items: center;
+      align-items: flex-start;
 
-      .messageText {
-        padding: 3px 16px 3px 1px;
-        line-height: 1.5rem;
-        word-wrap: break-word;
-        white-space: pre-line;
-      }
-    }
-
-    .botMessage {
-      margin: 9px auto;
-
-      .avatar {
-        height: 43px;
-        width: 43px;
-        flex-shrink: 0;
-        padding: 6px;
-        align-self: flex-start;
-        margin-right: -7px;
-        border-radius: 50%;
-        background: $background-color;
-        border: 1px solid $background-color;
-        // animation: rotate 3s linear infinite;
-      }
-
-      .loading {
+      &.botMessage {
+        margin: 9px auto;
+        
         .avatar {
-          animation: rotate 3s linear infinite;
+          height: 43px;
+          width: 43px;
+          flex-shrink: 0;
+          padding: 6px;
+          align-self: flex-start;
+          margin-right: -7px;
+          border-radius: 50%;
+          background: $background-color;
+          border: 1px solid $background-color;
+        }
+
+        &.loading {
+          .avatar {
+            animation: rotate 3s linear infinite;
+          }
+        }
+      }
+
+      &.userMessage {
+        flex-direction: column;
+        align-items: flex-end;
+
+        .messageContent {
+          padding: 12px 16px;
+          max-width: 75%;
+          border-radius: 13px 13px 3px 13px;
+          background: linear-gradient(to right, #f2c765, #eccd81, #e5d39d);
+          color: $light-text-color;
         }
       }
     }
 
-    .userMessage {
-      flex-direction: column;
-      align-items: flex-end;
-
-      .messageText {
-        padding: 12px 16px;
-        // max-width: 75%;
-        border-radius: 13px 13px 3px 13px;
-        background: linear-gradient(to right, #f2c765, #eccd81, #e5d39d);
-        color: $light-text-color;
-      }
+    .messageContent {
+      flex: 1;
+      padding: 3px 16px 3px 1px;
+      line-height: 1.5rem;
+      word-wrap: break-word;
+      white-space: pre-line;
     }
   }
 

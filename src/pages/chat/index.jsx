@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
-import { API_URL } from '../../config'; // API URL 환경변수 불러오기
 import axios from 'axios';
 
 // API 기본 URL 설정
@@ -205,11 +204,23 @@ const TrainingInfoForm = ({ onSubmit, onCancel, initialData }) => (
   </div>
 );
 
+// getMessageStyle 함수 추가
+const getMessageStyle = (msg) => {
+  const baseStyle = styles.message;
+  if (msg.role === "model") {
+    return `${baseStyle} ${styles.botMessage} ${msg.loading ? styles.loading : ""}`;
+  }
+  return `${baseStyle} ${styles.userMessage}`;
+};
+
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
-  const [chatHistory, setChatHistory] = useState([]); // { role: 'user' | 'model', text: string, loading?: boolean }
+  const [chatHistory, setChatHistory] = useState([]);
   const [isBotResponding, setIsBotResponding] = useState(false);
-  const [typingIntervalId, setTypingIntervalId] = useState(null); // 추가된 상태
+  const [typingIntervalId, setTypingIntervalId] = useState(null);
+  const [startTime, setStartTime] = useState(null);
+  const [processingTime, setProcessingTime] = useState(0);
+  
   const chatsContainerRef = useRef(null);
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -236,6 +247,15 @@ const Chat = () => {
     education: '',
     location: '',
     interests: ''
+  });
+
+  // 대화 모드 관리를 위한 상태 개선
+  const [chatContext, setChatContext] = useState({
+    mode: 'general', // 'general' | 'job' | 'training'
+    lastQuery: '',
+    userProfile: null,
+    searchHistory: [],
+    formSubmitted: false // 폼 제출 여부 추가
   });
 
   // 메뉴
@@ -294,277 +314,112 @@ const Chat = () => {
     typingIntervalRef.current = intervalId;
   };
 
-
-  // 봇 응답 생성 함수 수정  
-  const generateResponse = async () => {
-    setIsBotResponding(true);
-    abortControllerRef.current = new AbortController();
-
-    setChatHistory((prev) => 
-      [...prev, 
-      { role: "model", text: "답변을 작성중입니다...", loading: true }
-    ]);
-    scrollToBottom();
-
-    setTimeout(async () => {
-      try {
-        // 백엔드 API 호출
-        const response = await axios.post(`${API_BASE_URL}/chat/`, {
-          user_message: userMessage,
-          user_profile: userInfo,
-          session_id: "default_session"
-        }, { withCredentials: true });
-
-        const { message, jobPostings, type } = response.data;
-
-        // 봇 메시지의 텍스트를 빈 문자열로 바꾸고 타이핑 효과 적용
-        setChatHistory((prev) => {
-          const updatedHistory = [...prev];
-          updatedHistory[updatedHistory.length - 1] = { role: "model", text: "", loading: true };
-          return updatedHistory;
-        });
-
-        // 점진적으로 텍스트 업데이트
-        const cleanup = typingEffect(
-          message,
-          (partialText) => {
-            setChatHistory((prev) => {
-              const updatedHistory = [...prev];
-              const lastIndex = updatedHistory.length - 1;
-              updatedHistory[lastIndex] = {
-                role: "model",
-                text: partialText,
-                jobPostings: jobPostings,
-                loading: true
-              };
-              return updatedHistory;
-            });
-          },
-          () => {
-            // 타이핑 효과 완료 후 loading 상태 해제
-            setChatHistory((prev) => {
-              const updatedHistory = [...prev];
-              const lastIndex = updatedHistory.length - 1;
-              updatedHistory[lastIndex] = { 
-                role: "model", 
-                text: message,
-                jobPostings: jobPostings,
-                loading: false 
-              };
-              return updatedHistory;
-            });
-            setIsBotResponding(false);
-          }
-        );
-
-        return cleanup;
-
-      } catch (error) {
-        console.error(error);
-        setChatHistory((prev) => [
-          ...prev,
-          { role: "model", text: error.message || "오류가 발생했습니다.", loading: false }
-        ]);
-        setIsBotResponding(false);
-      }
-    }, 600);
-  };
-
-  // 응답 중단 핸들러 수정
-  const handleStopResponse = () => {
-    if(typingIntervalId) {
-      clearInterval(typingIntervalId);
-      setTypingIntervalId(null);
-    }
-
-    if(abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    setIsBotResponding(false);
-
-    // 채팅 내역 중 loading 중인 봇 메시지는 loading 해제
-    setChatHistory((prev) =>
-      prev.map((msg) =>
-        msg.role === "model" && msg.loading ? { ...msg, loading: false } : msg
-      )
-    );
-  };
-
-  // 컴포넌트 cleanup을 위한 useEffect 추가
-  useEffect(() => {
-    return () => {
-      if(typingIntervalId) {
-        clearInterval(typingIntervalId);
-      }
-
-      if(abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [typingIntervalId]);
-
-  // 훈련 관련 키워드 체크 및 키워드 추출
-  const isTrainingRelated = (message) => {
-    const keywords = ['훈련', '교육', '배움', '학습', '자격증', '국비지원', '내일배움카드'];
-    const found = keywords.find(keyword => message.includes(keyword));
-    return found ? found : null;
-  };
-
-  // 메시지 스타일 결정
-  const getMessageStyle = (msg) => {
-    const baseStyle = styles.message;
-    if (msg.role === "user") return `${baseStyle} ${styles.userMessage}`;
-    
-    // 봇 메시지 타입에 따른 스타일
-    const botStyle = `${baseStyle} ${styles.botMessage}`;
-    if (msg.type === "training") return `${botStyle} ${styles.trainingMessage}`;
-    return botStyle;
-  };
-
-  // 훈련정보 확인 처리
-  const handleTrainingConfirm = async () => {
-    setShowTrainingConfirm(false);
-    setShowTrainingInfoForm(true);
-    setChatHistory(prev => [...prev,
-      { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
-    ]);
-  };
-
   // 폼 제출 핸들러 수정
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!userMessage.trim() || isBotResponding) return;
 
-    // 사용자 메시지를 채팅 내역에 추가
-    setChatHistory(prev => [...prev, { role: "user", text: userMessage }]);
+    const message = userMessage.trim();
     
-    // 이전 메시지가 "다른 조건으로 찾아보시겠어요?"이고 훈련 관련 키워드가 있는 경우
-    const prevMessage = chatHistory[chatHistory.length - 1]?.text;
-    const isRetry = prevMessage === "현재 조건에 맞는 훈련과정이 없습니다. 다른 조건으로 찾아보시겠어요?";
-    const trainingKeyword = isTrainingRelated(userMessage);
-
-    if (isRetry && trainingKeyword) {
-      // 기존 훈련정보에 새로운 관심분야만 업데이트
-      const updatedUserInfo = {
-        ...trainingUserInfo,
-        interests: userMessage
-      };
-      setTrainingUserInfo(updatedUserInfo);
-
-      try {
-        const response = await axios.post(`${API_BASE_URL}/training/search`, {
-          user_message: userMessage,
-          user_profile: updatedUserInfo,
-          session_id: "default_session"
-        });
-
-        const { message, trainingCourses, type } = response.data;
-        
-        setChatHistory(prev => [...prev, {
-          role: "model",
-          text: message,
-          trainingCourses: trainingCourses,
-          type: "training"
-        }]);
-      } catch (error) {
-        console.error("훈련정보 검색 중 오류:", error);
-        setChatHistory(prev => [...prev, {
-          role: "model",
-          text: "죄송합니다. 훈련정보 검색 중 오류가 발생했습니다.",
-          type: "error"
-        }]);
-      }
-    } else if (trainingKeyword) {
-      // 일반적인 훈련 관련 검색
-      setShowTrainingConfirm(true);
-    } else {
-      // 기존 채팅 처리 로직
-      generateResponse();
-    }
-
-    setUserMessage("");
-  };
-
-  // 사용자 정보 입력 핸들러
-  const handleUserInfoChange = (e) => {
-    const { name, value } = e.target;
-    setUserInfo(prevInfo => ({ ...prevInfo, [name]: value }));
-  };
-
-  // 사용자 정보 제출 핸들러
-  const handleUserInfoSubmit = async (e) => {
-    e.preventDefault();
-    const ageValue = userInfo.age ? parseInt(userInfo.age, 10) : undefined;
-    const updatedUserInfo = {
-      ...userInfo,
-      age: ageValue,
-    };
-
-    const userInfoText = `입력하신 정보는 다음과 같습니다.\n\n나이 : ${userInfo.age}세\n성별 : ${userInfo.gender}\n희망 근무 지역 : ${userInfo.location}\n희망 직무 : ${userInfo.jobType}\n\n🔍 이 정보를 바탕으로 채용 정보를 검색하겠습니다!`;
-
-    setChatHistory(prev => [...prev, { role: "model", text: userInfoText }]);
-    setShowUserInfoForm(false);
+    // 사용자 메시지를 채팅 내역에 추가
+    setChatHistory(prev => [...prev, { role: "user", text: message }]);
+    setIsBotResponding(true);
+    setStartTime(Date.now());
+    setProcessingTime(0);
 
     try {
-      const searchQuery = `${userInfo.jobType} ${userInfo.location}`;
+      // 백엔드로 메시지 전송
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
-        user_message: searchQuery,
-        user_profile: updatedUserInfo
-      });
+        user_message: message,
+        user_profile: userInfo,
+        session_id: "default_session"
+      }, { withCredentials: true });
 
-      const { message, jobPostings, user_profile } = response.data;
+      const { message: botMessage, jobPostings, trainingCourses, type } = response.data;
+      console.log('Response data:', response.data);  // 응답 데이터 로깅
 
-      if (user_profile) {
-        setUserInfo(user_profile);
+      // 봇 응답 추가
+      const newBotMessage = {
+        role: "model",
+        text: botMessage,
+        type: type
+      };
+
+      // 채용정보나 훈련과정 정보가 있으면 추가
+      if (jobPostings && jobPostings.length > 0) {
+        newBotMessage.jobPostings = jobPostings;
+      }
+      if (trainingCourses && trainingCourses.length > 0) {
+        console.log('Adding training courses:', trainingCourses);  // 훈련과정 정보 로깅
+        newBotMessage.trainingCourses = trainingCourses;
       }
 
-      setChatHistory(prev => [
-        ...prev,
-        {
-          role: "model",
-          text: message,
-          jobPostings: jobPostings
-        }
-      ]);
+      setChatHistory(prev => [...prev, newBotMessage]);
+
+      // 프로필 업데이트 (있는 경우)
+      if (response.data.user_profile) {
+        setUserInfo(response.data.user_profile);
+      }
 
     } catch (error) {
-      console.error("일자리 검색 중 오류:", error);
-      setChatHistory(prev => [
-        ...prev,
-        { role: "model", text: "죄송합니다. 일자리 검색 중 오류가 발생했습니다." }
-      ]);
-    }
-  };
-
-  // 채용 공고 클릭 핸들러
-  const handleJobClick = (job) => {
-    setSelectedJob(job);
-    if (selectedCardRef.current) {
-      selectedCardRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
+      console.error("메시지 전송 오류:", error);
+      setChatHistory(prev => [...prev, {
+        role: "model",
+        text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.",
+        type: "error"
+      }]);
+    } finally {
+      setIsBotResponding(false);
+      setUserMessage("");
+      setStartTime(null);
     }
   };
 
   // 추천 메뉴 클릭 핸들러 수정
   const handleSuggestionClick = (suggestion) => {
-    if (suggestion.id === 2) {  // AI 맞춤 채용정보 검색
-      setShowUserInfoForm(true);
-      setChatHistory(prev => [...prev, 
-        { role: "user", text: "채용 정보 검색" },
-        { role: "model", text: "채용 정보 검색을 위해 기본 정보를 입력해주세요." }
-      ]);
-    } else if (suggestion.id === 3) {  // 맞춤 훈련정보 검색
-      setShowTrainingInfoForm(true);
-      setChatHistory(prev => [...prev,
-        { role: "user", text: "훈련 정보 검색" },
-        { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
-      ]);
-    } else {
-      setUserMessage(suggestion.text);
-      setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
-    }
+    setUserMessage(suggestion.text);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+  };
+
+  // 사용자 정보 제출 핸들러 수정
+  const handleUserInfoSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const updatedUserInfo = {
+      age: formData.get('age'),
+      gender: formData.get('gender'),
+      location: formData.get('location'),
+      jobType: formData.get('jobType')
+    };
+
+    setUserInfo(updatedUserInfo);
+    setShowUserInfoForm(false);
+
+    // 사용자 정보와 함께 검색 요청
+    const message = `${updatedUserInfo.location}에서 ${updatedUserInfo.jobType} 일자리 찾기`;
+    setUserMessage(message);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+  };
+
+  // 훈련정보 입력 폼 제출 핸들러 수정
+  const handleTrainingInfoSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const updatedUserInfo = {
+      age: formData.get('age'),
+      gender: formData.get('gender'),
+      education: formData.get('education'),
+      location: formData.get('location'),
+      interests: formData.get('interests')
+    };
+
+    setTrainingUserInfo(updatedUserInfo);
+    setShowTrainingInfoForm(false);
+
+    // 사용자 정보와 함께 검색 요청
+    const message = `${updatedUserInfo.location}에서 ${updatedUserInfo.interests} 관련 교육 찾기`;
+    setUserMessage(message);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
   };
 
   // 채팅 내역 모두 삭제
@@ -573,7 +428,25 @@ const Chat = () => {
     setIsBotResponding(false);
   };
 
+  // 채용 공고 클릭 핸들러 추가
+  const handleJobClick = (job) => {
+    setSelectedJob(prev => prev?.id === job.id ? null : job);
+    if (selectedCardRef.current) {
+      selectedCardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
 
+  // 응답 중단 핸들러 추가
+  const handleStopResponse = () => {
+    if(abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setIsBotResponding(false);
+    setUserMessage("");
+  };
 
   // 녹음 시작/중지 핸들러
   const handleRecord = async () => {
@@ -637,45 +510,6 @@ const Chat = () => {
     }
   };
 
-  // 훈련정보 입력 폼 제출 핸들러
-  const handleTrainingInfoSubmit = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const userInfo = {
-      age: formData.get('age') || trainingUserInfo.age,
-      gender: formData.get('gender') || trainingUserInfo.gender,
-      education: formData.get('education') || trainingUserInfo.education,
-      location: formData.get('location') || trainingUserInfo.location,
-      interests: formData.get('interests') || trainingUserInfo.interests
-    };
-    setTrainingUserInfo(userInfo);  // 입력 데이터 저장
-    setShowTrainingInfoForm(false);
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/training/search`, {
-        user_message: `${userInfo.interests || ""} 훈련과정 검색`,
-        user_profile: userInfo,
-        session_id: "default_session"
-      });
-
-      const { message, trainingCourses, type } = response.data;
-      
-      setChatHistory(prev => [...prev, {
-        role: "model",
-        text: message,
-        trainingCourses: trainingCourses,
-        type: "training"
-      }]);
-    } catch (error) {
-      console.error("훈련정보 검색 중 오류:", error);
-      setChatHistory(prev => [...prev, {
-        role: "model",
-        text: "죄송합니다. 훈련정보 검색 중 오류가 발생했습니다.",
-        type: "error"
-      }]);
-    }
-  };
-
   // 채팅 내역 전부 불러오기
   useEffect(() => {
     const fetchChatHistory = async () => {
@@ -688,17 +522,34 @@ const Chat = () => {
         const messages = response.data.messages ? response.data.messages : response.data;
         // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
         for (const msg of messages) {
-          // if role is 'user', keep it; otherwise set to 'model'
           const role = msg.role === "user" ? "user" : "model";
           let newMsg = { role, text: "" };
+          
+          // 문자열인 경우
           if (typeof msg.content === "string") {
             newMsg.text = msg.content;
-          } else if (typeof msg.content === "object" && msg.content !== null) {
-            newMsg.text = msg.content.message || "";
-            if (msg.content.jobPostings) {
+          } 
+          // 객체인 경우
+          else if (typeof msg.content === "object" && msg.content !== null) {
+            // 메시지 텍스트 설정
+            if (msg.content.message) {
+              newMsg.text = msg.content.message;
+            } else if (msg.content.text) {
+              newMsg.text = msg.content.text;
+            }
+            
+            // 채용정보 추가
+            if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
               newMsg.jobPostings = msg.content.jobPostings;
             }
+            
+            // 훈련과정 정보 추가
+            if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
+              newMsg.trainingCourses = msg.content.trainingCourses;
+            }
           }
+          
+          // 채팅 내역에 추가
           setChatHistory(prev => [...prev, newMsg]);
         }
       } catch (error) {
@@ -707,6 +558,13 @@ const Chat = () => {
     };
     fetchChatHistory();
   }, []);
+
+  const handleInputChange = (e) => {
+    const text = e.target.value;
+    if(text.length <= 500) {  // 길이 제한을 500자로 늘리고 줄바꿈 제한 제거
+      setUserMessage(text);
+    }
+  };
 
   return (
     <>
@@ -792,10 +650,14 @@ const Chat = () => {
                     {/* 훈련과정 목록 */}
                     {msg.trainingCourses && msg.trainingCourses.length > 0 && (
                       <div className={styles.trainingList}>
+                        {console.log('Training courses:', msg.trainingCourses)}
                         {msg.trainingCourses.map(course => (
                           <TrainingCard
                             key={course.id}
-                            training={course}
+                            training={{
+                              ...course,
+                              yardMan: course.yardMan || '미정'  // 정원 정보가 없는 경우 기본값 설정
+                            }}
                             onClick={setSelectedTraining}
                             isSelected={selectedTraining && selectedTraining.id === course.id}
                             cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
@@ -835,7 +697,7 @@ const Chat = () => {
                 className={styles.promptInput}
                 placeholder="궁금하신 내용을 입력해주세요"
                 value={userMessage}
-                onChange={(e) => setUserMessage(e.target.value)}
+                onChange={handleInputChange}
                 required
                 disabled={isBotResponding || recording}
               />
