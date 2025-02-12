@@ -778,3 +778,39 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     }
   }
 }
+
+.voiceInputButton {
+  width: 100%;
+  height: 56px;
+  border: none;
+  border-radius: 130px;
+  background: $light-secondary-color;
+  color: $light-text-color;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  
+  &::before {
+    content: "음성으로 검색하기";
+    font-size: 1rem;
+  }
+  
+  &:hover:not(:disabled) {
+    background: $light-placeholder-color;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.recording {
+    color: #fff;
+    background: $primary-color;
+    animation: pulse 1.5s infinite;
+  }
+}

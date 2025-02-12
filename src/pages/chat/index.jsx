@@ -230,11 +230,6 @@ const Chat = () => {
   const abortControllerRef = useRef(null);
   const typingIntervalRef = useRef(null);
 
-  // 녹음 관련 상태 및 ref
-  const [recording, setRecording] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-
   // 채용 정보 관련 상태 추가
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
@@ -445,68 +440,6 @@ const Chat = () => {
     setUserMessage("");
   };
 
-  // 녹음 시작/중지 핸들러
-  const handleRecord = async () => {
-    if (!recording) {
-      try {
-        // Web Speech API 초기화
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
-          return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'ko-KR';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-
-        // 음성 인식 결과 처리
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          setUserMessage(transcript);
-          setRecording(false);
-        };
-
-        // 에러 처리
-        recognition.onerror = (event) => {
-          console.error('음성 인식 오류:', event.error);
-          setRecording(false);
-          if (event.error === 'not-allowed') {
-            alert('마이크 접근 권한이 필요합니다.');
-          } else {
-            alert('음성 인식 중 오류가 발생했습니다.');
-          }
-        };
-
-        // 음성 인식 종료 처리
-        recognition.onend = () => {
-          setRecording(false);
-        };
-
-        // 음성 인식 시작
-        recognition.start();
-        setRecording(true);
-
-      } catch (error) {
-        console.error('음성 인식 초기화 오류:', error);
-        alert('음성 인식을 시작할 수 없습니다.');
-        setRecording(false);
-      }
-    } else {
-      // 녹음 중지
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          SpeechRecognition.abort();
-        }
-      } catch (error) {
-        console.error('음성 인식 중지 오류:', error);
-      }
-      setRecording(false);
-    }
-  };
-
   // 채팅 내역 전부 불러오기
   useEffect(() => {
     const fetchChatHistory = async () => {
@@ -521,7 +454,7 @@ const Chat = () => {
         for (const msg of messages) {
           const role = msg.role === "user" ? "user" : "model";
           let newMsg = { role, text: "" };
-          
+         
           // 문자열인 경우
           if (typeof msg.content === "string") {
             newMsg.text = msg.content;
@@ -549,6 +482,11 @@ const Chat = () => {
             if (msg.content.type) {
               newMsg.type = msg.content.type;
             }
+
+            // 음성 입력 모드 추가
+            if (msg.content.mode === 'voice') {
+              setIsVoiceMode(true);
+            }
           }
           
           // 채팅 내역에 추가
@@ -569,49 +507,76 @@ const Chat = () => {
   };
 
   const [isModalOpen, setIsModalOpen] = useState(true);  // 모달 상태 추가
+  const [isVoiceMode, setIsVoiceMode] = useState(false);  // 음성 입력 모드 상태 추가
+  const [initialMode, setInitialMode] = useState(null);  // 음성 입력 모드 초기 설정 상태 추가
 
-  // 모달 닫기 핸들러
-  const handleModalClose = () => {
+  // handleModalSubmit 수정
+  const handleModalSubmit = async (response) => {
     setIsModalOpen(false);
+    setUserMessage("");
+
+    // 음성 입력 모드 설정
+    if (response.mode === 'voice') {
+      setIsVoiceMode(true);
+      setInitialMode('voice');
+    }
+
+    // 음성 입력 모드가 아닌 경우에만 사용자 입력을 채팅 기록에 추가
+    if (!response.mode || response.mode !== 'voice') {
+      const userMessage = {
+        role: "user",
+        text: response.originalText || "음성으로 검색하기",
+      };
+      setChatHistory((prev) => [...prev, userMessage]);
+    }
+
+    // 봇 응답 처리
+    setIsBotResponding(true);
+    try {
+      const botMessage = {
+        role: "model",
+        text: response.message || response.text,
+      };
+
+      if (response.jobPostings && response.jobPostings.length > 0) {
+        botMessage.jobPostings = response.jobPostings;
+      }
+
+      if (response.trainingCourses && response.trainingCourses.length > 0) {
+        botMessage.trainingCourses = response.trainingCourses;
+      }
+
+      if (response.type) {
+        botMessage.type = response.type;
+      }
+
+      setChatHistory((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error processing bot response:", error);
+    } finally {
+      setIsBotResponding(false);
+    }
   };
 
-  // 모달 제출 핸들러 수정
-  const handleModalSubmit = async (response) => {
-    try {
-      // 응답 데이터 처리
-      const { message, jobPostings, trainingCourses, type } = response;
-      
-      // 사용자 입력을 채팅 내역에 추가
-      setChatHistory(prev => [
-        ...prev,
-        { role: "user", text: "음성으로 검색하기" }
-      ]);
+  // 음성 입력 모달 열기 핸들러 수정
+  const handleVoiceInputClick = () => {
+    setIsModalOpen(true);
+    setInitialMode('voice');
+    // 음성 녹음 모드로 바로 시작하도록 수정
+    setTimeout(() => {
+      const voiceButton = document.querySelector(`.${styles.recordingIndicator}`);
+      if (voiceButton) {
+        voiceButton.click();
+      }
+    }, 100);
+  };
 
-      // 봇 응답을 채팅 내역에 추가
-      setChatHistory(prev => [
-        ...prev,
-        {
-          role: "bot",
-          text: message,
-          type: type,
-          jobPostings: jobPostings || [],
-          trainingCourses: trainingCourses || []
-        }
-      ]);
-
-      // 모달 닫기
-      setIsModalOpen(false);
-
-    } catch (error) {
-      console.error('응답 처리 중 오류:', error);
-      setChatHistory(prev => [
-        ...prev,
-        {
-          role: "bot",
-          text: "죄송합니다. 응답 처리 중 오류가 발생했습니다.",
-          type: "error"
-        }
-      ]);
+  // 모달 닫기 핸들러 수정
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    // 음성 모드가 아닐 때만 isVoiceMode를 false로 설정
+    if (!isVoiceMode) {
+      setInitialMode(null);
     }
   };
 
@@ -624,6 +589,7 @@ const Chat = () => {
           isOpen={isModalOpen}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
+          initialMode={initialMode}
         />
         
         <div className={styles.container} ref={chatsContainerRef}>
@@ -715,46 +681,48 @@ const Chat = () => {
           {/* 프롬프트 영역 */}
           <div className={styles.promptContainer}>
             <div className={styles.promptWrapper}>
-              <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
-                <input
-                  ref={promptInputRef}
-                  type="text"
-                  className={styles.promptInput}
-                  placeholder="궁금하신 내용을 입력해주세요"
-                  value={userMessage}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isBotResponding || recording}
-                />
-                <div className={styles.promptActions}>
-                  <button
-                    id="stop-response-btn"
-                    type="button"
-                    onClick={handleStopResponse}
-                    disabled={!isBotResponding}
-                    className={`material-symbols-rounded ${styles.stopResponseBtn}`}
-                  >
-                    stop_circle
-                  </button>
-                  <button
-                    id="send-prompt-btn"
-                    type="submit"
-                    disabled={!userMessage.trim() || recording}
-                    className={`material-symbols-rounded ${styles.sendPromptBtn}`}
-                  >
-                    arrow_upward
-                  </button>
-                </div>
-              </form>
-              <button
-                id="record-btn"
-                type="button"
-                onClick={handleRecord}
-                className={`material-symbols-rounded ${styles.recordBtn} ${recording ? styles.recording : ''}`}
-                disabled={isBotResponding}
-              >
-                {recording ? "stop" : "mic"}
-              </button>
+              {isVoiceMode ? (
+                <button
+                  className={`${styles.voiceInputButton}`}
+                  onClick={handleVoiceInputClick}
+                  disabled={isBotResponding}
+                >
+                  <span className="material-symbols-rounded">mic</span>
+                  
+                </button>
+              ) : (
+                <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
+                  <input
+                    ref={promptInputRef}
+                    type="text"
+                    className={styles.promptInput}
+                    placeholder="궁금하신 내용을 입력해주세요"
+                    value={userMessage}
+                    onChange={handleInputChange}
+                    required
+                    disabled={isBotResponding}
+                  />
+                  <div className={styles.promptActions}>
+                    <button
+                      id="stop-response-btn"
+                      type="button"
+                      onClick={handleStopResponse}
+                      disabled={!isBotResponding}
+                      className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+                    >
+                      stop_circle
+                    </button>
+                    <button
+                      id="send-prompt-btn"
+                      type="submit"
+                      disabled={!userMessage.trim()}
+                      className={`material-symbols-rounded ${styles.sendPromptBtn}`}
+                    >
+                      arrow_upward
+                    </button>
+                  </div>
+                </form>
+              )}
               <button
                 id="delete-chats-btn"
                 type="button"

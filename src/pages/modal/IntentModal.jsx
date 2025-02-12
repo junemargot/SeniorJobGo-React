@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const API_BASE_URL = "http://localhost:8000/api/v1";
 
-const IntentModal = ({ isOpen, onClose, onSubmit }) => {
+const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -41,6 +41,22 @@ const IntentModal = ({ isOpen, onClose, onSubmit }) => {
       setRecognition(recognition);
     }
   }, []);
+
+  // initialMode가 변경될 때 모드 설정 및 음성 녹음 시작
+  useEffect(() => {
+    if (isOpen && initialMode === 'voice') {
+      setMode('voice');
+      // 약간의 지연 후 녹음 시작
+      setTimeout(() => {
+        if (recognition) {
+          recognition.start();
+          setIsListening(true);
+          setTranscript('');
+          setSummary(null);
+        }
+      }, 100);
+    }
+  }, [isOpen, initialMode]);
 
   // 텍스트 처리 함수
   const processTranscript = async (text) => {
@@ -109,7 +125,11 @@ const IntentModal = ({ isOpen, onClose, onSubmit }) => {
         });
 
         // 4. 검색 결과를 부모 컴포넌트로 전달
-        onSubmit(searchResponse.data);
+        onSubmit({
+          ...searchResponse.data,
+          mode: 'voice',  // 음성 입력 모드 정보 추가
+          originalText: summary.originalText  // 원본 텍스트 추가
+        });
         onClose();  // 모달 닫기
         
       } catch (error) {
