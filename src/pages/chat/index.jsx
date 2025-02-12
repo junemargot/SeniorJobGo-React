@@ -313,7 +313,7 @@ const Chat = () => {
           user_message: userMessage,
           user_profile: userInfo,
           session_id: "default_session"
-        },{ withCredentials: true });
+        }, { withCredentials: true });
 
         const { message, jobPostings, type } = response.data;
 
@@ -675,6 +675,38 @@ const Chat = () => {
       }]);
     }
   };
+
+  // 채팅 내역 전부 불러오기
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const id = document.cookie.split('; ')
+          .find(row => row.startsWith('sjgid='))
+          .split('=')[1];
+        const response = await axios.get(`${API_BASE_URL}/chat/get/all/${id}`, { withCredentials: true });
+        // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
+        const messages = response.data.messages ? response.data.messages : response.data;
+        // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
+        for (const msg of messages) {
+          // if role is 'user', keep it; otherwise set to 'model'
+          const role = msg.role === "user" ? "user" : "model";
+          let newMsg = { role, text: "" };
+          if (typeof msg.content === "string") {
+            newMsg.text = msg.content;
+          } else if (typeof msg.content === "object" && msg.content !== null) {
+            newMsg.text = msg.content.message || "";
+            if (msg.content.jobPostings) {
+              newMsg.jobPostings = msg.content.jobPostings;
+            }
+          }
+          setChatHistory(prev => [...prev, newMsg]);
+        }
+      } catch (error) {
+        console.error('채팅 내역 불러오기 오류:', error);
+      }
+    };
+    fetchChatHistory();
+  }, []);
 
   return (
     <>
