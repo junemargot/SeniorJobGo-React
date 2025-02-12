@@ -4,6 +4,7 @@ import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
 import axios from 'axios';
+import IntentModal from '@pages/modal/IntentModal';
 
 // API 기본 URL 설정
 const API_BASE_URL = "http://localhost:8000/api/v1";
@@ -204,10 +205,10 @@ const TrainingInfoForm = ({ onSubmit, onCancel, initialData }) => (
   </div>
 );
 
-// getMessageStyle 함수 추가
+// getMessageStyle 함수 수정
 const getMessageStyle = (msg) => {
   const baseStyle = styles.message;
-  if (msg.role === "model") {
+  if (msg.role === "model" || msg.role === "bot") {
     return `${baseStyle} ${styles.botMessage} ${msg.loading ? styles.loading : ""}`;
   }
   return `${baseStyle} ${styles.userMessage}`;
@@ -340,19 +341,12 @@ const Chat = () => {
 
       // 봇 응답 추가
       const newBotMessage = {
-        role: "model",
+        role: "bot",
         text: botMessage,
-        type: type
+        type: type,
+        jobPostings: jobPostings || [],
+        trainingCourses: trainingCourses || []
       };
-
-      // 채용정보나 훈련과정 정보가 있으면 추가
-      if (jobPostings && jobPostings.length > 0) {
-        newBotMessage.jobPostings = jobPostings;
-      }
-      if (trainingCourses && trainingCourses.length > 0) {
-        console.log('Adding training courses:', trainingCourses);  // 훈련과정 정보 로깅
-        newBotMessage.trainingCourses = trainingCourses;
-      }
 
       setChatHistory(prev => [...prev, newBotMessage]);
 
@@ -547,6 +541,11 @@ const Chat = () => {
             if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
               newMsg.trainingCourses = msg.content.trainingCourses;
             }
+
+            // 메시지 타입 추가
+            if (msg.content.type) {
+              newMsg.type = msg.content.type;
+            }
           }
           
           // 채팅 내역에 추가
@@ -566,186 +565,210 @@ const Chat = () => {
     }
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(true);  // 모달 상태 추가
+
+  // 모달 닫기 핸들러
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  // 모달 제출 핸들러 수정
+  const handleModalSubmit = async (response) => {
+    try {
+      // 응답 데이터 처리
+      const { message, jobPostings, trainingCourses, type } = response;
+      
+      // 사용자 입력을 채팅 내역에 추가
+      setChatHistory(prev => [
+        ...prev,
+        { role: "user", text: "음성으로 검색하기" }
+      ]);
+
+      // 봇 응답을 채팅 내역에 추가
+      setChatHistory(prev => [
+        ...prev,
+        {
+          role: "bot",
+          text: message,
+          type: type,
+          jobPostings: jobPostings || [],
+          trainingCourses: trainingCourses || []
+        }
+      ]);
+
+      // 모달 닫기
+      setIsModalOpen(false);
+
+    } catch (error) {
+      console.error('응답 처리 중 오류:', error);
+      setChatHistory(prev => [
+        ...prev,
+        {
+          role: "bot",
+          text: "죄송합니다. 응답 처리 중 오류가 발생했습니다.",
+          type: "error"
+        }
+      ]);
+    }
+  };
+
   return (
-    <>
-    <Header />
-      <div className={styles.container} ref={chatsContainerRef}>
-        {chatHistory.length === 0 && (
-          <>
-          {/* 앱 헤더 */}
-          <div className={styles.appHeader}>
-            <h1 className={styles.heading}>안녕하세요!</h1>
-            <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
-          </div>
-
-          {/* 추천 문구 */}
-          <ul className={styles.suggestions}>
-            {suggestions.map((item) => (
-              <li
-                key={item.id}
-                className={styles.suggestionsItem}
-                onClick={() => handleSuggestionClick(item)}
-              >
-                <p className={styles.text}>{item.text}</p>
-                <span className={`material-symbols-rounded`}>{item.icon}</span>
-              </li>
-            ))}
-          </ul>
-          </>
-        )}
-
-        {/* 채팅 내역 */}
-        <div className={styles.chatsContainer}>
-          {chatHistory.map((msg, index) => (
-            <div key={index} className={getMessageStyle(msg)}>
-              {msg.role === "model" && <img src={Avatar} alt="avatar" className={styles.avatar} />}
-              <div className={styles.messageContent}>
-                {msg.loading ? (
-                  <>
-                    <div className={styles.loadingBar} />
-                    <div className={styles.processingTime}>답변 생성 중...</div>
-                  </>
-                ) : (
-                  <>
-                    <p className={styles.messageText}>
-                      {msg.text.split('\n').map((line, i) => (
-                        <React.Fragment key={i}>
-                          {line}
-                          {i < msg.text.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
-                    </p>
-                    
-                    {/* 훈련정보 확인 대화상자 */}
-                    {showTrainingConfirm && msg.role === "user" && isTrainingRelated(msg.text) && (
-                      <TrainingConfirmDialog
-                        onConfirm={handleTrainingConfirm}
-                        onCancel={() => {
-                          setShowTrainingConfirm(false);
-                          setShowTrainingInfoForm(true);
-                          setChatHistory(prev => [...prev,
-                            { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
-                          ]);
-                        }}
-                      />
-                    )}
-                    
-                    {/* 채용정보 입력 폼 */}
-                    {showUserInfoForm && msg.text === "채용 정보 검색을 위해 기본 정보를 입력해주세요." && (
-                      <UserInfoForm
-                        onSubmit={handleUserInfoSubmit}
-                        onCancel={() => setShowUserInfoForm(false)}
-                      />
-                    )}
-                    
-                    {/* 훈련정보 입력 폼 */}
-                    {showTrainingInfoForm && msg.text === "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." && (
-                      <TrainingInfoForm
-                        onSubmit={handleTrainingInfoSubmit}
-                        onCancel={() => setShowTrainingInfoForm(false)}
-                        initialData={trainingUserInfo}  // 저장된 데이터 전달
-                      />
-                    )}
-                    
-                    {/* 훈련과정 목록 */}
-                    {msg.trainingCourses && msg.trainingCourses.length > 0 && (
-                      <div className={styles.trainingList}>
-                        {console.log('Training courses:', msg.trainingCourses)}
-                        {msg.trainingCourses.map(course => (
-                          <TrainingCard
-                            key={course.id}
-                            training={{
-                              ...course,
-                              yardMan: course.yardMan || '미정'  // 정원 정보가 없는 경우 기본값 설정
-                            }}
-                            onClick={setSelectedTraining}
-                            isSelected={selectedTraining && selectedTraining.id === course.id}
-                            cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* 기존 채용정보 목록 */}
-                    {msg.jobPostings && msg.jobPostings.length > 0 && (
-                      <div className={styles.jobList}>
-                        {msg.jobPostings.map(job => (
-                          <JobCard
-                            key={job.id}
-                            job={job}
-                            onClick={handleJobClick}
-                            isSelected={selectedJob && selectedJob.id === job.id}
-                            cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+    <div className={styles.page}>
+      <Header />
+      <main className={styles.content}>
+        {/* IntentModal 추가 */}
+        <IntentModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onSubmit={handleModalSubmit}
+        />
+        
+        <div className={styles.container} ref={chatsContainerRef}>
+          {chatHistory.length === 0 && (
+            <>
+            {/* 앱 헤더 */}
+            <div className={styles.appHeader}>
+              <h1 className={styles.heading}>안녕하세요!</h1>
+              <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
             </div>
-          ))}
-        </div>
 
-        {/* 프롬프트 영역 */}
-        <div className={styles.promptContainer}>
-          <div className={styles.promptWrapper}>
-            <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
-              <input
-                ref={promptInputRef}
-                type="text"
-                className={styles.promptInput}
-                placeholder="궁금하신 내용을 입력해주세요"
-                value={userMessage}
-                onChange={handleInputChange}
-                required
-                disabled={isBotResponding || recording}
-              />
-              <div className={styles.promptActions}>
-                <button
-                  id="stop-response-btn"
-                  type="button"
-                  onClick={handleStopResponse}
-                  disabled={!isBotResponding}
-                  className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+            {/* 추천 문구 */}
+            <ul className={styles.suggestions}>
+              {suggestions.map((item) => (
+                <li
+                  key={item.id}
+                  className={styles.suggestionsItem}
+                  onClick={() => handleSuggestionClick(item)}
                 >
-                  stop_circle
-                </button>
-                <button
-                  id="send-prompt-btn"
-                  type="submit"
-                  disabled={!userMessage.trim() || recording}
-                  className={`material-symbols-rounded ${styles.sendPromptBtn}`}
-                >
-                  arrow_upward
-                </button>
+                  <p className={styles.text}>{item.text}</p>
+                  <span className={`material-symbols-rounded`}>{item.icon}</span>
+                </li>
+              ))}
+            </ul>
+            </>
+          )}
+
+          {/* 채팅 내역 */}
+          <div className={styles.chatsContainer}>
+            {chatHistory.map((msg, index) => (
+              <div key={index} className={getMessageStyle(msg)}>
+                {(msg.role === "model" || msg.role === "bot") && <img src={Avatar} alt="avatar" className={styles.avatar} />}
+                <div className={styles.messageContent}>
+                  {msg.loading ? (
+                    <>
+                      <div className={styles.loadingBar} />
+                      <div className={styles.processingTime}>답변 생성 중...</div>
+                    </>
+                  ) : (
+                    <>
+                      <p className={styles.messageText}>
+                        {msg.text.split('\n').map((line, i) => (
+                          <React.Fragment key={i}>
+                            {line}
+                            {i < msg.text.split('\n').length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </p>
+                      
+                      {/* 채용정보 목록 */}
+                      {msg.jobPostings && msg.jobPostings.length > 0 && (
+                        <div className={styles.jobList}>
+                          {msg.jobPostings.map(job => (
+                            <JobCard
+                              key={job.id}
+                              job={job}
+                              onClick={handleJobClick}
+                              isSelected={selectedJob && selectedJob.id === job.id}
+                              cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 훈련과정 목록 */}
+                      {msg.trainingCourses && msg.trainingCourses.length > 0 && (
+                        <div className={styles.trainingList}>
+                          {msg.trainingCourses.map(course => (
+                            <TrainingCard
+                              key={course.id}
+                              training={{
+                                ...course,
+                                yardMan: course.yardMan || '미정'
+                              }}
+                              onClick={setSelectedTraining}
+                              isSelected={selectedTraining && selectedTraining.id === course.id}
+                              cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </form>
-            <button
-              id="record-btn"
-              type="button"
-              onClick={handleRecord}
-              className={`material-symbols-rounded ${styles.recordBtn} ${recording ? styles.recording : ''}`}
-              disabled={isBotResponding}
-            >
-              {recording ? "stop" : "mic"}
-            </button>
-            <button
-              id="delete-chats-btn"
-              type="button"
-              onClick={handleDeleteChats}
-              className={`material-symbols-rounded ${styles.deleteChatsBtn}`}
-            >
-              delete
-            </button>
+            ))}
           </div>
-          <p className={styles.disclaimerText}>
-            본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
-            AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
-          </p>
+
+          {/* 프롬프트 영역 */}
+          <div className={styles.promptContainer}>
+            <div className={styles.promptWrapper}>
+              <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
+                <input
+                  ref={promptInputRef}
+                  type="text"
+                  className={styles.promptInput}
+                  placeholder="궁금하신 내용을 입력해주세요"
+                  value={userMessage}
+                  onChange={handleInputChange}
+                  required
+                  disabled={isBotResponding || recording}
+                />
+                <div className={styles.promptActions}>
+                  <button
+                    id="stop-response-btn"
+                    type="button"
+                    onClick={handleStopResponse}
+                    disabled={!isBotResponding}
+                    className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+                  >
+                    stop_circle
+                  </button>
+                  <button
+                    id="send-prompt-btn"
+                    type="submit"
+                    disabled={!userMessage.trim() || recording}
+                    className={`material-symbols-rounded ${styles.sendPromptBtn}`}
+                  >
+                    arrow_upward
+                  </button>
+                </div>
+              </form>
+              <button
+                id="record-btn"
+                type="button"
+                onClick={handleRecord}
+                className={`material-symbols-rounded ${styles.recordBtn} ${recording ? styles.recording : ''}`}
+                disabled={isBotResponding}
+              >
+                {recording ? "stop" : "mic"}
+              </button>
+              <button
+                id="delete-chats-btn"
+                type="button"
+                onClick={handleDeleteChats}
+                className={`material-symbols-rounded ${styles.deleteChatsBtn}`}
+              >
+                delete
+              </button>
+            </div>
+            <p className={styles.disclaimerText}>
+              본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
+              AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
+            </p>
+          </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 
