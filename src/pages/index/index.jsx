@@ -5,8 +5,7 @@ import styles from './styles/index.module.scss';
 import IntroImage from '@assets/images/intro-illust.png';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-const API_BASE_URL = "http://localhost:8000/api/v1";
+import { API_BASE_URL } from '@/config';
 
 const Index = () => {
   const navigate = useNavigate();
