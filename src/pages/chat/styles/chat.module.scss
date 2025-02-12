@@ -137,18 +137,12 @@ body {
           background: $background-color;
           border: 1px solid $background-color;
         }
-      }
         
-      .avatar {
-        height: 43px;
-        width: 43px;
-        flex-shrink: 0;
-        padding: 6px;
-        align-self: flex-start;
-        margin-right: -7px;
-        border-radius: 50%;
-        background: $background-color;
-        border: 1px solid $background-color;
+        &.loading {
+          .avatar {
+            animation: rotate 3s linear infinite;
+          }
+        }
       }
 
       &.userMessage {
