@@ -15,6 +15,7 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
     ref={cardRef}
     className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
     onClick={() => onClick(job)}
+    data-job-id={job.id}
   >
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
@@ -60,6 +61,7 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
     ref={cardRef}
     className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
     onClick={() => onClick(training)}
+    data-training-id={training.id}
   >
     <div className={styles.trainingCard__header}>
       <div className={styles.trainingCard__institute}>
@@ -422,13 +424,23 @@ const Chat = () => {
 
   // 채용 공고 클릭 핸들러 추가
   const handleJobClick = (job) => {
-    setSelectedJob(prev => prev?.id === job.id ? null : job);
-    if (selectedCardRef.current) {
-      selectedCardRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
+    setSelectedJob(prev => {
+      const newSelected = prev?.id === job.id ? null : job;
+      // 새로 선택된 카드가 있을 때만 스크롤
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-job-id="${job.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100); // 약간의 지연을 주어 상태 업데이트와 DOM 업데이트가 완료된 후 스크롤
+      }
+      return newSelected;
+    });
   };
 
   // 응답 중단 핸들러 추가
@@ -580,6 +592,27 @@ const Chat = () => {
     }
   };
 
+  // 훈련 공고 클릭 핸들러 추가
+  const handleTrainingClick = (training) => {
+    setSelectedTraining(prev => {
+      const newSelected = prev?.id === training.id ? null : training;
+      // 새로 선택된 카드가 있을 때만 스크롤
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-training-id="${training.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100); // 약간의 지연을 주어 상태 업데이트와 DOM 업데이트가 완료된 후 스크롤
+      }
+      return newSelected;
+    });
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -664,7 +697,7 @@ const Chat = () => {
                                 ...course,
                                 yardMan: course.yardMan || '미정'
                               }}
-                              onClick={setSelectedTraining}
+                              onClick={handleTrainingClick}
                               isSelected={selectedTraining && selectedTraining.id === course.id}
                               cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
                             />
