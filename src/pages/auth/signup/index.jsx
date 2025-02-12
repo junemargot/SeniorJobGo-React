@@ -1,4 +1,5 @@
 // pages/auth/signup/index.jsx
+import React from 'react';
 import { useNavigate } from "react-router-dom";
 import styles from './styles/signup.module.scss';
 import Header from '@components/Header/Header';
@@ -6,6 +7,13 @@ import Footer from '@components/Footer/Footer';
 
 const Signup = () => {
   const navigate = useNavigate();
+  
+  const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_JS_KEY;
+  const REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+
+  const handleKakaoLogin = () => {
+    window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+  };
 
   return (
     <div className={styles.page}>
@@ -22,9 +30,9 @@ const Signup = () => {
             <div className={styles.circles__item3}></div>
           </div>
           <div className={styles.buttons}>
-            <button className={styles.buttons__social}>
+            <button className={styles.buttons__social} onClick={handleKakaoLogin}>
               <span className={styles.buttons__icon}>
-                <i class='bx bxs-message-rounded'></i>
+                <i className='bx bxs-message-rounded'></i>
               </span>
               카카오로 시작하기
             </button>
