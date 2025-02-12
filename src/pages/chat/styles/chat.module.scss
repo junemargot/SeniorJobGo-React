@@ -66,11 +66,14 @@ body {
       align-items: flex-start;
       justify-content: space-between;
       border-radius: 12px;
-      background: $light-secondary-color;
+      // background: $light-secondary-color;
+      background: linear-gradient(to right, #edbf4a, #eee2bf);
+
 
       &:hover {
         // background: $light-secondary-hover-color;
-        background: linear-gradient(to right, #eccd81, #e5d39d);
+        // background: rgba($primary-color, 0);
+        background: linear-gradient(to right, #eee2bf, #edbf4a);
       }
 
       .text {
@@ -135,11 +138,16 @@ body {
           border: 1px solid $background-color;
         }
 
-        &.loading {
-          .avatar {
-            animation: rotate 3s linear infinite;
-          }
-        }
+      .avatar {
+        height: 43px;
+        width: 43px;
+        flex-shrink: 0;
+        padding: 6px;
+        align-self: flex-start;
+        margin-right: -7px;
+        border-radius: 50%;
+        background: $background-color;
+        border: 1px solid $background-color;
       }
 
       &.userMessage {
@@ -179,7 +187,7 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 16px 9px;
+  padding: 12px 9px;
   background: $background-color;
 
   :where(.promptWrapper, .promptForm, .promptActions) {
@@ -335,19 +343,19 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
 /* 채용 공고 카드 */
 .jobCard {
-  background: #fff;
-  border-radius: 12px;
+  background: $white-color;
+  border-radius: $radius-lg;
   padding: 16px;
-  border: 1px solid #e1e1e1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid $border-light-color;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
   width: 100%;
   margin: 0;
   box-sizing: border-box;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
 
   &.selected {
-    border-color: $primary-color;
+    border-color: $light-secondary-color;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 

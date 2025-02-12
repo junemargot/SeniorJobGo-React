@@ -17,7 +17,8 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   >
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
-        <span className={styles.icon}>📍</span>
+        {/* <span className={styles.icon}>📍</span> */}
+        <span className={`material-symbols-rounded`}>location_on</span>
         {job.location}
       </div>
       <div className={styles.jobCard__company}>{job.company}</div>
@@ -25,11 +26,13 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
     <h3 className={styles.jobCard__title}>{job.title}</h3>
     <div className={styles.jobCard__details}>
       <div className={styles.jobCard__detail}>
-        <span className={styles.icon}>💰</span>
+        {/* <span className={styles.icon}>💰</span> */}
+        <span className={`material-symbols-rounded`}>money_bag</span>
         {job.salary}
       </div>
       <div className={styles.jobCard__detail}>
-        <span className={styles.icon}>⏰</span>
+        {/* <span className={styles.icon}>⏰</span> */}
+        <span className={`material-symbols-rounded`}>calendar_month</span>
         {job.workingHours}
       </div>
     </div>
