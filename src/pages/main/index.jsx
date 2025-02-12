@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
-import Footer from '@components/Footer/Footer';
 import ChatbotIcon from '@assets/images/icon-robot.svg'
 
 // API 기본 URL 설정
@@ -52,6 +51,46 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   </div>
 );
 
+// TrainingCard 컴포넌트 추가
+const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
+  <div 
+    ref={cardRef}
+    className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
+    onClick={() => onClick(training)}
+  >
+    <div className={styles.trainingCard__header}>
+      <div className={styles.trainingCard__institute}>
+        <span className={styles.icon}>🏫</span>
+        {training.institute}
+      </div>
+      <div className={styles.trainingCard__location}>{training.location}</div>
+    </div>
+    <h3 className={styles.trainingCard__title}>{training.title}</h3>
+    <div className={styles.trainingCard__details}>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>📅</span>
+        {training.period}
+      </div>
+      <div className={styles.trainingCard__detail}>
+        <span className={styles.icon}>💰</span>
+        {training.cost}
+      </div>
+      {training.target && (
+        <div className={styles.trainingCard__detail}>
+          <span className={styles.icon}>👥</span>
+          {training.target}
+        </div>
+      )}
+    </div>
+    
+    <div className={`${styles.trainingCard__description} ${isSelected ? styles.visible : ''}`}>
+      {training.description && (
+        <p data-label="교육내용">{training.description}</p>
+      )}
+    </div>
+  </div>
+);
+
 const Main = () => {
   // 상태 관리
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
@@ -68,8 +107,6 @@ const Main = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  const [chatHistoryIndex, setChatHistoryIndex] = useState(-1);
-  const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
 
   // 상태 추가
   const [processingTime, setProcessingTime] = useState(0);
@@ -88,15 +125,8 @@ const Main = () => {
       // 스크롤이 위로 올라갔을 때 버튼 표시
       const isScrolledUp = element.scrollTop < element.scrollHeight - element.clientHeight - 100;
       setShowScrollButton(isScrolledUp);
-
-      // 스크롤이 맨 위로 올라갔을 때 채팅 기록 가져오기
-      const isScrolledTop = element.scrollTop === 0;
-      if(isScrolledTop) {
-        fetchChatHistory();
-      }
     }
   };
-
 
   // 스크롤 다운 이벤트
   const scrollToBottom = () => {
@@ -135,91 +165,6 @@ const Main = () => {
   const [sessionId, setSessionId] = useState('');
   const [selectedJob, setSelectedJob] = useState(null);
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-
-  // fetch가 중복되지 않도록 useRef를 사용합니다.
-  const guestLoginRef = useRef(false);
-  const historyFetchedRef = useRef(false);
-
-  // 쿠키가 없다면 비회원 로그인
-  const handleGuestLogin = async () => {
-    if (!guestLoginRef.current) {
-      guestLoginRef.current = true;
-      try {
-        const response = await fetch(`${API_BASE_URL}/auth/login/guest`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          guestLoginRef.current = false;
-        } else {
-          window.location.href = '/';
-          guestLoginRef.current = false;
-        }
-      } catch (error) {
-        window.location.href = '/';
-        guestLoginRef.current = false;
-      }
-    }
-  }
-
-  // 채팅 기록 가져오기
-  const fetchChatHistory = async () => {
-    if (chatHistoryIndex === 0) {
-      console.log("chatHistoryIndex is 0");
-      return;
-    }
-
-    try {
-      const cookies = document.cookie;
-      if (cookies === '') {
-
-        handleGuestLogin();
-        return;
-      }
-
-      const sjgid = cookies.split(';').find(row => row.trim().startsWith('sjgid='))
-      if (!sjgid) {
-        handleGuestLogin();
-        return;
-      }
-
-      const limit = 4;
-      const _id = sjgid.split('=')[1];
-
-      if (_id) {
-        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${_id}`,
-          {
-            params: {
-              end: chatHistoryIndex,
-              limit: limit
-            }
-          }
-        );
-
-        setChatHistoryIndex(response.data.index);
-
-        if (response.data.messages.length > 0) {
-          const historyMessages = response.data.messages.map(msg => ({
-            type: msg.role,
-            text: msg.content,
-            created_at: msg.created_at,
-            options: msg.options
-          }));
-          setMessages(historyMessages);
-        }
-
-        // 현재 높이에서 기존 높이 뺀 값을 현재 스크롤 위치로 설정
-        setCurrentScrollPosition(chatContainerRef.current.scrollHeight - currentScrollPosition);
-      } else {
-        handleGuestLogin();
-        return;
-      }
-
-    } catch (error) {
-      console.error("Error fetching chat history:", error);
-    }
-  };
   const selectedCardRef = useRef(null);
 
   // 음성 인식 초기화
@@ -322,7 +267,7 @@ const Main = () => {
             user_message: trimmedText,
             user_profile: userInfo,
             session_id: sessionId 
-        }, {withCredentials: true});
+        });
 
         clearInterval(timer);  // 타이머 정지
 
@@ -464,36 +409,38 @@ const Main = () => {
     }
   };
 
-  // // 스크롤 관련 useEffect 통합
-  // useEffect(() => {
-  //   const chatContainer = chatContainerRef.current;
-  //   if (chatContainer) {
-  //     setIsAutoScrolling(true);
-  //     setShowScrollButton(false);
-      
-  //     chatContainer.scrollTo({
-  //       top: chatContainer.scrollHeight,
-  //       behavior: 'smooth'
-  //     });
+  // 훈련정보 관련 상태 추가
+  const [selectedTraining, setSelectedTraining] = useState(null);
+  
+  // 훈련과정 클릭 핸들러 추가
+  const handleTrainingClick = (training) => {
+    setSelectedTraining(prev => prev?.id === training.id ? null : training);
+    if (selectedCardRef.current) {
+      selectedCardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
 
-  //     // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
-  //     setTimeout(() => {
-  //       setIsAutoScrolling(false);
-  //     }, 500);
-  //   }
-  // }, [messages]);
-
-  // 컴포넌트 마운트 시 채팅 기록을 한 번만 가져옵니다.
+  // 스크롤 관련 useEffect 통합
   useEffect(() => {
-    const fetchHistory = async () => {
-      if (!historyFetchedRef.current) {
-        await fetchChatHistory();
-        historyFetchedRef.current = true;
-        scrollToBottom();
-      }
-    };
-    fetchHistory();
-  }, []);
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      setIsAutoScrolling(true);
+      setShowScrollButton(false);
+      
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+
+      // 스크롤 애니메이션이 끝난 후 auto scrolling 상태 해제
+      setTimeout(() => {
+        setIsAutoScrolling(false);
+      }, 500);
+    }
+  }, [messages]);
 
 
   return (
@@ -571,6 +518,19 @@ const Main = () => {
                                   onClick={handleJobClick}
                                   isSelected={selectedJob && selectedJob.id === job.id}
                                   cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          {message.trainingCourses && message.trainingCourses.length > 0 && (
+                            <div className={styles.trainingList}>
+                              {message.trainingCourses.map(course => (
+                                <TrainingCard
+                                  key={course.id}
+                                  training={course}
+                                  onClick={handleTrainingClick}
+                                  isSelected={selectedTraining && selectedTraining.id === course.id}
+                                  cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
                                 />
                               ))}
                             </div>

@@ -196,7 +196,7 @@
     }
 
     &:focus {
-      border-color: $color-primary;
+      border-color: $primary-color;
       outline: none;
     }
   }
@@ -229,13 +229,13 @@
     }
 
     &:hover:not(:disabled) {
-      color: $color-primary;
-      background-color: rgba($color-primary, 0.1);
+      color: $primary-color;
+      background-color: rgba($primary-color, 0.1);
     }
 
     &.recording {
       color: #fff;
-      background-color: $color-primary;
+      background-color: $primary-color;
       animation: pulse 1.5s infinite;
     }
 
@@ -259,7 +259,7 @@
 
   button {
     padding: 0 1.25rem;
-    background: $color-primary;
+    background: $primary-color;
     color: $color-text;
     border: none;
     border-radius: 8px;
@@ -267,7 +267,7 @@
     min-width: 64px;
 
     &:hover {
-      background: $color-primary-hover;
+      background: $primary-hover-color;
       cursor: pointer;
 
     }
@@ -358,7 +358,7 @@
 
     &:hover {
 
-      color: $color-primary;
+      color: $primary-color;
 
       cursor: pointer;
     }
@@ -556,7 +556,7 @@
   transition: all 0.2s ease;
 
   &.selected {
-    border-color: $color-primary;
+    border-color: $primary-color;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
@@ -619,17 +619,17 @@
 
   &__button {
     padding: 8px 20px;
-    border: 1px solid $color-primary;
+    border: 1px solid $primary-color;
     border-radius: 6px;
-    background: $color-primary;
-    color: white;
+    background: $primary-color;
+    color: $white-color;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-      background: color.adjust($color-primary, $lightness: -5%);
+      background: color.adjust($primary-color, $lightness: -5%);
       transform: translateY(-1px);
     }
   }
@@ -749,15 +749,15 @@
 
   &__button {
     padding: 6px 12px;
-    border: 1px solid $color-primary;
+    border: 1px solid $primary-color;
     border-radius: 6px;
     background: #fff;
-    color: $color-primary;
+    color: $primary-color;
     font-size: 14px;
     cursor: pointer;
 
     &:hover {
-      background: $color-primary;
+      background: $primary-color;
       color: #fff;
     }
   }
@@ -800,9 +800,9 @@
     width: 100%;
     height: 2px;
     background: linear-gradient(90deg, 
-        $color-primary 0%, 
-        color.adjust($color-primary, $lightness: 20%) 50%, 
-        $color-primary 100%
+        $primary-color 0%, 
+        color.adjust($primary-color, $lightness: 20%) 50%, 
+        $primary-color 100%
     );
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
@@ -813,5 +813,109 @@
 @keyframes loading {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+/* 훈련과정 리스트 */
+.trainingList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+/* 훈련과정 카드 */
+.trainingCard {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: 16px;
+  border: 1px solid $color-border;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.selected {
+    border-color: $color-primary;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__institute {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $color-primary;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &__location {
+    color: $color-text-secondary;
+    font-size: 14px;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $color-text;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $color-text-secondary;
+    font-size: 14px;
+
+    .icon {
+      color: $color-text-secondary;
+    }
+  }
+
+  &__description {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid $color-border;
+    
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: $color-text;
+      margin-bottom: 16px;
+      padding: 0 4px;
+
+      &[data-label]::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 4px;
+        color: $color-text-secondary;
+        font-weight: 500;
+        width: 70px;
+      }
+    }
+  }
 }
 
