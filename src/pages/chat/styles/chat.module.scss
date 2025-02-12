@@ -140,6 +140,12 @@ body {
             animation: rotate 3s linear infinite;
           }
         }
+
+        &.loading {
+          .avatar {
+            animation: rotate 3s linear infinite;
+          }
+        }
       }
 
       &.userMessage {
