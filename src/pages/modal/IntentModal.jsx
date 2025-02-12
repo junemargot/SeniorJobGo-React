@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './styles/IntentModal.module.scss';
 import axios from 'axios';
-
-const API_BASE_URL = "http://localhost:8000/api/v1";
+import { API_BASE_URL } from '@/config';
 
 const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'

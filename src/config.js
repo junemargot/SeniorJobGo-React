@@ -9,3 +9,8 @@ if (!API_KEY) {
 }
 
 export const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+// 기타 환경변수들도 여기에서 관리할 수 있습니다.
+export const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;

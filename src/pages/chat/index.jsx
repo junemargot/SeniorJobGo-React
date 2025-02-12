@@ -5,9 +5,10 @@ import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
 import axios from 'axios';
 import IntentModal from '@pages/modal/IntentModal';
+import { API_BASE_URL } from '@/config';
 
 // API 기본 URL 설정
-const API_BASE_URL = "http://localhost:8000/api/v1";
+// const API_BASE_URL = "http://localhost:8000/api/v1";
 
 // JobCard 컴포넌트 추가
 const JobCard = ({ job, onClick, isSelected, cardRef }) => (
