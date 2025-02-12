@@ -23,52 +23,38 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       recognition.interimResults = true;
       recognition.lang = 'ko-KR';
 
-      let silenceTimer = null;
-      const silenceDelay = 5000;  // 5초 동안 말이 없으면 종료
-
       recognition.onresult = async (event) => {
         let interimTranscript = '';
-        let currentFinalTranscript = finalTranscript;  // 현재 state 값 사용
+        let finalTranscript = '';
         
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // 이전 텍스트를 유지하면서 새로운 결과 추가
+        for (let i = 0; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            currentFinalTranscript += transcript;
-            setFinalTranscript(currentFinalTranscript);  // state 업데이트
+            finalTranscript += transcript + ' ';
           } else {
             interimTranscript += transcript;
           }
         }
 
-        // 중간 결과 표시
-        setTranscript(currentFinalTranscript + interimTranscript);
-
-        // 말하는 중에는 타이머 초기화
-        if (silenceTimer) clearTimeout(silenceTimer);
-        
-        // 새로운 타이머 설정
-        silenceTimer = setTimeout(async () => {
-          if (currentFinalTranscript) {
-            setIsListening(false);
-            recognition.stop();
-            await processTranscript(currentFinalTranscript);
-          }
-        }, silenceDelay);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('음성 인식 오류:', event.error);
-        setIsListening(false);
+        // 최종 결과와 중간 결과를 합쳐서 표시
+        setTranscript(prevTranscript => {
+          // 이전 최종 결과에 새로운 결과 추가
+          const newTranscript = finalTranscript + interimTranscript;
+          return newTranscript;
+        });
       };
 
       recognition.onend = () => {
-        if (silenceTimer) clearTimeout(silenceTimer);
-        setIsListening(false);
+        // 녹음 중이면 자동으로 다시 시작
+        if (isListening) {
+          recognition.start();
+        }
       };
 
       setRecognition(recognition);
     }
-  }, [finalTranscript]);  // finalTranscript를 의존성 배열에 추가
+  }, [isListening]); // isListening을 의존성 배열에 추가
 
   // initialMode가 변경될 때 모드 설정 및 음성 녹음 시작
   useEffect(() => {
@@ -241,9 +227,9 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
               <div className={styles.recordingSection}>
                 <div 
                   className={`${styles.recordingIndicator} ${isListening ? styles.active : ''}`}
-                  onClick={isListening ? stopListening : startListening}
+                  onClick={isListening ? null : startListening}
                 >
-                  {isListening ? '녹음 중지' : '녹음 시작'}
+                  {isListening ? '녹음 중...' : '녹음 시작'}
                 </div>
                 {transcript && (
                   <div className={styles.transcript}>
@@ -253,6 +239,17 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                       <div className={styles.processing}>
                         텍스트 분석 중...
                       </div>
+                    )}
+                    {isListening && (
+                      <button 
+                        className={styles.confirmRecording}
+                        onClick={() => {
+                          stopListening();
+                          processTranscript(transcript);
+                        }}
+                      >
+                        녹음 완료
+                      </button>
                     )}
                   </div>
                 )}

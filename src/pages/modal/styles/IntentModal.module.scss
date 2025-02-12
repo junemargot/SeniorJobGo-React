@@ -191,6 +191,28 @@
     line-height: 1.5;
     margin-bottom: 1rem;
   }
+
+  .confirmRecording {
+    width: 100%;
+    padding: 12px;
+    margin-top: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #218838;
+    }
+
+    @media (max-width: 768px) {
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+  }
 }
 
 .processing {
@@ -322,28 +344,25 @@
 
   &.loading {
     cursor: wait;
-    background-color: #1e7e34;  // 더 어두운 배경색
+    background-color: #1e7e34;
     
-    // 금속광택 그라디에이션 효과
     &::before {
       content: '';
       position: absolute;
       top: 0;
       left: -100%;
-      width: 200%;
+      width: 100%;
       height: 100%;
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(255, 255, 255, 0) 10%,
-        rgba(255, 255, 255, 0.7) 20%,
-        rgba(255, 255, 255, 0.9) 25%,
-        rgba(255, 255, 255, 0.7) 30%,
-        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0.1) 20%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.1) 80%,
         transparent 100%
       );
-      animation: metallicSlide 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      transform: skewX(-20deg);  // 비스듬한 효과
+      animation: metallicSlide 2s linear infinite;
+      transform: skewX(-10deg);
     }
   }
 
@@ -374,10 +393,10 @@
 
 @keyframes metallicSlide {
   0% {
-    transform: translateX(-100%) skewX(-20deg);
+    transform: translateX(0%) skewX(-10deg);
   }
   100% {
-    transform: translateX(50%) skewX(-20deg);
+    transform: translateX(1000%) skewX(-10deg);
   }
 }
 
