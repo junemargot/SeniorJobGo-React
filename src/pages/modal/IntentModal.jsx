@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './styles/IntentModal.module.scss';
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
@@ -7,25 +7,53 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');  // finalTranscript를 state로 관리
   const [summary, setSummary] = useState(null);
   const [recognition, setRecognition] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);  // 검색 중 상태
+  const [searchTime, setSearchTime] = useState(0);  // 검색 시간 (초)
+  const searchTimerRef = useRef(null);  // 타이머 참조
 
   // 음성 인식 초기화
   useEffect(() => {
     if ('webkitSpeechRecognition' in window) {
       const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.lang = 'ko-KR';
 
+      let silenceTimer = null;
+      const silenceDelay = 5000;  // 5초 동안 말이 없으면 종료
+
       recognition.onresult = async (event) => {
-        const transcript = event.results[0][0].transcript;
-        setTranscript(transcript);
-        setIsListening(false);
+        let interimTranscript = '';
+        let currentFinalTranscript = finalTranscript;  // 현재 state 값 사용
         
-        // 음성 인식이 완료되면 자동으로 요약 처리 시작
-        await processTranscript(transcript);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            currentFinalTranscript += transcript;
+            setFinalTranscript(currentFinalTranscript);  // state 업데이트
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        // 중간 결과 표시
+        setTranscript(currentFinalTranscript + interimTranscript);
+
+        // 말하는 중에는 타이머 초기화
+        if (silenceTimer) clearTimeout(silenceTimer);
+        
+        // 새로운 타이머 설정
+        silenceTimer = setTimeout(async () => {
+          if (currentFinalTranscript) {
+            setIsListening(false);
+            recognition.stop();
+            await processTranscript(currentFinalTranscript);
+          }
+        }, silenceDelay);
       };
 
       recognition.onerror = (event) => {
@@ -34,12 +62,13 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       };
 
       recognition.onend = () => {
+        if (silenceTimer) clearTimeout(silenceTimer);
         setIsListening(false);
       };
 
       setRecognition(recognition);
     }
-  }, []);
+  }, [finalTranscript]);  // finalTranscript를 의존성 배열에 추가
 
   // initialMode가 변경될 때 모드 설정 및 음성 녹음 시작
   useEffect(() => {
@@ -90,9 +119,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   // 음성 입력 시작
   const startListening = () => {
     if (recognition) {
+      setFinalTranscript('');  // finalTranscript 초기화
+      setTranscript('');  // transcript 초기화
       recognition.start();
       setIsListening(true);
-      setTranscript('');
       setSummary(null);
     } else {
       alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
@@ -111,7 +141,14 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const handleConfirm = async () => {
     if (summary) {
       try {
-        // 3. 사용자가 확인한 요약 정보로 실제 검색 수행
+        setIsSearching(true);  // 검색 시작
+        setSearchTime(0);  // 타이머 초기화
+
+        // 타이머 시작
+        searchTimerRef.current = setInterval(() => {
+          setSearchTime(prev => prev + 1);
+        }, 1000);
+
         const searchResponse = await axios.post(`${API_BASE_URL}/chat/`, {
           user_message: summary.originalText,
           user_profile: {
@@ -123,23 +160,34 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           withCredentials: true
         });
 
-        // 4. 검색 결과를 부모 컴포넌트로 전달
+        // 모든 음성 입력 관련 상태 초기화
+        setFinalTranscript('');
+        setTranscript('');
+        setSummary(null);
+
         onSubmit({
           ...searchResponse.data,
-          mode: 'voice',  // 음성 입력 모드 정보 추가
-          originalText: summary.originalText  // 원본 텍스트 추가
+          mode: 'voice',
+          originalText: summary.originalText
         });
-        onClose();  // 모달 닫기
+        onClose();
         
       } catch (error) {
         console.error('검색 중 오류:', error);
         alert('검색 중 오류가 발생했습니다.');
+      } finally {
+        setIsSearching(false);  // 검색 종료
+        if (searchTimerRef.current) {
+          clearInterval(searchTimerRef.current);  // 타이머 정지
+          searchTimerRef.current = null;
+        }
       }
     }
   };
 
   // 요약 내용 수정 요청
   const handleRetry = () => {
+    setFinalTranscript('');  // finalTranscript 초기화
     setTranscript('');
     setSummary(null);
     startListening();
@@ -150,6 +198,15 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     onClose();  // 모달 닫기
   };
 
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        clearInterval(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   return (
@@ -158,19 +215,21 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         {!mode ? (
           // 초기 선택 화면
           <div className={styles.modeSelection}>
-            <h2>원하시는 입력 방식을 선택해주세요</h2>
+            <h2>입력 방식을 선택해주세요</h2>
             <div className={styles.modeButtons}>
               <button 
                 className={styles.modeButton}
                 onClick={() => setMode('voice')}
               >
-                음성으로 시작하기
+                <span className="material-symbols-rounded">mic</span>
+                음성
               </button>
               <button 
                 className={styles.modeButton}
                 onClick={handleTextModeSelect}
               >
-                텍스트로 시작하기
+                <span className="material-symbols-rounded">chat</span>
+                문자
               </button>
             </div>
           </div>
@@ -184,7 +243,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                   className={`${styles.recordingIndicator} ${isListening ? styles.active : ''}`}
                   onClick={isListening ? stopListening : startListening}
                 >
-                  {isListening ? '클릭하여 녹음 중지' : '클릭하여 녹음 시작'}
+                  {isListening ? '녹음 중지' : '녹음 시작'}
                 </div>
                 {transcript && (
                   <div className={styles.transcript}>
@@ -219,13 +278,20 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                 <div className={styles.summaryActions}>
                   <button 
                     onClick={handleConfirm}
-                    className={styles.confirmButton}
+                    className={`${styles.confirmButton} ${isSearching ? styles.loading : ''}`}
+                    disabled={isSearching}
                   >
-                    확인하고 검색
+                    <div className={styles.loadingText}>
+                      {isSearching ? '검색 중...' : '확인하고 검색'}
+                      {isSearching && (
+                        <span className={styles.loadingTimer}>{searchTime}s</span>
+                      )}
+                    </div>
                   </button>
                   <button 
                     onClick={handleRetry}
                     className={styles.retryButton}
+                    disabled={isSearching}
                   >
                     다시 입력
                   </button>
