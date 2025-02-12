@@ -227,6 +227,11 @@ const Chat = () => {
   const [startTime, setStartTime] = useState(null);
   const [processingTime, setProcessingTime] = useState(0);
   
+  // 스크롤 관련 상태 추가
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  
   const chatsContainerRef = useRef(null);
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -267,15 +272,37 @@ const Chat = () => {
     { text: "이력서 관리", icon: "description", id: 4 },
   ];
 
-  // 채팅 컨테이너 스크롤 하단으로 이동
+  // 스크롤 이벤트 핸들러 추가
+  const handleScroll = () => {
+    const element = chatsContainerRef.current;
+    if (element && !isAutoScrolling) {
+      // 사용자가 스크롤하면 감지
+      if(!isUserScrolling) {
+        setIsUserScrolling(true);
+      }
+
+      // 스크롤이 위로 올라갔을 때 버튼 표시
+      const isScrolledUp = element.scrollTop < element.scrollHeight - element.clientHeight - 100;
+      setShowScrollButton(isScrolledUp);
+    }
+  };
+
+  // 스크롤 다운 함수 수정
   const scrollToBottom = () => {
     if(chatsContainerRef.current) {
-      const { current } = chatsContainerRef;
+      setIsAutoScrolling(true);
+      setIsUserScrolling(false);
+      setShowScrollButton(false);
 
-      // 애니메이션 프레임을 사용하여 DOM 업데이트 후 스크롤
-      requestAnimationFrame(() => {
-        current.scrollTop = current.scrollHeight;
+      chatsContainerRef.current.scrollTo({
+        top: chatsContainerRef.current.scrollHeight,
+        behavior: 'smooth'
       });
+
+      // 스크롤 애니메이션 완료 후 auto scrolling 상태 해제
+      setTimeout(() => {
+        setIsAutoScrolling(false);
+      }, 500);
     }
   };
 
@@ -625,7 +652,11 @@ const Chat = () => {
           initialMode={initialMode}
         />
         
-        <div className={styles.container} ref={chatsContainerRef}>
+        <div 
+          className={styles.container} 
+          ref={chatsContainerRef}
+          onScroll={handleScroll}  // 스크롤 이벤트 핸들러 추가
+        >
           {chatHistory.length === 0 && (
             <>
             {/* 앱 헤더 */}
@@ -770,6 +801,17 @@ const Chat = () => {
               AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
             </p>
           </div>
+
+          {/* 최근 메시지로 이동 버튼 추가 */}
+          {showScrollButton && (
+            <button 
+              className={`${styles.scrollButton} ${styles.visible}`} 
+              onClick={scrollToBottom}
+            >
+              <span className="material-symbols-rounded">arrow_downward</span>
+              최근 메시지 보기
+            </button>
+          )}
         </div>
       </main>
     </div>

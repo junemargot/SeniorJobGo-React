@@ -850,3 +850,42 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     animation: pulse 1.5s infinite;
   }
 }
+
+/* 최근 메시지로 이동 버튼 스타일 */
+.scrollButton {
+  position: fixed;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, .5);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility .3s ease;
+  cursor: pointer;
+  z-index: 100;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  span {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, .8);
+  }
+
+  @media (max-width: 768px) {
+    bottom: 160px;
+  }
+}
