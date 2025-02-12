@@ -42,8 +42,13 @@ const SignupWithId = () => {
       method: 'POST',
       body: JSON.stringify(formData),
     });
-    const data = await response.json();
-    console.log(data);
+
+    if (response.ok) {
+      navigate('/chat');
+    } else {
+      const data = await response.json();
+      alert(data.detail);
+    }
   };
 
   function idCheckMessage(message, color) {
