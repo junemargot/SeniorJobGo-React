@@ -391,17 +391,17 @@ const Chat = () => {
       };
 
       setChatHistory(prev => {
-        // 만약 이전에 아무 메시지도 없으면, 그냥 로드한 메시지를 그대로 채팅 내역으로 설정
+        // 이전 채팅 내역이 없으면, 불러온 메시지 뭉치를 그대로 사용
         if (prev.length === 0) return [...loadingMessages];
         
         // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
-        const firstPrev = prev[0];
-        // 새로 불러온 메시지 배열 내에 기존 채팅 내역의 첫 메시지가 있다면 중복되는 부분이 있음
+        const oldestMessage = prev[0];
+        // loadingMessages에서, 기존 채팅 내역의 첫 메시지와 동일한 메시지가 있는지 찾습니다.
         const duplicateIndex = loadingMessages.findIndex(
-          msg => msg.text === firstPrev.text && msg.role === firstPrev.role
+          msg => msg.text === oldestMessage.text && msg.role === oldestMessage.role
         );
-        // 만약 중복되는 메시지가 발견되면, 그 앞쪽(즉, 중복되지 않는 부분)만 취함
-        if (duplicateIndex > 0) {
+        // 중복이 발견되면, 중복되지 않는 부분만 가져옵니다.
+        if (duplicateIndex !== -1) {
           return [...loadingMessages.slice(0, duplicateIndex), ...prev];
         }
         return [...loadingMessages, ...prev];
@@ -576,17 +576,17 @@ const Chat = () => {
       }
 
       setChatHistory(prev => {
-        // 만약 이전에 아무 메시지도 없으면, 그냥 로드한 메시지를 그대로 채팅 내역으로 설정
+        // 이전 채팅 내역이 없으면, 불러온 메시지 뭉치를 그대로 사용
         if (prev.length === 0) return [...loadingMessages];
         
         // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
-        const firstPrev = prev[0];
-        // 새로 불러온 메시지 배열 내에 기존 채팅 내역의 첫 메시지가 있다면 중복되는 부분이 있음
+        const oldestMessage = prev[0];
+        // loadingMessages에서, 기존 채팅 내역의 첫 메시지와 동일한 메시지가 있는지 찾습니다.
         const duplicateIndex = loadingMessages.findIndex(
-          msg => msg.text === firstPrev.text && msg.role === firstPrev.role
+          msg => msg.text === oldestMessage.text && msg.role === oldestMessage.role
         );
-        // 만약 중복되는 메시지가 발견되면, 그 앞쪽(즉, 중복되지 않는 부분)만 취함
-        if (duplicateIndex > 0) {
+        // 중복이 발견되면, 중복되지 않는 부분만 가져옵니다.
+        if (duplicateIndex !== -1) {
           return [...loadingMessages.slice(0, duplicateIndex), ...prev];
         }
         return [...loadingMessages, ...prev];
