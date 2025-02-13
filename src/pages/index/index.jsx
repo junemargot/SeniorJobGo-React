@@ -55,6 +55,14 @@ const Index = () => {
     }
   }
 
+  // 쿠키에 로그인 정보가 있다면 채팅 페이지로 이동
+  useEffect(() => {
+    const cookie = document.cookie;
+    if (cookie.includes("sjgid")) {
+      navigate('/chat');
+    }
+  }, []);
+
   return (
     <div className={styles.page}>
       <Header />
