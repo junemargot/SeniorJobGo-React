@@ -136,6 +136,7 @@ body {
           border-radius: 50%;
           background: $background-color;
           border: 1px solid $background-color;
+          user-select: none;
         }
         
         &.loading {

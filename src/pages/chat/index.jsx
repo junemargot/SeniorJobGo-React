@@ -237,6 +237,14 @@ const Chat = () => {
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
   const typingIntervalRef = useRef(null);
+  // 자동 스크롤(채팅 내역 변경 시) 방지를 위한 플래그 ref
+  const preventAutoScrollRef = useRef(false);
+  // 채팅 기록 fetch 중 중복 호출 방지를 위한 ref
+  const isFetchingHistoryRef = useRef(false);
+
+  // 채팅 기록 불러오기 관련 상태 추가
+  const chatEndIndex = useRef(-1);
+  const limit = 10;
 
   // 채용 정보 관련 상태 추가
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
@@ -290,30 +298,35 @@ const Chat = () => {
 
   // 스크롤 다운 함수 수정
   const scrollToBottom = () => {
-    if(chatsContainerRef.current) {
+    const container = chatsContainerRef.current;
+    if (container) {
+      console.log('scrollToBottom called: current scrollHeight =', container.scrollHeight);
       setIsAutoScrolling(true);
       setIsUserScrolling(false);
       setShowScrollButton(false);
 
-      chatsContainerRef.current.scrollTo({
-        top: chatsContainerRef.current.scrollHeight,
+      container.scrollTo({
+        top: container.scrollHeight,
         behavior: 'smooth'
       });
-
-      // 스크롤 애니메이션 완료 후 auto scrolling 상태 해제
+      // 애니메이션 완료 후 상태 해제 (지연 시간을 300ms 등으로 조정해서 테스트)
       setTimeout(() => {
         setIsAutoScrolling(false);
-      }, 500);
+      }, 300);
     }
   };
 
-  // 채팅 내역 변경 시 스크롤 하단 이동
+  // 채팅 내역 변경 시 자동 스크롤 (새 메시지 추가인 경우)
   useEffect(() => {
-    // 더 안정적이니 스크롤 로직 추가
+    // 채팅 내역 변경 시 자동 스크롤 (새 메시지 추가인 경우)
+    if (preventAutoScrollRef.current) {
+      // 이 경우 자동 스크롤은 이미 fetch 등 별도 작업 후에 실행되고 있으므로 건너뜁니다.
+      preventAutoScrollRef.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       scrollToBottom();
     }, 0);
-
     return () => clearTimeout(timer);
   }, [chatHistory]);
 
@@ -376,7 +389,22 @@ const Chat = () => {
         trainingCourses: trainingCourses || []
       };
 
-      setChatHistory(prev => [...prev, newBotMessage]);
+      setChatHistory(prev => {
+        // 만약 이전에 아무 메시지도 없으면, 그냥 로드한 메시지를 그대로 채팅 내역으로 설정
+        if (prev.length === 0) return [...loadingMessages];
+        
+        // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
+        const firstPrev = prev[0];
+        // 새로 불러온 메시지 배열 내에 기존 채팅 내역의 첫 메시지가 있다면 중복되는 부분이 있음
+        const duplicateIndex = loadingMessages.findIndex(
+          msg => msg.text === firstPrev.text && msg.role === firstPrev.role
+        );
+        // 만약 중복되는 메시지가 발견되면, 그 앞쪽(즉, 중복되지 않는 부분)만 취함
+        if (duplicateIndex > 0) {
+          return [...loadingMessages.slice(0, duplicateIndex), ...prev];
+        }
+        return [...loadingMessages, ...prev];
+      });
 
       // 프로필 업데이트 (있는 경우)
       if (response.data.user_profile) {
@@ -480,63 +508,134 @@ const Chat = () => {
     setUserMessage("");
   };
 
-  // 채팅 내역 전부 불러오기
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      try {
-        const id = document.cookie.split('; ')
-          .find(row => row.startsWith('sjgid='))
-          .split('=')[1];
-        const response = await axios.get(`${API_BASE_URL}/chat/get/all/${id}`, { withCredentials: true });
-        // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
-        const messages = response.data.messages ? response.data.messages : response.data;
-        // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
-        for (const msg of messages) {
-          const role = msg.role === "user" ? "user" : "model";
-          let newMsg = { role, text: "" };
-         
-          // 문자열인 경우
-          if (typeof msg.content === "string") {
-            newMsg.text = msg.content;
-          } 
-          // 객체인 경우
-          else if (typeof msg.content === "object" && msg.content !== null) {
-            // 메시지 텍스트 설정
-            if (msg.content.message) {
-              newMsg.text = msg.content.message;
-            } else if (msg.content.text) {
-              newMsg.text = msg.content.text;
-            }
-            
-            // 채용정보 추가
-            if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
-              newMsg.jobPostings = msg.content.jobPostings;
-            }
-            
-            // 훈련과정 정보 추가
-            if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
-              newMsg.trainingCourses = msg.content.trainingCourses;
-            }
+  // 채팅 기록 불러오기
+  const fetchChatHistory = async () => {
+    // chatEndIndex가 0이면 더 이상 불러올 기록이 없다고 판단하여 종료
+    if (chatEndIndex.current === 0) {
+      return;
+    }
 
-            // 메시지 타입 추가
-            if (msg.content.type) {
-              newMsg.type = msg.content.type;
-            }
+    try {
+      const id = document.cookie.split('; ')
+        .find(row => row.startsWith('sjgid='))
+        .split('=')[1];
+      const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
+        params: {
+          end: chatEndIndex.current,
+          limit: limit
+        }
+      }, { withCredentials: true });
+      chatEndIndex.current = response.data.index;
 
-            // 음성 입력 모드 추가
-            if (msg.content.mode === 'voice') {
-              setIsVoiceMode(true);
-            }
+      // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
+      const messages = response.data.messages ? response.data.messages : response.data;
+      // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
+
+      const loadingMessages = [];
+      for (const msg of messages) {
+        const role = msg.role === "user" ? "user" : "model";
+        let newMsg = { role, text: "" };
+       
+        // 문자열인 경우
+        if (typeof msg.content === "string") {
+          newMsg.text = msg.content;
+        } 
+        // 객체인 경우
+        else if (typeof msg.content === "object" && msg.content !== null) {
+          // 메시지 텍스트 설정
+          if (msg.content.message) {
+            newMsg.text = msg.content.message;
+          } else if (msg.content.text) {
+            newMsg.text = msg.content.text;
           }
           
-          // 채팅 내역에 추가
-          setChatHistory(prev => [...prev, newMsg]);
+          // 채용정보 추가
+          if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
+            newMsg.jobPostings = msg.content.jobPostings;
+          }
+          
+          // 훈련과정 정보 추가
+          if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
+            newMsg.trainingCourses = msg.content.trainingCourses;
+          }
+
+          // 메시지 타입 추가
+          if (msg.content.type) {
+            newMsg.type = msg.content.type;
+          }
+
+          // 음성 입력 모드 추가
+          if (msg.content.mode === 'voice') {
+            setIsVoiceMode(true);
+          }
         }
-      } catch (error) {
-        console.error('채팅 내역 불러오기 오류:', error);
+        
+        // 채팅 내역에 추가
+        loadingMessages.push(newMsg);
+      }
+
+      setChatHistory(prev => {
+        // 만약 이전에 아무 메시지도 없으면, 그냥 로드한 메시지를 그대로 채팅 내역으로 설정
+        if (prev.length === 0) return [...loadingMessages];
+        
+        // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
+        const firstPrev = prev[0];
+        // 새로 불러온 메시지 배열 내에 기존 채팅 내역의 첫 메시지가 있다면 중복되는 부분이 있음
+        const duplicateIndex = loadingMessages.findIndex(
+          msg => msg.text === firstPrev.text && msg.role === firstPrev.role
+        );
+        // 만약 중복되는 메시지가 발견되면, 그 앞쪽(즉, 중복되지 않는 부분)만 취함
+        if (duplicateIndex > 0) {
+          return [...loadingMessages.slice(0, duplicateIndex), ...prev];
+        }
+        return [...loadingMessages, ...prev];
+      });
+    } catch (error) {
+      console.error('채팅 내역 불러오기 오류:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChatHistory();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = async () => {
+      const container = chatsContainerRef.current;
+      // 만약 컨테이너가 존재하고, scrollTop이 10 이하이면 (즉, 아주 위쪽이면) 실행
+      if (container && container.scrollTop <= 10) {
+        // 방지: 이미 fetch 중이면 재호출하지 않음
+        if (isFetchingHistoryRef.current) return;
+        isFetchingHistoryRef.current = true;
+        
+        // Prevent auto-scroll effect from 실행되지 않도록 플래그 설정
+        preventAutoScrollRef.current = true;
+        
+        // 불러오기 전의 전체 scrollHeight 저장
+        const prevScrollHeight = container.scrollHeight;
+        // 채팅 기록 불러오기 (새 메시지가 prepend될 경우)
+        await fetchChatHistory();
+        
+        // DOM 업데이트가 완료되는 타이밍에 requestAnimationFrame을 사용
+        requestAnimationFrame(() => {
+          const newScrollHeight = container.scrollHeight;
+          const scrollDifference = newScrollHeight - prevScrollHeight;
+          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
+          container.scrollTop = scrollDifference;
+          console.log('스크롤 위치 보정:', scrollDifference);
+          isFetchingHistoryRef.current = false;
+        });
       }
     };
-    fetchChatHistory();
+    const container = chatsContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, []);
 
   const handleInputChange = (e) => {
