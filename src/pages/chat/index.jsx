@@ -4,9 +4,11 @@ import styles from './styles/chat.module.scss';
 import Header from '@components/Header/Header';
 import Avatar from '@assets/images/icon-robot.svg'
 import axios from 'axios';
+import IntentModal from '@pages/modal/IntentModal';
+import { API_BASE_URL } from '@/config';
 
 // API 기본 URL 설정
-const API_BASE_URL = "http://localhost:8000/api/v1";
+// const API_BASE_URL = "http://localhost:8000/api/v1";
 
 // JobCard 컴포넌트 추가
 const JobCard = ({ job, onClick, isSelected, cardRef }) => (
@@ -14,6 +16,7 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
     ref={cardRef}
     className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
     onClick={() => onClick(job)}
+    data-job-id={job.id}
   >
     <div className={styles.jobCard__header}>
       <div className={styles.jobCard__location}>
@@ -59,6 +62,7 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
     ref={cardRef}
     className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
     onClick={() => onClick(training)}
+    data-training-id={training.id}
   >
     <div className={styles.trainingCard__header}>
       <div className={styles.trainingCard__institute}>
@@ -207,10 +211,10 @@ const TrainingInfoForm = ({ onSubmit, onCancel, initialData }) => (
   </div>
 );
 
-// getMessageStyle 함수 추가
+// getMessageStyle 함수 수정
 const getMessageStyle = (msg) => {
   const baseStyle = styles.message;
-  if (msg.role === "model") {
+  if (msg.role === "model" || msg.role === "bot") {
     return `${baseStyle} ${styles.botMessage} ${msg.loading ? styles.loading : ""}`;
   }
   return `${baseStyle} ${styles.userMessage}`;
@@ -224,15 +228,15 @@ const Chat = () => {
   const [startTime, setStartTime] = useState(null);
   const [processingTime, setProcessingTime] = useState(0);
   
+  // 스크롤 관련 상태 추가
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  
   const chatsContainerRef = useRef(null);
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
   const typingIntervalRef = useRef(null);
-
-  // 녹음 관련 상태 및 ref
-  const [recording, setRecording] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
 
   // 채용 정보 관련 상태 추가
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
@@ -269,15 +273,37 @@ const Chat = () => {
     { text: "이력서 관리", icon: "description", id: 4 },
   ];
 
-  // 채팅 컨테이너 스크롤 하단으로 이동
+  // 스크롤 이벤트 핸들러 추가
+  const handleScroll = () => {
+    const element = chatsContainerRef.current;
+    if (element && !isAutoScrolling) {
+      // 사용자가 스크롤하면 감지
+      if(!isUserScrolling) {
+        setIsUserScrolling(true);
+      }
+
+      // 스크롤이 위로 올라갔을 때 버튼 표시
+      const isScrolledUp = element.scrollTop < element.scrollHeight - element.clientHeight - 100;
+      setShowScrollButton(isScrolledUp);
+    }
+  };
+
+  // 스크롤 다운 함수 수정
   const scrollToBottom = () => {
     if(chatsContainerRef.current) {
-      const { current } = chatsContainerRef;
+      setIsAutoScrolling(true);
+      setIsUserScrolling(false);
+      setShowScrollButton(false);
 
-      // 애니메이션 프레임을 사용하여 DOM 업데이트 후 스크롤
-      requestAnimationFrame(() => {
-        current.scrollTop = current.scrollHeight;
+      chatsContainerRef.current.scrollTo({
+        top: chatsContainerRef.current.scrollHeight,
+        behavior: 'smooth'
       });
+
+      // 스크롤 애니메이션 완료 후 auto scrolling 상태 해제
+      setTimeout(() => {
+        setIsAutoScrolling(false);
+      }, 500);
     }
   };
 
@@ -343,19 +369,12 @@ const Chat = () => {
 
       // 봇 응답 추가
       const newBotMessage = {
-        role: "model",
+        role: "bot",
         text: botMessage,
-        type: type
+        type: type,
+        jobPostings: jobPostings || [],
+        trainingCourses: trainingCourses || []
       };
-
-      // 채용정보나 훈련과정 정보가 있으면 추가
-      if (jobPostings && jobPostings.length > 0) {
-        newBotMessage.jobPostings = jobPostings;
-      }
-      if (trainingCourses && trainingCourses.length > 0) {
-        console.log('Adding training courses:', trainingCourses);  // 훈련과정 정보 로깅
-        newBotMessage.trainingCourses = trainingCourses;
-      }
 
       setChatHistory(prev => [...prev, newBotMessage]);
 
@@ -433,13 +452,23 @@ const Chat = () => {
 
   // 채용 공고 클릭 핸들러 추가
   const handleJobClick = (job) => {
-    setSelectedJob(prev => prev?.id === job.id ? null : job);
-    if (selectedCardRef.current) {
-      selectedCardRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    }
+    setSelectedJob(prev => {
+      const newSelected = prev?.id === job.id ? null : job;
+      // 새로 선택된 카드가 있을 때만 스크롤
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-job-id="${job.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100); // 약간의 지연을 주어 상태 업데이트와 DOM 업데이트가 완료된 후 스크롤
+      }
+      return newSelected;
+    });
   };
 
   // 응답 중단 핸들러 추가
@@ -449,68 +478,6 @@ const Chat = () => {
     }
     setIsBotResponding(false);
     setUserMessage("");
-  };
-
-  // 녹음 시작/중지 핸들러
-  const handleRecord = async () => {
-    if (!recording) {
-      try {
-        // Web Speech API 초기화
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
-          return;
-        }
-
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'ko-KR';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-
-        // 음성 인식 결과 처리
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          setUserMessage(transcript);
-          setRecording(false);
-        };
-
-        // 에러 처리
-        recognition.onerror = (event) => {
-          console.error('음성 인식 오류:', event.error);
-          setRecording(false);
-          if (event.error === 'not-allowed') {
-            alert('마이크 접근 권한이 필요합니다.');
-          } else {
-            alert('음성 인식 중 오류가 발생했습니다.');
-          }
-        };
-
-        // 음성 인식 종료 처리
-        recognition.onend = () => {
-          setRecording(false);
-        };
-
-        // 음성 인식 시작
-        recognition.start();
-        setRecording(true);
-
-      } catch (error) {
-        console.error('음성 인식 초기화 오류:', error);
-        alert('음성 인식을 시작할 수 없습니다.');
-        setRecording(false);
-      }
-    } else {
-      // 녹음 중지
-      try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          SpeechRecognition.abort();
-        }
-      } catch (error) {
-        console.error('음성 인식 중지 오류:', error);
-      }
-      setRecording(false);
-    }
   };
 
   // 채팅 내역 전부 불러오기
@@ -527,7 +494,7 @@ const Chat = () => {
         for (const msg of messages) {
           const role = msg.role === "user" ? "user" : "model";
           let newMsg = { role, text: "" };
-          
+         
           // 문자열인 경우
           if (typeof msg.content === "string") {
             newMsg.text = msg.content;
@@ -550,6 +517,16 @@ const Chat = () => {
             if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
               newMsg.trainingCourses = msg.content.trainingCourses;
             }
+
+            // 메시지 타입 추가
+            if (msg.content.type) {
+              newMsg.type = msg.content.type;
+            }
+
+            // 음성 입력 모드 추가
+            if (msg.content.mode === 'voice') {
+              setIsVoiceMode(true);
+            }
           }
           
           // 채팅 내역에 추가
@@ -569,186 +546,276 @@ const Chat = () => {
     }
   };
 
+  const [isModalOpen, setIsModalOpen] = useState(true);  // 모달 상태 추가
+  const [isVoiceMode, setIsVoiceMode] = useState(false);  // 음성 입력 모드 상태 추가
+  const [initialMode, setInitialMode] = useState(null);  // 음성 입력 모드 초기 설정 상태 추가
+
+  // handleModalSubmit 수정
+  const handleModalSubmit = async (response) => {
+    setIsModalOpen(false);
+    setUserMessage("");
+
+    // 음성 입력 모드 설정
+    if (response.mode === 'voice') {
+      setIsVoiceMode(true);
+      setInitialMode('voice');
+    }
+
+    // 음성 입력 모드가 아닌 경우에만 사용자 입력을 채팅 기록에 추가
+    if (!response.mode || response.mode !== 'voice') {
+      const userMessage = {
+        role: "user",
+        text: response.originalText || "음성으로 검색하기",
+      };
+      setChatHistory((prev) => [...prev, userMessage]);
+    }
+
+    // 봇 응답 처리
+    setIsBotResponding(true);
+    try {
+      const botMessage = {
+        role: "model",
+        text: response.message || response.text,
+      };
+
+      if (response.jobPostings && response.jobPostings.length > 0) {
+        botMessage.jobPostings = response.jobPostings;
+      }
+
+      if (response.trainingCourses && response.trainingCourses.length > 0) {
+        botMessage.trainingCourses = response.trainingCourses;
+      }
+
+      if (response.type) {
+        botMessage.type = response.type;
+      }
+
+      setChatHistory((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Error processing bot response:", error);
+    } finally {
+      setIsBotResponding(false);
+    }
+  };
+
+  // 음성 입력 모달 열기 핸들러 수정
+  const handleVoiceInputClick = () => {
+    setIsModalOpen(true);
+    setInitialMode('voice');
+    // 음성 녹음 모드로 바로 시작하도록 수정
+    setTimeout(() => {
+      const voiceButton = document.querySelector(`.${styles.recordingIndicator}`);
+      if (voiceButton) {
+        voiceButton.click();
+      }
+    }, 100);
+  };
+
+  // 모달 닫기 핸들러 수정
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    // 음성 모드가 아닐 때만 isVoiceMode를 false로 설정
+    if (!isVoiceMode) {
+      setInitialMode(null);
+    }
+  };
+
+  // 훈련 공고 클릭 핸들러 추가
+  const handleTrainingClick = (training) => {
+    setSelectedTraining(prev => {
+      const newSelected = prev?.id === training.id ? null : training;
+      // 새로 선택된 카드가 있을 때만 스크롤
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-training-id="${training.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100); // 약간의 지연을 주어 상태 업데이트와 DOM 업데이트가 완료된 후 스크롤
+      }
+      return newSelected;
+    });
+  };
+
   return (
-    <>
-    <Header />
-      <div className={styles.container} ref={chatsContainerRef}>
-        {chatHistory.length === 0 && (
-          <>
-          {/* 앱 헤더 */}
-          <div className={styles.appHeader}>
-            <h1 className={styles.heading}>안녕하세요!</h1>
-            <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
-          </div>
-
-          {/* 추천 문구 */}
-          <ul className={styles.suggestions}>
-            {suggestions.map((item) => (
-              <li
-                key={item.id}
-                className={styles.suggestionsItem}
-                onClick={() => handleSuggestionClick(item)}
-              >
-                <p className={styles.text}>{item.text}</p>
-                <span className={`material-symbols-rounded`}>{item.icon}</span>
-              </li>
-            ))}
-          </ul>
-          </>
-        )}
-
-        {/* 채팅 내역 */}
-        <div className={styles.chatsContainer}>
-          {chatHistory.map((msg, index) => (
-            <div key={index} className={getMessageStyle(msg)}>
-              {msg.role === "model" && <img src={Avatar} alt="avatar" className={styles.avatar} />}
-              <div className={styles.messageContent}>
-                {msg.loading ? (
-                  <>
-                    <div className={styles.loadingBar} />
-                    <div className={styles.processingTime}>답변 생성 중...</div>
-                  </>
-                ) : (
-                  <>
-                    <p className={styles.messageText}>
-                      {msg.text.split('\n').map((line, i) => (
-                        <React.Fragment key={i}>
-                          {line}
-                          {i < msg.text.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
-                    </p>
-                    
-                    {/* 훈련정보 확인 대화상자 */}
-                    {showTrainingConfirm && msg.role === "user" && isTrainingRelated(msg.text) && (
-                      <TrainingConfirmDialog
-                        onConfirm={handleTrainingConfirm}
-                        onCancel={() => {
-                          setShowTrainingConfirm(false);
-                          setShowTrainingInfoForm(true);
-                          setChatHistory(prev => [...prev,
-                            { role: "model", text: "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." }
-                          ]);
-                        }}
-                      />
-                    )}
-                    
-                    {/* 채용정보 입력 폼 */}
-                    {showUserInfoForm && msg.text === "채용 정보 검색을 위해 기본 정보를 입력해주세요." && (
-                      <UserInfoForm
-                        onSubmit={handleUserInfoSubmit}
-                        onCancel={() => setShowUserInfoForm(false)}
-                      />
-                    )}
-                    
-                    {/* 훈련정보 입력 폼 */}
-                    {showTrainingInfoForm && msg.text === "맞춤 훈련정보 제공을 위해 기본 정보를 입력해주세요." && (
-                      <TrainingInfoForm
-                        onSubmit={handleTrainingInfoSubmit}
-                        onCancel={() => setShowTrainingInfoForm(false)}
-                        initialData={trainingUserInfo}  // 저장된 데이터 전달
-                      />
-                    )}
-                    
-                    {/* 훈련과정 목록 */}
-                    {msg.trainingCourses && msg.trainingCourses.length > 0 && (
-                      <div className={styles.trainingList}>
-                        {console.log('Training courses:', msg.trainingCourses)}
-                        {msg.trainingCourses.map(course => (
-                          <TrainingCard
-                            key={course.id}
-                            training={{
-                              ...course,
-                              yardMan: course.yardMan || '미정'  // 정원 정보가 없는 경우 기본값 설정
-                            }}
-                            onClick={setSelectedTraining}
-                            isSelected={selectedTraining && selectedTraining.id === course.id}
-                            cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
-                          />
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* 기존 채용정보 목록 */}
-                    {msg.jobPostings && msg.jobPostings.length > 0 && (
-                      <div className={styles.jobList}>
-                        {msg.jobPostings.map(job => (
-                          <JobCard
-                            key={job.id}
-                            job={job}
-                            onClick={handleJobClick}
-                            isSelected={selectedJob && selectedJob.id === job.id}
-                            cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+    <div className={styles.page}>
+      <Header />
+      <main className={styles.content}>
+        {/* IntentModal 추가 */}
+        <IntentModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onSubmit={handleModalSubmit}
+          initialMode={initialMode}
+        />
+        
+        <div 
+          className={styles.container} 
+          ref={chatsContainerRef}
+          onScroll={handleScroll}  // 스크롤 이벤트 핸들러 추가
+        >
+          {chatHistory.length === 0 && (
+            <>
+            {/* 앱 헤더 */}
+            <div className={styles.appHeader}>
+              <h1 className={styles.heading}>안녕하세요!</h1>
+              <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
             </div>
-          ))}
-        </div>
 
-        {/* 프롬프트 영역 */}
-        <div className={styles.promptContainer}>
-          <div className={styles.promptWrapper}>
-            <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
-              <input
-                ref={promptInputRef}
-                type="text"
-                className={styles.promptInput}
-                placeholder="궁금하신 내용을 입력해주세요"
-                value={userMessage}
-                onChange={handleInputChange}
-                required
-                disabled={isBotResponding || recording}
-              />
-              <div className={styles.promptActions}>
-                <button
-                  id="stop-response-btn"
-                  type="button"
-                  onClick={handleStopResponse}
-                  disabled={!isBotResponding}
-                  className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+            {/* 추천 문구 */}
+            <ul className={styles.suggestions}>
+              {suggestions.map((item) => (
+                <li
+                  key={item.id}
+                  className={styles.suggestionsItem}
+                  onClick={() => handleSuggestionClick(item)}
                 >
-                  stop_circle
-                </button>
-                <button
-                  id="send-prompt-btn"
-                  type="submit"
-                  disabled={!userMessage.trim() || recording}
-                  className={`material-symbols-rounded ${styles.sendPromptBtn}`}
-                >
-                  arrow_upward
-                </button>
+                  <p className={styles.text}>{item.text}</p>
+                  <span className={`material-symbols-rounded`}>{item.icon}</span>
+                </li>
+              ))}
+            </ul>
+            </>
+          )}
+
+          {/* 채팅 내역 */}
+          <div className={styles.chatsContainer}>
+            {chatHistory.map((msg, index) => (
+              <div key={index} className={getMessageStyle(msg)}>
+                {(msg.role === "model" || msg.role === "bot") && <img src={Avatar} alt="avatar" className={styles.avatar} />}
+                <div className={styles.messageContent}>
+                  {msg.loading ? (
+                    <>
+                      <div className={styles.loadingBar} />
+                      <div className={styles.processingTime}>답변 생성 중...</div>
+                    </>
+                  ) : (
+                    <>
+                      <p className={styles.messageText}>
+                        {msg.text.split('\n').map((line, i) => (
+                          <React.Fragment key={i}>
+                            {line}
+                            {i < msg.text.split('\n').length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </p>
+                      
+                      {/* 채용정보 목록 */}
+                      {msg.jobPostings && msg.jobPostings.length > 0 && (
+                        <div className={styles.jobList}>
+                          {msg.jobPostings.map(job => (
+                            <JobCard
+                              key={job.id}
+                              job={job}
+                              onClick={handleJobClick}
+                              isSelected={selectedJob && selectedJob.id === job.id}
+                              cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* 훈련과정 목록 */}
+                      {msg.trainingCourses && msg.trainingCourses.length > 0 && (
+                        <div className={styles.trainingList}>
+                          {msg.trainingCourses.map(course => (
+                            <TrainingCard
+                              key={course.id}
+                              training={{
+                                ...course,
+                                yardMan: course.yardMan || '미정'
+                              }}
+                              onClick={handleTrainingClick}
+                              isSelected={selectedTraining && selectedTraining.id === course.id}
+                              cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
-            </form>
-            <button
-              id="record-btn"
-              type="button"
-              onClick={handleRecord}
-              className={`material-symbols-rounded ${styles.recordBtn} ${recording ? styles.recording : ''}`}
-              disabled={isBotResponding}
-            >
-              {recording ? "stop" : "mic"}
-            </button>
-            <button
-              id="delete-chats-btn"
-              type="button"
-              onClick={handleDeleteChats}
-              className={`material-symbols-rounded ${styles.deleteChatsBtn}`}
-            >
-              delete
-            </button>
+            ))}
           </div>
-          <p className={styles.disclaimerText}>
-            본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
-            AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
-          </p>
+
+          {/* 프롬프트 영역 */}
+          <div className={styles.promptContainer}>
+            <div className={styles.promptWrapper}>
+              {isVoiceMode ? (
+                <button
+                  className={`${styles.voiceInputButton}`}
+                  onClick={handleVoiceInputClick}
+                  disabled={isBotResponding}
+                >
+                  <span className="material-symbols-rounded">mic</span>
+                  
+                </button>
+              ) : (
+                <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
+                  <input
+                    ref={promptInputRef}
+                    type="text"
+                    className={styles.promptInput}
+                    placeholder="궁금하신 내용을 입력해주세요"
+                    value={userMessage}
+                    onChange={handleInputChange}
+                    required
+                    disabled={isBotResponding}
+                  />
+                  <div className={styles.promptActions}>
+                    <button
+                      id="stop-response-btn"
+                      type="button"
+                      onClick={handleStopResponse}
+                      disabled={!isBotResponding}
+                      className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+                    >
+                      stop_circle
+                    </button>
+                    <button
+                      id="send-prompt-btn"
+                      type="submit"
+                      disabled={!userMessage.trim()}
+                      className={`material-symbols-rounded ${styles.sendPromptBtn}`}
+                    >
+                      arrow_upward
+                    </button>
+                  </div>
+                </form>
+              )}
+              <button
+                id="delete-chats-btn"
+                type="button"
+                onClick={handleDeleteChats}
+                className={`material-symbols-rounded ${styles.deleteChatsBtn}`}
+              >
+                delete
+              </button>
+            </div>
+            <p className={styles.disclaimerText}>
+              본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
+              AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
+            </p>
+          </div>
+
+          {/* 최근 메시지로 이동 버튼 추가 */}
+          {showScrollButton && (
+            <button 
+              className={`${styles.scrollButton} ${styles.visible}`} 
+              onClick={scrollToBottom}
+            >
+              <span className="material-symbols-rounded">arrow_downward</span>
+              최근 메시지 보기
+            </button>
+          )}
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 

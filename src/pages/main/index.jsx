@@ -4,9 +4,7 @@ import axios from 'axios';
 import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
 import ChatbotIcon from '@assets/images/icon-robot.svg'
-
-// API 기본 URL 설정
-const API_BASE_URL = "http://localhost:8000/api/v1";
+import { API_BASE_URL } from '@/config';
 
 const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   <div 
@@ -97,10 +95,26 @@ const Main = () => {
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [isKeywordFormExpanded, setIsKeywordFormExpanded] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [isNoticeOpen, setIsNoticeOpen] = useState(false);
+  const [hideNotice, setHideNotice] = useState(false);
+  const [messages, setMessages] = useState([
+    // 초기 봇 메세지 설정
+    {
+      type: 'bot',
+      text: '안녕하세요. AI 취업도우미입니다.\n어떤 도움이 필요하신가요?',
+      options: [
+        { id: 1, text: '채용 정보' },
+        { id: 2, text: '훈련 정보' },
+        { id: 3, text: '이력서 관리' }
+      ]
+    }
+  ]);
 
-  // 음성 인식 객체 생성
-  const [recognition, setRecognition] = useState(null);
+  const [sessionId, setSessionId] = useState('');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+  const selectedCardRef = useRef(null);
 
   // 스크롤 관련 상태 관리
   const chatContainerRef = useRef(null);
@@ -143,70 +157,6 @@ const Main = () => {
     setTimeout(() => {
       setIsAutoScrolling(false);
     }, 500);
-  };
-
-  // 채팅 관련 상태
-  const [inputText, setInputText] = useState('');
-  const [isNoticeOpen, setIsNoticeOpen] = useState(false);
-  const [hideNotice, setHideNotice] = useState(false);
-  const [messages, setMessages] = useState([
-    // 초기 봇 메세지 설정
-    {
-      type: 'bot',
-      text: '안녕하세요. AI 취업도우미입니다.\n어떤 도움이 필요하신가요?',
-      options: [
-        { id: 1, text: '채용 정보' },
-        { id: 2, text: '훈련 정보' },
-        { id: 3, text: '이력서 관리' }
-      ]
-    }
-  ]);
-
-  const [sessionId, setSessionId] = useState('');
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
-  const selectedCardRef = useRef(null);
-
-  // 음성 인식 초기화
-  useEffect(() => {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'ko-KR';
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInputText(transcript);
-        setIsRecording(false);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('음성 인식 오류:', event.error);
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
-
-      setRecognition(recognition);
-    }
-  }, []);
-
-  // 음성 입력 토글 함수
-  const toggleVoiceInput = () => {
-    if (!recognition) {
-      alert('죄송합니다. 음성 인식이 지원되지 않는 브라우저입니다.');
-      return;
-    }
-
-    if (isRecording) {
-      recognition.stop();
-    } else {
-      recognition.start();
-      setIsRecording(true);
-    }
   };
 
   // 입력창 관련 핸들러
@@ -586,16 +536,21 @@ const Main = () => {
                 onKeyUp={handleKeyPress} 
                 onPaste={handlePaste} 
                 rows="1" 
-                disabled={isLoading || isRecording} 
+                disabled={isLoading} 
               />
               <button 
-                className={`${styles.mic__button} ${isRecording ? styles.recording : ''}`}
-                onClick={toggleVoiceInput}
+                className={styles.mic__button}
+                onClick={() => {
+                  // IntentModal을 음성 모드로 열기
+                  setShowIntentModal(true);
+                  setInitialMode('voice');
+                }}
                 disabled={isLoading}
               >
-                <i className={`bx ${isRecording ? 'bxs-microphone' : 'bx-microphone'}`}></i>
+                <i className='bx bx-microphone'></i>
               </button>
             </div>
+            
             <button onClick={handleSubmit} disabled={isLoading}>
               {isLoading ? '답변 준비중...' : '입력'}
             </button>
