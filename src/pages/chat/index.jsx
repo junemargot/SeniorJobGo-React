@@ -6,6 +6,7 @@ import Avatar from '@assets/images/icon-robot.svg'
 import axios from 'axios';
 import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
+import ReactMarkdown from 'react-markdown';
 
 // API 기본 URL 설정
 // const API_BASE_URL = "http://localhost:8000/api/v1";
@@ -219,6 +220,10 @@ const getMessageStyle = (msg) => {
   }
   return `${baseStyle} ${styles.userMessage}`;
 };
+
+// URL 정규식 패턴 수정
+const URL_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/g;
+const PLAIN_URL_PATTERN = /(https?:\/\/[^\s]+)(?=\s|$|\))/g;  // URL 끝에 있는 속성들이 포함되지 않도록 수정
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -641,6 +646,33 @@ const Chat = () => {
     });
   };
 
+  // 메시지 내용을 HTML로 변환하는 함수 수정
+  const formatMessage = (message) => {
+    if (!message) return '';
+
+    return (
+      <div className={styles.messageContent}>
+        <ReactMarkdown
+          components={{
+            // 링크 컴포넌트 커스터마이징
+            a: ({ node, ...props }) => (
+              <a
+                {...props}
+                className={styles.sourceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            ),
+            // 줄바꿈 유지
+            p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>
+          }}
+        >
+          {message}
+        </ReactMarkdown>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -695,14 +727,7 @@ const Chat = () => {
                     </>
                   ) : (
                     <>
-                      <p className={styles.messageText}>
-                        {msg.text.split('\n').map((line, i) => (
-                          <React.Fragment key={i}>
-                            {line}
-                            {i < msg.text.split('\n').length - 1 && <br />}
-                          </React.Fragment>
-                        ))}
-                      </p>
+                      {formatMessage(msg.text)}
                       
                       {/* 채용정보 목록 */}
                       {msg.jobPostings && msg.jobPostings.length > 0 && (

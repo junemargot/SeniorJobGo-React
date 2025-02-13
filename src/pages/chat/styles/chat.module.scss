@@ -164,7 +164,22 @@ body {
       padding: 3px 16px 3px 1px;
       line-height: 1.5rem;
       word-wrap: break-word;
-      white-space: pre-line;
+      white-space: pre-wrap;
+      word-break: break-word;
+      
+      a {
+        color: #2563eb;  // 파란색 링크
+        text-decoration: underline;
+        transition: color 0.2s ease;
+        
+        &:hover {
+          color: #1d4ed8;  // 더 진한 파란색
+        }
+        
+        &:visited {
+          color: #7c3aed;  // 보라색 (방문한 링크)
+        }
+      }
     }
   }
 
@@ -881,5 +896,17 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
   @media (max-width: 768px) {
     bottom: 160px;
+  }
+}
+
+// 출처 스타일
+.sourceLink {
+  display: inline-block;
+  font-size: 0.9em;
+  color: #6b7280;  // 회색
+  margin-top: 0.5rem;
+  
+  &:hover {
+    text-decoration: underline;
   }
 }

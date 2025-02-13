@@ -76,27 +76,42 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const processTranscript = async (text) => {
     setIsProcessing(true);
     try {
+      console.log('텍스트 처리 시작:', text);
+      
       // 1. 텍스트를 LLM으로 분석하여 의도와 정보 추출
       const extractResponse = await axios.post(`${API_BASE_URL}/extract_info/`, {
         user_message: text,
         chat_history: ""  // 빈 문자열로 전달
       });
 
+      console.log('서버 응답:', extractResponse);
+
       if (!extractResponse.data) {
-        throw new Error('정보 추출 실패');
+        console.error('서버 응답에 data가 없음');
+        throw new Error('정보 추출 실패: 서버 응답 없음');
       }
+
+      const extractedData = {
+        직무: extractResponse.data.직무 || "",
+        지역: extractResponse.data.지역 || "",
+        연령대: extractResponse.data.연령대 || ""
+      };
+
+      console.log('추출된 데이터:', extractedData);
 
       // 2. 추출된 정보를 요약 형태로 저장
       setSummary({
         originalText: text,
-        직무: extractResponse.data.직무 || "",
-        지역: extractResponse.data.지역 || "",
-        연령대: extractResponse.data.연령대 || ""
+        ...extractedData
       });
       
     } catch (error) {
-      console.error('텍스트 처리 중 오류:', error);
-      alert('텍스트 처리 중 오류가 발생했습니다.');
+      console.error('텍스트 처리 중 상세 에러:', error);
+      console.error('에러 응답:', error.response?.data);
+      alert('텍스트 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      // 에러 발생 시 초기화
+      setTranscript('');
+      setSummary(null);
     } finally {
       setIsProcessing(false);
     }
