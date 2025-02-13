@@ -47,7 +47,7 @@
       background-color: white;
       border: 1px solid $primary-color;
       padding: 0.5rem 1rem;
-      border-radius: 1rem;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 600;
@@ -55,6 +55,7 @@
 
       &:hover {
         background-color: $primary-color;
+        color: white;
       }
     }
   }
