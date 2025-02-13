@@ -1,4 +1,6 @@
 // Header.module.scss
+@use '@assets/styles/_variables' as *;
+
 .header {
   width: 100%;
   padding: 1rem 0 0.5rem 0;
@@ -9,6 +11,8 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
   }
 
   &Logo {
@@ -34,6 +38,23 @@
         background-color: #ffbc2c;
         z-index: -1;
         opacity: 0.8;
+      }
+    }
+  }
+
+  &Buttons {
+    button {
+      background-color: white;
+      border: 1px solid $primary-color;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: $primary-color;
       }
     }
   }
