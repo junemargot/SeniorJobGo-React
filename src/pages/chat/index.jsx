@@ -241,6 +241,8 @@ const Chat = () => {
   const preventAutoScrollRef = useRef(false);
   // 채팅 기록 fetch 중 중복 호출 방지를 위한 ref
   const isFetchingHistoryRef = useRef(false);
+  // "최근 메시지 보기" 버튼 클릭 시 자동 fetch를 방지하기 위한 플래그
+  const forceScrollDownRef = useRef(false);
 
   // 채팅 기록 불러오기 관련 상태 추가
   const chatEndIndex = useRef(-1);
@@ -300,27 +302,27 @@ const Chat = () => {
   const scrollToBottom = () => {
     const container = chatsContainerRef.current;
     if (container) {
-      console.log('scrollToBottom called: current scrollHeight =', container.scrollHeight);
       setIsAutoScrolling(true);
       setIsUserScrolling(false);
       setShowScrollButton(false);
-
+      
       container.scrollTo({
         top: container.scrollHeight,
         behavior: 'smooth'
       });
-      // 애니메이션 완료 후 상태 해제 (지연 시간을 300ms 등으로 조정해서 테스트)
+      
       setTimeout(() => {
         setIsAutoScrolling(false);
+        // 버튼 클릭에 의한 강제 스크롤 상태 해제
+        forceScrollDownRef.current = false;
       }, 300);
     }
   };
 
   // 채팅 내역 변경 시 자동 스크롤 (새 메시지 추가인 경우)
   useEffect(() => {
-    // 채팅 내역 변경 시 자동 스크롤 (새 메시지 추가인 경우)
-    if (preventAutoScrollRef.current) {
-      // 이 경우 자동 스크롤은 이미 fetch 등 별도 작업 후에 실행되고 있으므로 건너뜁니다.
+    if (preventAutoScrollRef.current || forceScrollDownRef.current) {
+      // 이미 fetch 등의 작업이나 버튼 클릭에 의한 강제 스크롤 상황이면 자동 스크롤은 건너뜁니다.
       preventAutoScrollRef.current = false;
       return;
     }
@@ -378,7 +380,6 @@ const Chat = () => {
       }, { withCredentials: true });
 
       const { message: botMessage, jobPostings, trainingCourses, type } = response.data;
-      console.log('Response data:', response.data);  // 응답 데이터 로깅
 
       // 봇 응답 추가
       const newBotMessage = {
@@ -602,8 +603,8 @@ const Chat = () => {
   useEffect(() => {
     const handleScroll = async () => {
       const container = chatsContainerRef.current;
-      // 만약 컨테이너가 존재하고, scrollTop이 10 이하이면 (즉, 아주 위쪽이면) 실행
-      if (container && container.scrollTop <= 10) {
+      // 만약 컨테이너가 존재하고, scrollTop이 10 이하이며, forceScrollDownRef가 false일 때 실행합니다.
+      if (container && container.scrollTop <= 10 && !forceScrollDownRef.current) {
         // 방지: 이미 fetch 중이면 재호출하지 않음
         if (isFetchingHistoryRef.current) return;
         isFetchingHistoryRef.current = true;
@@ -622,7 +623,6 @@ const Chat = () => {
           const scrollDifference = newScrollHeight - prevScrollHeight;
           // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
           container.scrollTop = scrollDifference;
-          console.log('스크롤 위치 보정:', scrollDifference);
           isFetchingHistoryRef.current = false;
         });
       }
@@ -645,9 +645,9 @@ const Chat = () => {
     }
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(true);  // 모달 상태 추가
-  const [isVoiceMode, setIsVoiceMode] = useState(false);  // 음성 입력 모드 상태 추가
-  const [initialMode, setInitialMode] = useState(null);  // 음성 입력 모드 초기 설정 상태 추가
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [initialMode, setInitialMode] = useState(null);
 
   // handleModalSubmit 수정
   const handleModalSubmit = async (response) => {
@@ -738,6 +738,12 @@ const Chat = () => {
       }
       return newSelected;
     });
+  };
+
+  // "최근 메시지 보기" 버튼 클릭 시 호출되는 핸들러
+  const handleRecentMessageButtonClick = () => {
+    forceScrollDownRef.current = true; // 강제 스크롤 플래그 설정
+    scrollToBottom();
   };
 
   return (
@@ -906,7 +912,7 @@ const Chat = () => {
           {showScrollButton && (
             <button 
               className={`${styles.scrollButton} ${styles.visible}`} 
-              onClick={scrollToBottom}
+              onClick={handleRecentMessageButtonClick}
             >
               <span className="material-symbols-rounded">arrow_downward</span>
               최근 메시지 보기
