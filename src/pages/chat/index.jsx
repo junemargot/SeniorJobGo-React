@@ -13,9 +13,9 @@ import { useNavigate } from 'react-router-dom';
 
 // JobCard 컴포넌트 추가
 const JobCard = ({ job, onClick, isSelected, cardRef }) => (
-  <div 
+  <div
     ref={cardRef}
-    className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`} 
+    className={`${styles.jobCard} ${isSelected ? styles.selected : ''}`}
     onClick={() => onClick(job)}
     data-job-id={job.id}
   >
@@ -40,7 +40,7 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
         {job.workingHours}
       </div>
     </div>
-    
+
     <div className={`${styles.jobCard__description} ${isSelected ? styles.visible : ''}`}>
       <p data-label="고용형태">{job.employmentType}</p>
       <p data-label="근무시간">{job.workingHours}</p>
@@ -48,7 +48,7 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
       <p data-label="복리후생">{job.benefits}</p>
       <p data-label="상세내용">{job.description}</p>
     </div>
-    
+
     <div className={`${styles.jobCard__footer} ${isSelected ? styles.visible : ''}`}>
       <button className={styles.jobCard__button}>
         지원하기
@@ -59,9 +59,9 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => (
 
 // TrainingCard 컴포넌트 수정
 const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
-  <div 
+  <div
     ref={cardRef}
-    className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`} 
+    className={`${styles.trainingCard} ${isSelected ? styles.selected : ''}`}
     onClick={() => onClick(training)}
     data-training-id={training.id}
   >
@@ -87,7 +87,7 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
         정원 {training.yardMan}명
       </div>
     </div>
-    
+
     <div className={`${styles.trainingCard__description} ${isSelected ? styles.visible : ''}`}>
       <p data-label="훈련기관">{training.institute}</p>
       <p data-label="훈련대상">{training.target}</p>
@@ -99,12 +99,12 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
       <p data-label="문의전화">{training.telNo}</p>
       <p data-label="훈련내용">{training.description}</p>
     </div>
-    
+
     <div className={`${styles.trainingCard__footer} ${isSelected ? styles.visible : ''}`}>
-      <a 
-        href={training.titleLink} 
-        target="_blank" 
-        rel="noopener noreferrer" 
+      <a
+        href={training.titleLink}
+        target="_blank"
+        rel="noopener noreferrer"
         className={styles.trainingCard__button}
       >
         상세정보 보기
@@ -113,52 +113,43 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
   </div>
 );
 
-// 훈련정보 확인 대화상자
-const TrainingConfirmDialog = ({ onConfirm, onCancel }) => (
-  <div className={styles.confirmDialog}>
-    <p>훈련정보를 알려드릴까요?</p>
-    <div className={styles.confirmDialog__buttons}>
-      <button onClick={onConfirm} className={styles.confirmButton}>예</button>
-      <button onClick={onCancel} className={styles.cancelButton}>아니오</button>
-    </div>
-  </div>
-);
+
 
 // 채용정보 입력 폼 컴포넌트
 const UserInfoForm = ({ onSubmit, onCancel }) => (
   <div className={styles.userForm}>
     <form onSubmit={onSubmit}>
-      <button 
-        type="button" 
+      <button
+        type="button"
         className={styles.closeButton}
         onClick={onCancel}
       >
         <i className='bx bx-x'></i>
       </button>
       <h3>맞춤 채용정보 제공을 위한 기본정보</h3>
-      <input 
-        type="number" 
-        name="age" 
-        placeholder="나이 (숫자만 입력)" 
-        required 
+      <input
+        type="number"
+        name="age"
+        placeholder="나이 (숫자만 입력)"
+        required
       />
-      <input 
-        type="text" 
-        name="gender" 
-        placeholder="성별 (예: 남성)" 
-        required 
+      <input
+        type="text"
+        name="gender"
+        placeholder="성별 (예: 남성)"
+        required
       />
-      <input 
-        type="text" 
-        name="location" 
-        placeholder="희망 근무지역 (예: 서울 강남구)" 
-        required 
+      <input
+        type="text"
+        name="location"
+        placeholder="희망 근무지역 (예: 서울 강남구)"
+        required
       />
-      <input 
-        type="text" 
-        name="jobType" 
-        placeholder="희망 직종 (예: 경비)" 
-        required 
+      <input
+        type="text"
+        name="jobType"
+        placeholder="희망 직종 (예: 경비)"
+        required
       />
       <button type="submit">맞춤 채용정보 검색</button>
     </form>
@@ -169,42 +160,42 @@ const UserInfoForm = ({ onSubmit, onCancel }) => (
 const TrainingInfoForm = ({ onSubmit, onCancel, initialData }) => (
   <div className={styles.userForm}>
     <form onSubmit={onSubmit}>
-      <button 
-        type="button" 
+      <button
+        type="button"
         className={styles.closeButton}
         onClick={onCancel}
       >
         <i className='bx bx-x'></i>
       </button>
       <h3>맞춤 훈련정보 제공을 위한 기본정보</h3>
-      <input 
-        type="number" 
-        name="age" 
-        placeholder="나이 (숫자만 입력)" 
+      <input
+        type="number"
+        name="age"
+        placeholder="나이 (숫자만 입력)"
         defaultValue={initialData?.age || ""}
       />
-      <input 
-        type="text" 
-        name="gender" 
-        placeholder="성별 (예: 남성)" 
+      <input
+        type="text"
+        name="gender"
+        placeholder="성별 (예: 남성)"
         defaultValue={initialData?.gender || ""}
       />
-      <input 
-        type="text" 
-        name="education" 
-        placeholder="최종학력 (예: 고졸)" 
+      <input
+        type="text"
+        name="education"
+        placeholder="최종학력 (예: 고졸)"
         defaultValue={initialData?.education || ""}
       />
-      <input 
-        type="text" 
-        name="location" 
-        placeholder="거주지역 (예: 서울 강남구)" 
+      <input
+        type="text"
+        name="location"
+        placeholder="거주지역 (예: 서울 강남구)"
         defaultValue={initialData?.location || ""}
       />
-      <input 
-        type="text" 
-        name="interests" 
-        placeholder="관심분야 (예: IT, 요양, 조리)" 
+      <input
+        type="text"
+        name="interests"
+        placeholder="관심분야 (예: IT, 요양, 조리)"
         defaultValue={initialData?.interests || ""}
       />
       <button type="submit">맞춤 훈련정보 검색</button>
@@ -221,9 +212,6 @@ const getMessageStyle = (msg) => {
   return `${baseStyle} ${styles.userMessage}`;
 };
 
-// URL 정규식 패턴 수정
-const URL_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/g;
-const PLAIN_URL_PATTERN = /(https?:\/\/[^\s]+)(?=\s|$|\))/g;  // URL 끝에 있는 속성들이 포함되지 않도록 수정
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -232,12 +220,12 @@ const Chat = () => {
   const [typingIntervalId, setTypingIntervalId] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [processingTime, setProcessingTime] = useState(0);
-  
+
   // 스크롤 관련 상태 추가
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isUserScrolling, setIsUserScrolling] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  
+
   const chatsContainerRef = useRef(null);
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -255,7 +243,7 @@ const Chat = () => {
   const selectedCardRef = useRef(null);
 
   // 훈련정보 관련 상태 추가
-  const [showTrainingConfirm, setShowTrainingConfirm] = useState(false);
+  /* const [showTrainingConfirm, setShowTrainingConfirm] = useState(false); */
   const [selectedTraining, setSelectedTraining] = useState(null);
   const [showTrainingInfoForm, setShowTrainingInfoForm] = useState(false);
   const [trainingUserInfo, setTrainingUserInfo] = useState({
@@ -288,7 +276,7 @@ const Chat = () => {
     const element = chatsContainerRef.current;
     if (element && !isAutoScrolling) {
       // 사용자가 스크롤하면 감지
-      if(!isUserScrolling) {
+      if (!isUserScrolling) {
         setIsUserScrolling(true);
       }
 
@@ -300,7 +288,7 @@ const Chat = () => {
 
   // 스크롤 다운 함수 수정
   const scrollToBottom = () => {
-    if(chatsContainerRef.current) {
+    if (chatsContainerRef.current) {
       setIsAutoScrolling(true);
       setIsUserScrolling(false);
       setShowScrollButton(false);
@@ -332,14 +320,14 @@ const Chat = () => {
   // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
   const typingEffect = (text, updateCallback, onComplete) => {
     // 기존 인터벌 있으면 정리
-    if(typingIntervalRef.current) {
+    if (typingIntervalRef.current) {
       clearInterval(typingIntervalRef.current);
     }
 
     const words = text.split(" ");
     let wordIndex = 0;
     let currentText = "";
-    
+
     const intervalId = setInterval(() => {
       if (wordIndex < words.length) {
         currentText += (currentText ? " " : "") + words[wordIndex];
@@ -361,7 +349,7 @@ const Chat = () => {
     if (!userMessage.trim() || isBotResponding) return;
 
     const message = userMessage.trim();
-    
+
     // 사용자 메시지를 채팅 내역에 추가
     setChatHistory(prev => [...prev, { role: "user", text: message }]);
     setIsBotResponding(true);
@@ -378,18 +366,36 @@ const Chat = () => {
       }, { withCredentials: true });
 
       const { message: botMessage, jobPostings, trainingCourses, type } = response.data;
-      console.log('Response data:', response.data);  // 응답 데이터 로깅
 
-      // 봇 응답 추가
+      // 빈 봇 메시지를 먼저 추가
       const newBotMessage = {
         role: "bot",
-        text: botMessage,
+        text: "",
         type: type,
         jobPostings: jobPostings || [],
         trainingCourses: trainingCourses || []
       };
 
       setChatHistory(prev => [...prev, newBotMessage]);
+
+      // 타이핑 효과로 메시지 표시
+      typingEffect(
+        botMessage,
+        (currentText) => {
+          setChatHistory(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              text: currentText
+            };
+            return updated;
+          });
+        },
+        () => {
+          // 타이핑 완료 후 처리할 작업
+          scrollToBottom();
+        }
+      );
 
       // 프로필 업데이트 (있는 경우)
       if (response.data.user_profile) {
@@ -414,7 +420,7 @@ const Chat = () => {
   // 추천 메뉴 클릭 핸들러 수정
   const handleSuggestionClick = (suggestion) => {
     setUserMessage(suggestion.text);
-    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => { } }), 0);
   };
 
   // 사용자 정보 제출 핸들러 수정
@@ -434,7 +440,7 @@ const Chat = () => {
     // 사용자 정보와 함께 검색 요청
     const message = `${updatedUserInfo.location}에서 ${updatedUserInfo.jobType} 일자리 찾기`;
     setUserMessage(message);
-    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => { } }), 0);
   };
 
   // 훈련정보 입력 폼 제출 핸들러 수정
@@ -455,7 +461,7 @@ const Chat = () => {
     // 사용자 정보와 함께 검색 요청
     const message = `${updatedUserInfo.location}에서 ${updatedUserInfo.interests} 관련 교육 찾기`;
     setUserMessage(message);
-    setTimeout(() => handleFormSubmit({ preventDefault: () => {} }), 0);
+    setTimeout(() => handleFormSubmit({ preventDefault: () => { } }), 0);
   };
 
   // 채팅 내역 모두 삭제
@@ -487,7 +493,7 @@ const Chat = () => {
 
   // 응답 중단 핸들러 추가
   const handleStopResponse = () => {
-    if(abortControllerRef.current) {
+    if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     setIsBotResponding(false);
@@ -506,22 +512,22 @@ const Chat = () => {
           id = document.cookie.split('; ')
             .find(row => row.startsWith('sjgid='))
             .split('=')[1];
-  
+
           provider = document.cookie.split('; ')
             .find(row => row.startsWith('sjgpr='))
             .split('=')[1];
 
-            if (!await axios.get(`${API_BASE_URL}/auth/check`,{
-              withCredentials: true
-            })) throw new Error();
+          if (!await axios.get(`${API_BASE_URL}/auth/check`, {
+            withCredentials: true
+          })) throw new Error();
         } catch (error) {
           alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
           document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/');
         }
-        
-        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`,{
+
+        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
           params: {
             end: chatEndIndex.current,
             limit: limit
@@ -537,11 +543,11 @@ const Chat = () => {
         for (const msg of messages) {
           const role = msg.role === "user" ? "user" : "model";
           let newMsg = { role, text: "" };
-         
+
           // 문자열인 경우
           if (typeof msg.content === "string") {
             newMsg.text = msg.content;
-          } 
+          }
           // 객체인 경우
           else if (typeof msg.content === "object" && msg.content !== null) {
             // 메시지 텍스트 설정
@@ -550,12 +556,12 @@ const Chat = () => {
             } else if (msg.content.text) {
               newMsg.text = msg.content.text;
             }
-            
+
             // 채용정보 추가
             if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
               newMsg.jobPostings = msg.content.jobPostings;
             }
-            
+
             // 훈련과정 정보 추가
             if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
               newMsg.trainingCourses = msg.content.trainingCourses;
@@ -571,7 +577,7 @@ const Chat = () => {
               setIsVoiceMode(true);
             }
           }
-          
+
           // 채팅 내역에 추가
           newMessages.push(newMsg);
         }
@@ -612,7 +618,7 @@ const Chat = () => {
 
   const handleInputChange = (e) => {
     const text = e.target.value;
-    if(text.length <= 500) {  // 길이 제한을 500자로 늘리고 줄바꿈 제한 제거
+    if (text.length <= 500) {  // 길이 제한을 500자로 늘리고 줄바꿈 제한 제거
       setUserMessage(text);
     }
   };
@@ -714,28 +720,29 @@ const Chat = () => {
 
   // 메시지 내용을 HTML로 변환하는 함수 수정
   const formatMessage = (message) => {
-    if (!message) return '';
-
+    if (typeof message !== 'string') return message;
+    
     return (
-      <div className={styles.messageContent}>
-        <ReactMarkdown
-          components={{
-            // 링크 컴포넌트 커스터마이징
-            a: ({ node, ...props }) => (
-              <a
-                {...props}
-                className={styles.sourceLink}
-                target="_blank"
-                rel="noopener noreferrer"
-              />
-            ),
-            // 줄바꿈 유지
-            p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>
-          }}
-        >
-          {message}
-        </ReactMarkdown>
-      </div>
+      <ReactMarkdown
+        components={{
+          a: ({ node, ...props }) => (
+            <a {...props} target="_blank" rel="noopener noreferrer" className={styles.messageLink} />
+          ),
+          h1: ({ node, ...props }) => <h1 {...props} className={styles.messageHeading} />,
+          h2: ({ node, ...props }) => <h2 {...props} className={styles.messageHeading} />,
+          h3: ({ node, ...props }) => <h3 {...props} className={styles.messageSubHeading} />,
+          h4: ({ node, ...props }) => <h4 {...props} className={styles.messageSubHeading} />,
+          p: ({ node, ...props }) => <p {...props} className={styles.messageParagraph} />,
+          hr: ({ node, ...props }) => <hr {...props} className={styles.messageDivider} />,
+          code: ({ node, inline, ...props }) => (
+            inline ? 
+              <code {...props} className={styles.messageInlineCode} /> :
+              <code {...props} className={styles.messageCodeBlock} />
+          )
+        }}
+      >
+        {message}
+      </ReactMarkdown>
     );
   };
 
@@ -750,33 +757,33 @@ const Chat = () => {
           onSubmit={handleModalSubmit}
           initialMode={initialMode}
         />
-        
-        <div 
-          className={styles.container} 
+
+        <div
+          className={styles.container}
           ref={chatsContainerRef}
           onScroll={handleScroll}  // 스크롤 이벤트 핸들러 추가
         >
           {chatHistory.length === 0 && (
             <>
-            {/* 앱 헤더 */}
-            <div className={styles.appHeader}>
-              <h1 className={styles.heading}>안녕하세요!</h1>
-              <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
-            </div>
+              {/* 앱 헤더 */}
+              <div className={styles.appHeader}>
+                <h1 className={styles.heading}>안녕하세요!</h1>
+                <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
+              </div>
 
-            {/* 추천 문구 */}
-            <ul className={styles.suggestions}>
-              {suggestions.map((item) => (
-                <li
-                  key={item.id}
-                  className={styles.suggestionsItem}
-                  onClick={() => handleSuggestionClick(item)}
-                >
-                  <p className={styles.text}>{item.text}</p>
-                  <span className={`material-symbols-rounded`}>{item.icon}</span>
-                </li>
-              ))}
-            </ul>
+              {/* 추천 문구 */}
+              <ul className={styles.suggestions}>
+                {suggestions.map((item) => (
+                  <li
+                    key={item.id}
+                    className={styles.suggestionsItem}
+                    onClick={() => handleSuggestionClick(item)}
+                  >
+                    <p className={styles.text}>{item.text}</p>
+                    <span className={`material-symbols-rounded`}>{item.icon}</span>
+                  </li>
+                ))}
+              </ul>
             </>
           )}
 
@@ -793,15 +800,10 @@ const Chat = () => {
                     </>
                   ) : (
                     <>
-                      <p className={styles.messageText}>
-                        {msg.text.split('\n').map((line, i) => (
-                          <React.Fragment key={i}>
-                            {line}
-                            {i < msg.text.split('\n').length - 1 && <br />}
-                          </React.Fragment>
-                        ))}
-                      </p>
-                      
+                      <div className={styles.messageText}>
+                        {formatMessage(msg.text)}
+                      </div>
+
                       {/* 채용정보 목록 */}
                       {msg.jobPostings && msg.jobPostings.length > 0 && (
                         <div className={styles.jobList}>
@@ -816,7 +818,7 @@ const Chat = () => {
                           ))}
                         </div>
                       )}
-                      
+
                       {/* 훈련과정 목록 */}
                       {msg.trainingCourses && msg.trainingCourses.length > 0 && (
                         <div className={styles.trainingList}>
@@ -851,7 +853,7 @@ const Chat = () => {
                   disabled={isBotResponding}
                 >
                   <span className="material-symbols-rounded">mic</span>
-                  
+
                 </button>
               ) : (
                 <form id="prompt-form" onSubmit={handleFormSubmit} className={styles.promptForm}>
@@ -903,8 +905,8 @@ const Chat = () => {
 
           {/* 최근 메시지로 이동 버튼 추가 */}
           {showScrollButton && (
-            <button 
-              className={`${styles.scrollButton} ${styles.visible}`} 
+            <button
+              className={`${styles.scrollButton} ${styles.visible}`}
               onClick={scrollToBottom}
             >
               <span className="material-symbols-rounded">arrow_downward</span>

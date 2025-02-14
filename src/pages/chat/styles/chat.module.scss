@@ -214,6 +214,71 @@ body {
         padding-top: 0.75rem;
         border-top: 1px solid #e2e8f0;
       }
+
+      // 마크다운 요소 스타일링
+      .messageLink {
+        color: var(--color-primary);
+        text-decoration: none;
+        transition: color 0.2s;
+        
+        &:hover {
+          color: var(--color-primary-hover);
+          text-decoration: underline;
+        }
+      }
+
+      .messageHeading {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $color-primary;
+        margin: 1rem 0 0.5rem 0;
+      }
+
+      .messageSubHeading {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: $color-text;
+        margin: 0.8rem 0 0.5rem 0;
+      }
+
+      .messageParagraph {
+        margin: 0.5rem 0;
+        line-height: 1.5;
+      }
+
+      .messageDivider {
+        border: none;
+        border-top: 1px solid $color-border;
+        margin: 1rem 0;
+      }
+
+      .messageInlineCode {
+        background-color: var(--color-background-light);
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        color: var(--color-text);
+      }
+
+      .messageCodeBlock {
+        display: block;
+        background-color: var(--color-background-light);
+        padding: 1rem;
+        border-radius: 5px;
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        white-space: pre-wrap;
+        margin: 1rem 0;
+        color: var(--color-text);
+      }
+
+      .messageSource {
+        font-style: italic;
+        color: $color-text-secondary;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+      }
     }
   }
 
