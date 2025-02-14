@@ -511,9 +511,13 @@ const Chat = () => {
             .find(row => row.startsWith('sjgpr='))
             .split('=')[1];
 
-            if (!await axios.get(`${API_BASE_URL}/auth/check`,{
-              withCredentials: true
-            })) throw new Error();
+          const check = await axios.get(`${API_BASE_URL}/auth/check`,{
+            withCredentials: true
+          });
+
+          if (!check.data) {
+            throw new Error();
+          }
         } catch (error) {
           alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
           document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
