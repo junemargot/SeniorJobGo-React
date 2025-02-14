@@ -7,7 +7,7 @@ import axios from 'axios';
 import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
 import ReactMarkdown from 'react-markdown';
-
+import { useNavigate } from 'react-router-dom';
 // API 기본 URL 설정
 // const API_BASE_URL = "http://localhost:8000/api/v1";
 
@@ -244,6 +244,7 @@ const Chat = () => {
   const typingIntervalRef = useRef(null);
 
   // 채팅 기록 불러오기 관련 상태 추가
+  const navigate = useNavigate();
   const chatEndIndex = useRef(-1);
   const limit = 10;
 
@@ -499,9 +500,27 @@ const Chat = () => {
       if (chatEndIndex.current === 0) return;
 
       try {
-        const id = document.cookie.split('; ')
-          .find(row => row.startsWith('sjgid='))
-          .split('=')[1];
+        let id = null;
+        let provider = null;
+        try {
+          id = document.cookie.split('; ')
+            .find(row => row.startsWith('sjgid='))
+            .split('=')[1];
+  
+          provider = document.cookie.split('; ')
+            .find(row => row.startsWith('sjgpr='))
+            .split('=')[1];
+
+            if (!await axios.get(`${API_BASE_URL}/auth/check`,{
+              withCredentials: true
+            })) throw new Error();
+        } catch (error) {
+          alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
+          document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          navigate('/');
+        }
+        
         const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`,{
           params: {
             end: chatEndIndex.current,
