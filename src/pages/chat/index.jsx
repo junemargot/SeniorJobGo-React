@@ -565,31 +565,29 @@ const Chat = () => {
     fetchChatHistory();
 
     // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
-    const timer = setTimeout(() => {
+    setTimeout(() => {
       scrollToBottom();
-    }, 0);
+    }, 100);
 
-    const container = chatsContainerRef.current;
     // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
+    const container = chatsContainerRef.current;
     const handleScrollToTop = async () => {
       const scrollPosition = container.scrollTop;
       if (scrollPosition <= 0) {
-        const prevHeight = container.scrollHeight;
-        fetchChatHistory();
-        setTimeout(() => {
-          const newHeight = container.scrollHeight;
-        container.scrollTo({
-          top: newHeight - prevHeight,
-            behavior: 'instant' // 바로 이동
-          });
-        }, 20);
+        const prevScrollHeight = container.scrollHeight;
+        await fetchChatHistory();
+        requestAnimationFrame(() => {
+          const newScrollHeight = container.scrollHeight;
+          const scrollDifference = newScrollHeight - prevScrollHeight;
+          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
+          container.scrollTop = scrollDifference;
+        });
       }
     }
     container.addEventListener('scroll', handleScrollToTop);
 
     return () => {
       container.removeEventListener('scroll', handleScrollToTop);
-      clearTimeout(timer);
     };
   }, []);
 
