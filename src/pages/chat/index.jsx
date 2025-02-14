@@ -243,6 +243,10 @@ const Chat = () => {
   const abortControllerRef = useRef(null);
   const typingIntervalRef = useRef(null);
 
+  // 채팅 기록 불러오기 관련 상태 추가
+  const chatEndIndex = useRef(-1);
+  const limit = 10;
+
   // 채용 정보 관련 상태 추가
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
@@ -300,10 +304,12 @@ const Chat = () => {
       setIsUserScrolling(false);
       setShowScrollButton(false);
 
-      chatsContainerRef.current.scrollTo({
-        top: chatsContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
+      setTimeout(() => {
+        chatsContainerRef.current.scrollTo({
+          top: chatsContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
 
       // 스크롤 애니메이션 완료 후 auto scrolling 상태 해제
       setTimeout(() => {
@@ -312,15 +318,15 @@ const Chat = () => {
     }
   };
 
-  // 채팅 내역 변경 시 스크롤 하단 이동
-  useEffect(() => {
-    // 더 안정적이니 스크롤 로직 추가
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 0);
+  // // 채팅 내역 변경 시 스크롤 하단 이동
+  // useEffect(() => {
+  //   // 더 안정적이니 스크롤 로직 추가
+  //   const timer = setTimeout(() => {
+  //     scrollToBottom();
+  //   }, 0);
 
-    return () => clearTimeout(timer);
-  }, [chatHistory]);
+  //   return () => clearTimeout(timer);
+  // }, [chatHistory]);
 
   // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
   const typingEffect = (text, updateCallback, onComplete) => {
@@ -360,6 +366,7 @@ const Chat = () => {
     setIsBotResponding(true);
     setStartTime(Date.now());
     setProcessingTime(0);
+    scrollToBottom();
 
     try {
       // 백엔드로 메시지 전송
@@ -399,6 +406,7 @@ const Chat = () => {
       setIsBotResponding(false);
       setUserMessage("");
       setStartTime(null);
+      scrollToBottom();
     }
   };
 
@@ -485,16 +493,27 @@ const Chat = () => {
     setUserMessage("");
   };
 
-  // 채팅 내역 전부 불러오기
+  // 채팅 기록 불러오기
   useEffect(() => {
     const fetchChatHistory = async () => {
+      if (chatEndIndex.current === 0) return;
+
       try {
         const id = document.cookie.split('; ')
           .find(row => row.startsWith('sjgid='))
           .split('=')[1];
-        const response = await axios.get(`${API_BASE_URL}/chat/get/all/${id}`, { withCredentials: true });
+        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`,{
+          params: {
+            end: chatEndIndex.current,
+            limit: limit
+          },
+          withCredentials: true
+        });
         // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
         const messages = response.data.messages ? response.data.messages : response.data;
+
+        const newMessages = []
+
         // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
         for (const msg of messages) {
           const role = msg.role === "user" ? "user" : "model";
@@ -535,13 +554,41 @@ const Chat = () => {
           }
           
           // 채팅 내역에 추가
-          setChatHistory(prev => [...prev, newMsg]);
+          newMessages.push(newMsg);
         }
+        setChatHistory(prev => [...newMessages, ...prev]);
+        chatEndIndex.current = response.data.index;
       } catch (error) {
         console.error('채팅 내역 불러오기 오류:', error);
       }
     };
     fetchChatHistory();
+
+    // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+
+    // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
+    const container = chatsContainerRef.current;
+    const handleScrollToTop = async () => {
+      const scrollPosition = container.scrollTop;
+      if (scrollPosition <= 0) {
+        const prevScrollHeight = container.scrollHeight;
+        await fetchChatHistory();
+        requestAnimationFrame(() => {
+          const newScrollHeight = container.scrollHeight;
+          const scrollDifference = newScrollHeight - prevScrollHeight;
+          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
+          container.scrollTop = scrollDifference;
+        });
+      }
+    }
+    container.addEventListener('scroll', handleScrollToTop);
+
+    return () => {
+      container.removeEventListener('scroll', handleScrollToTop);
+    };
   }, []);
 
   const handleInputChange = (e) => {
@@ -727,7 +774,14 @@ const Chat = () => {
                     </>
                   ) : (
                     <>
-                      {formatMessage(msg.text)}
+                      <p className={styles.messageText}>
+                        {msg.text.split('\n').map((line, i) => (
+                          <React.Fragment key={i}>
+                            {line}
+                            {i < msg.text.split('\n').length - 1 && <br />}
+                          </React.Fragment>
+                        ))}
+                      </p>
                       
                       {/* 채용정보 목록 */}
                       {msg.jobPostings && msg.jobPostings.length > 0 && (
