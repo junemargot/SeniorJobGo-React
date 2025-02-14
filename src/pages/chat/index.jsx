@@ -6,6 +6,7 @@ import Avatar from '@assets/images/icon-robot.svg'
 import axios from 'axios';
 import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
+import ReactMarkdown from 'react-markdown';
 
 // API 기본 URL 설정
 // const API_BASE_URL = "http://localhost:8000/api/v1";
@@ -220,6 +221,10 @@ const getMessageStyle = (msg) => {
   return `${baseStyle} ${styles.userMessage}`;
 };
 
+// URL 정규식 패턴 수정
+const URL_PATTERN = /\[([^\]]+)\]\(([^)]+)\)/g;
+const PLAIN_URL_PATTERN = /(https?:\/\/[^\s]+)(?=\s|$|\))/g;  // URL 끝에 있는 속성들이 포함되지 않도록 수정
+
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
@@ -237,12 +242,6 @@ const Chat = () => {
   const promptInputRef = useRef(null);
   const abortControllerRef = useRef(null);
   const typingIntervalRef = useRef(null);
-  // 자동 스크롤(채팅 내역 변경 시) 방지를 위한 플래그 ref
-  const preventAutoScrollRef = useRef(false);
-  // 채팅 기록 fetch 중 중복 호출 방지를 위한 ref
-  const isFetchingHistoryRef = useRef(false);
-  // "최근 메시지 보기" 버튼 클릭 시 자동 fetch를 방지하기 위한 플래그
-  const forceScrollDownRef = useRef(false);
 
   // 채팅 기록 불러오기 관련 상태 추가
   const chatEndIndex = useRef(-1);
@@ -300,37 +299,34 @@ const Chat = () => {
 
   // 스크롤 다운 함수 수정
   const scrollToBottom = () => {
-    const container = chatsContainerRef.current;
-    if (container) {
+    if(chatsContainerRef.current) {
       setIsAutoScrolling(true);
       setIsUserScrolling(false);
       setShowScrollButton(false);
-      
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth'
-      });
-      
+
+      setTimeout(() => {
+        chatsContainerRef.current.scrollTo({
+          top: chatsContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
+
+      // 스크롤 애니메이션 완료 후 auto scrolling 상태 해제
       setTimeout(() => {
         setIsAutoScrolling(false);
-        // 버튼 클릭에 의한 강제 스크롤 상태 해제
-        forceScrollDownRef.current = false;
-      }, 300);
+      }, 500);
     }
   };
 
-  // 채팅 내역 변경 시 자동 스크롤 (새 메시지 추가인 경우)
-  useEffect(() => {
-    if (preventAutoScrollRef.current || forceScrollDownRef.current) {
-      // 이미 fetch 등의 작업이나 버튼 클릭에 의한 강제 스크롤 상황이면 자동 스크롤은 건너뜁니다.
-      preventAutoScrollRef.current = false;
-      return;
-    }
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [chatHistory]);
+  // // 채팅 내역 변경 시 스크롤 하단 이동
+  // useEffect(() => {
+  //   // 더 안정적이니 스크롤 로직 추가
+  //   const timer = setTimeout(() => {
+  //     scrollToBottom();
+  //   }, 0);
+
+  //   return () => clearTimeout(timer);
+  // }, [chatHistory]);
 
   // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
   const typingEffect = (text, updateCallback, onComplete) => {
@@ -370,6 +366,7 @@ const Chat = () => {
     setIsBotResponding(true);
     setStartTime(Date.now());
     setProcessingTime(0);
+    scrollToBottom();
 
     try {
       // 백엔드로 메시지 전송
@@ -380,6 +377,7 @@ const Chat = () => {
       }, { withCredentials: true });
 
       const { message: botMessage, jobPostings, trainingCourses, type } = response.data;
+      console.log('Response data:', response.data);  // 응답 데이터 로깅
 
       // 봇 응답 추가
       const newBotMessage = {
@@ -390,22 +388,7 @@ const Chat = () => {
         trainingCourses: trainingCourses || []
       };
 
-      setChatHistory(prev => {
-        // 이전 채팅 내역이 없으면, 불러온 메시지 뭉치를 그대로 사용
-        if (prev.length === 0) return [...loadingMessages];
-        
-        // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
-        const oldestMessage = prev[0];
-        // loadingMessages에서, 기존 채팅 내역의 첫 메시지와 동일한 메시지가 있는지 찾습니다.
-        const duplicateIndex = loadingMessages.findIndex(
-          msg => msg.text === oldestMessage.text && msg.role === oldestMessage.role
-        );
-        // 중복이 발견되면, 중복되지 않는 부분만 가져옵니다.
-        if (duplicateIndex !== -1) {
-          return [...loadingMessages.slice(0, duplicateIndex), ...prev];
-        }
-        return [...loadingMessages, ...prev];
-      });
+      setChatHistory(prev => [...prev, newBotMessage]);
 
       // 프로필 업데이트 (있는 경우)
       if (response.data.user_profile) {
@@ -423,6 +406,7 @@ const Chat = () => {
       setIsBotResponding(false);
       setUserMessage("");
       setStartTime(null);
+      scrollToBottom();
     }
   };
 
@@ -510,131 +494,102 @@ const Chat = () => {
   };
 
   // 채팅 기록 불러오기
-  const fetchChatHistory = async () => {
-    // chatEndIndex가 0이면 더 이상 불러올 기록이 없다고 판단하여 종료
-    if (chatEndIndex.current === 0) {
-      return;
-    }
-
-    try {
-      const id = document.cookie.split('; ')
-        .find(row => row.startsWith('sjgid='))
-        .split('=')[1];
-      const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
-        params: {
-          end: chatEndIndex.current,
-          limit: limit
-        }
-      }, { withCredentials: true });
-      chatEndIndex.current = response.data.index;
-
-      // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
-      const messages = response.data.messages ? response.data.messages : response.data;
-      // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
-
-      const loadingMessages = [];
-      for (const msg of messages) {
-        const role = msg.role === "user" ? "user" : "model";
-        let newMsg = { role, text: "" };
-       
-        // 문자열인 경우
-        if (typeof msg.content === "string") {
-          newMsg.text = msg.content;
-        } 
-        // 객체인 경우
-        else if (typeof msg.content === "object" && msg.content !== null) {
-          // 메시지 텍스트 설정
-          if (msg.content.message) {
-            newMsg.text = msg.content.message;
-          } else if (msg.content.text) {
-            newMsg.text = msg.content.text;
-          }
-          
-          // 채용정보 추가
-          if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
-            newMsg.jobPostings = msg.content.jobPostings;
-          }
-          
-          // 훈련과정 정보 추가
-          if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
-            newMsg.trainingCourses = msg.content.trainingCourses;
-          }
-
-          // 메시지 타입 추가
-          if (msg.content.type) {
-            newMsg.type = msg.content.type;
-          }
-
-          // 음성 입력 모드 추가
-          if (msg.content.mode === 'voice') {
-            setIsVoiceMode(true);
-          }
-        }
-        
-        // 채팅 내역에 추가
-        loadingMessages.push(newMsg);
-      }
-
-      setChatHistory(prev => {
-        // 이전 채팅 내역이 없으면, 불러온 메시지 뭉치를 그대로 사용
-        if (prev.length === 0) return [...loadingMessages];
-        
-        // 기존 채팅 내역의 맨 위(가장 오래된 메시지)
-        const oldestMessage = prev[0];
-        // loadingMessages에서, 기존 채팅 내역의 첫 메시지와 동일한 메시지가 있는지 찾습니다.
-        const duplicateIndex = loadingMessages.findIndex(
-          msg => msg.text === oldestMessage.text && msg.role === oldestMessage.role
-        );
-        // 중복이 발견되면, 중복되지 않는 부분만 가져옵니다.
-        if (duplicateIndex !== -1) {
-          return [...loadingMessages.slice(0, duplicateIndex), ...prev];
-        }
-        return [...loadingMessages, ...prev];
-      });
-    } catch (error) {
-      console.error('채팅 내역 불러오기 오류:', error);
-    }
-  };
-
   useEffect(() => {
-    fetchChatHistory();
-  }, []);
+    const fetchChatHistory = async () => {
+      if (chatEndIndex.current === 0) return;
 
-  useEffect(() => {
-    const handleScroll = async () => {
-      const container = chatsContainerRef.current;
-      // 만약 컨테이너가 존재하고, scrollTop이 10 이하이며, forceScrollDownRef가 false일 때 실행합니다.
-      if (container && container.scrollTop <= 10 && !forceScrollDownRef.current) {
-        // 방지: 이미 fetch 중이면 재호출하지 않음
-        if (isFetchingHistoryRef.current) return;
-        isFetchingHistoryRef.current = true;
-        
-        // Prevent auto-scroll effect from 실행되지 않도록 플래그 설정
-        preventAutoScrollRef.current = true;
-        
-        // 불러오기 전의 전체 scrollHeight 저장
-        const prevScrollHeight = container.scrollHeight;
-        // 채팅 기록 불러오기 (새 메시지가 prepend될 경우)
-        await fetchChatHistory();
-        
-        // DOM 업데이트가 완료되는 타이밍에 requestAnimationFrame을 사용
-        requestAnimationFrame(() => {
-          const newScrollHeight = container.scrollHeight;
-          const scrollDifference = newScrollHeight - prevScrollHeight;
-          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
-          container.scrollTop = scrollDifference;
-          isFetchingHistoryRef.current = false;
+      try {
+        const id = document.cookie.split('; ')
+          .find(row => row.startsWith('sjgid='))
+          .split('=')[1];
+        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`,{
+          params: {
+            end: chatEndIndex.current,
+            limit: limit
+          },
+          withCredentials: true
         });
+        // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
+        const messages = response.data.messages ? response.data.messages : response.data;
+
+        const newMessages = []
+
+        // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
+        for (const msg of messages) {
+          const role = msg.role === "user" ? "user" : "model";
+          let newMsg = { role, text: "" };
+         
+          // 문자열인 경우
+          if (typeof msg.content === "string") {
+            newMsg.text = msg.content;
+          } 
+          // 객체인 경우
+          else if (typeof msg.content === "object" && msg.content !== null) {
+            // 메시지 텍스트 설정
+            if (msg.content.message) {
+              newMsg.text = msg.content.message;
+            } else if (msg.content.text) {
+              newMsg.text = msg.content.text;
+            }
+            
+            // 채용정보 추가
+            if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
+              newMsg.jobPostings = msg.content.jobPostings;
+            }
+            
+            // 훈련과정 정보 추가
+            if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
+              newMsg.trainingCourses = msg.content.trainingCourses;
+            }
+
+            // 메시지 타입 추가
+            if (msg.content.type) {
+              newMsg.type = msg.content.type;
+            }
+
+            // 음성 입력 모드 추가
+            if (msg.content.mode === 'voice') {
+              setIsVoiceMode(true);
+            }
+          }
+          
+          // 채팅 내역에 추가
+          newMessages.push(newMsg);
+        }
+        setChatHistory(prev => [...newMessages, ...prev]);
+        chatEndIndex.current = response.data.index;
+      } catch (error) {
+        console.error('채팅 내역 불러오기 오류:', error);
       }
     };
+    fetchChatHistory();
+
+    // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 0);
+
     const container = chatsContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScroll);
-    }
-    return () => {
-      if (container) {
-        container.removeEventListener('scroll', handleScroll);
+    // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
+    const handleScrollToTop = async () => {
+      const scrollPosition = container.scrollTop;
+      if (scrollPosition <= 0) {
+        const prevHeight = container.scrollHeight;
+        fetchChatHistory();
+        setTimeout(() => {
+          const newHeight = container.scrollHeight;
+        container.scrollTo({
+          top: newHeight - prevHeight,
+            behavior: 'instant' // 바로 이동
+          });
+        }, 20);
       }
+    }
+    container.addEventListener('scroll', handleScrollToTop);
+
+    return () => {
+      container.removeEventListener('scroll', handleScrollToTop);
+      clearTimeout(timer);
     };
   }, []);
 
@@ -645,9 +600,9 @@ const Chat = () => {
     }
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(true);
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [initialMode, setInitialMode] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(true);  // 모달 상태 추가
+  const [isVoiceMode, setIsVoiceMode] = useState(false);  // 음성 입력 모드 상태 추가
+  const [initialMode, setInitialMode] = useState(null);  // 음성 입력 모드 초기 설정 상태 추가
 
   // handleModalSubmit 수정
   const handleModalSubmit = async (response) => {
@@ -740,10 +695,31 @@ const Chat = () => {
     });
   };
 
-  // "최근 메시지 보기" 버튼 클릭 시 호출되는 핸들러
-  const handleRecentMessageButtonClick = () => {
-    forceScrollDownRef.current = true; // 강제 스크롤 플래그 설정
-    scrollToBottom();
+  // 메시지 내용을 HTML로 변환하는 함수 수정
+  const formatMessage = (message) => {
+    if (!message) return '';
+
+    return (
+      <div className={styles.messageContent}>
+        <ReactMarkdown
+          components={{
+            // 링크 컴포넌트 커스터마이징
+            a: ({ node, ...props }) => (
+              <a
+                {...props}
+                className={styles.sourceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              />
+            ),
+            // 줄바꿈 유지
+            p: ({ children }) => <p style={{ margin: '0.5em 0' }}>{children}</p>
+          }}
+        >
+          {message}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   return (
@@ -912,7 +888,7 @@ const Chat = () => {
           {showScrollButton && (
             <button 
               className={`${styles.scrollButton} ${styles.visible}`} 
-              onClick={handleRecentMessageButtonClick}
+              onClick={scrollToBottom}
             >
               <span className="material-symbols-rounded">arrow_downward</span>
               최근 메시지 보기
