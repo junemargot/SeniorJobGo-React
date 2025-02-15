@@ -110,21 +110,21 @@ body {
 
   .chatsContainer {
     display: flex;
-    gap: 20px;
+    gap: 12px;
     flex-direction: column;
     overflow-y: auto;
     scroll-behavior: smooth;
     // overscroll-behavior-y: contain; // 모바일에서 스크롤 바운스 방지
 
     .message {
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.75rem;
       width: 100%;
       display: flex;
       gap: 10px;
       align-items: flex-start;
 
       &.botMessage {
-        margin: 9px auto;
+        margin: 4px auto;
         
         .avatar {
           height: 43px;
@@ -173,7 +173,47 @@ body {
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       
       .messageText {
-        padding: 8px 0;
+        font-size: 15px;
+        line-height: 1.4;
+        color: #333;
+
+        p {
+          margin: 0;
+          line-height: 1.4;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+
+        h3 {
+          font-size: 17px;
+          font-weight: 600;
+          color: #1a1a1a;
+          margin: 16px 0 8px;
+          
+          &:first-child {
+            margin-top: 4px;
+          }
+        }
+
+        ul {
+          margin: 0;
+          padding-left: 1.2rem;
+          
+          li {
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+            
+            ul {
+              margin: 0;
+            }
+          }
+        }
+
+        strong {
+          color: #1a1a1a;
+          font-weight: 600;
+        }
       }
       
       .voiceProcessing {
@@ -252,6 +292,20 @@ body {
         &:visited {
           color: #7c3aed;  // 보라색 (방문한 링크)
         }
+      }
+
+      .jobList {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .trainingList {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
       }
     }
   }
@@ -416,12 +470,30 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 }
 
 /* 채용 공고 리스트 */
-.jobList {
+.jobList, .trainingList {
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-  width: 100%;
+  gap: 24px;
+}
+
+.itemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paragraph {
+  background: rgba(255, 188, 44, 0.1);
+  border-left: 4px solid #ffbc2c;
+  padding: 16px;
+  margin: 0 0 16px 0;
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* 채용 공고 카드 */
@@ -733,25 +805,17 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 }
 
 // 훈련정보 카드 스타일
-.trainingList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-  width: 100%;
-}
-
 .trainingCard {
-  background: $color-white;
-  border-radius: $radius-lg;
+  background: white;
+  border-radius: 12px;
   padding: 16px;
-  border: 1px solid $color-border;
+  border: 1px solid #eee;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   width: 100%;
   margin: 0;
   box-sizing: border-box;
   cursor: pointer;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   position: relative;
 
   &::after {
@@ -761,16 +825,15 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: $radius-lg;
+    border-radius: 12px;
     border: 2px solid transparent;
-    transition: border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 0.3s ease;
     pointer-events: none;
   }
 
   &.selected {
     transform: scale(1.02);
     box-shadow: 0 8px 24px rgba(29, 126, 253, 0.15);
-    scroll-margin: 100px;
 
     &::after {
       border-color: #1d7efd;
@@ -800,6 +863,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   &__title {
     font-size: 16px;
     font-weight: 600;
+    color: #333;
     margin-bottom: 12px;
     line-height: 1.4;
   }
@@ -825,7 +889,6 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     border-top: 1px solid #eee;
     background: #f8f9fa;
     border-radius: 8px;
-    transition: all 0.3s ease;
 
     &.visible {
       display: block;
@@ -866,6 +929,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   &__footer {
     display: none;
     margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
     
     &.visible {
       display: block;
@@ -876,23 +941,23 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: inline-block;
     padding: 8px 16px;
     background: #0078d4;
-    color: white !important;
+    color: white;
     border: none;
     border-radius: 6px;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
-    text-decoration: none !important;
+    text-decoration: none;
     text-align: center;
     
     &:hover {
       background: #006cbd;
-      color: white !important;
-      text-decoration: none !important;
+      color: white;
     }
 
     &:visited {
-      color: white !important;
+      color: white;
     }
   }
 }
@@ -1108,4 +1173,225 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+.courseList {
+  list-style: decimal;
+  padding-left: 20px;
+  margin: 0;
+  
+  li {
+    padding-left: 4px;
+    margin-bottom: 8px;
+    
+    p {
+      margin: 4px 0;
+    }
+
+    ul {
+      list-style: disc;
+      padding-left: 16px;
+      margin: 4px 0;
+
+      li {
+        margin-bottom: 2px;
+      }
+    }
+  }
+}
+
+.trainingList {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  .courseList {
+    list-style: decimal;
+    padding-left: 24px;
+    margin: 0;
+    
+    li {
+      padding-left: 8px;
+      margin-bottom: 16px;
+      
+      p {
+        margin: 8px 0;
+      }
+
+      ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin: 8px 0;
+
+        li {
+          margin-bottom: 4px;
+        }
+      }
+    }
+  }
+
+  .courseCards {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 24px;
+  }
+}
+
+.trainingCard {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    pointer-events: none;
+  }
+
+  &.selected {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(29, 126, 253, 0.15);
+
+    &::after {
+      border-color: #1d7efd;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__institute {
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__location {
+    font-size: 14px;
+    color: #0078d4;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: #444;
+  }
+
+  &__description {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      display: flex;
+      margin: 8px 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+      word-break: break-all;
+
+      &[data-label] {
+        position: relative;
+        padding-left: 120px;
+        min-height: 24px;
+
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 0;
+          width: 110px;
+          font-weight: 600;
+          color: #555;
+          
+          &::after {
+            content: ":";
+            position: absolute;
+            right: 8px;
+          }
+        }
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    
+    &.visible {
+      display: block;
+    }
+  }
+
+  &__button {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    text-align: center;
+    
+    &:hover {
+      background: #006cbd;
+      color: white;
+    }
+
+    &:visited {
+      color: white;
+    }
+  }
 }
