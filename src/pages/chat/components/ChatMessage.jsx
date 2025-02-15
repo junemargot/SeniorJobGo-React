@@ -11,12 +11,17 @@ const ChatMessage = ({
   selectedTraining,
   onJobClick,
   onTrainingClick,
-  selectedCardRef 
+  selectedCardRef,
+  isLast
 }) => {
+  const isBot = message.role === "bot";
+  const isUser = message.role === "user";
+  const isLoading = message.loading;
+
   const getMessageStyle = (msg) => {
     const baseStyle = styles.message;
     if (msg.role === "model" || msg.role === "bot") {
-      return `${baseStyle} ${styles.botMessage} ${msg.loading ? styles.loading : ""}`;
+      return `${baseStyle} ${styles.botMessage} ${msg.loading ? styles.loading : ""} ${msg.mode === 'voice' ? styles.voiceLoading : ""}`;
     }
     return `${baseStyle} ${styles.userMessage}`;
   };
@@ -54,22 +59,38 @@ const ChatMessage = ({
   };
 
   return (
-    <div className={getMessageStyle(message)}>
-      {(message.role === "model" || message.role === "bot") && 
-        <img src={Avatar} alt="avatar" className={styles.avatar} />
-      }
+    <div className={`${styles.message} ${isBot ? styles.botMessage : ''} ${isUser ? styles.userMessage : ''} ${isLoading ? styles.loading : ''}`}>
+      {isBot && <img src={Avatar} alt="Bot" className={styles.avatar} />}
       <div className={styles.messageContent}>
-        {message.loading ? (
-          <>
-            <div className={styles.loadingBar} />
-            <div className={styles.processingTime}>답변 생성 중...</div>
-          </>
+        {isLoading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingDots}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className={styles.loadingText}>답변을 준비중입니다...</div>
+          </div>
         ) : (
-          <>
-            {formatMessage(message.text)}
-
-            {/* 채용정보 목록 */}
-            {message.jobPostings && message.jobPostings.length > 0 && (
+          <div className={styles.messageText}>
+            <ReactMarkdown
+              components={{
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    className={styles.sourceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                ),
+                p: ({ node, ...props }) => (
+                  <p {...props} className={styles.paragraph} />
+                )
+              }}
+            >
+              {message.text}
+            </ReactMarkdown>
+            {message.jobPostings?.length > 0 && (
               <div className={styles.jobList}>
                 {message.jobPostings.map(job => (
                   <JobCard
@@ -82,9 +103,7 @@ const ChatMessage = ({
                 ))}
               </div>
             )}
-
-            {/* 훈련과정 목록 */}
-            {message.trainingCourses && message.trainingCourses.length > 0 && (
+            {message.trainingCourses?.length > 0 && (
               <div className={styles.trainingList}>
                 {message.trainingCourses.map(course => (
                   <TrainingCard
@@ -100,7 +119,7 @@ const ChatMessage = ({
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -39,6 +39,7 @@ const ChatInput = ({
                 onClick={onStopResponse}
                 disabled={!isBotResponding}
                 className={`material-symbols-rounded ${styles.stopResponseBtn}`}
+                id="stop-response-btn"
               >
                 stop_circle
               </button>
@@ -46,6 +47,7 @@ const ChatInput = ({
                 type="submit"
                 disabled={!userMessage.trim()}
                 className={`material-symbols-rounded ${styles.sendPromptBtn}`}
+                id="send-prompt-btn"
               >
                 arrow_upward
               </button>

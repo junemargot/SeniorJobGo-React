@@ -84,6 +84,15 @@ const Chat = () => {
     return () => clearTimeout(timer);
   }, [chatHistory]);
 
+  // 챗봇 응답 상태 변경 시 body 클래스 업데이트
+  useEffect(() => {
+    if (isBotResponding) {
+      document.body.classList.add('bot-responding');
+    } else {
+      document.body.classList.remove('bot-responding');
+    }
+  }, [isBotResponding]);
+
   // 폼 제출 핸들러
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -91,38 +100,48 @@ const Chat = () => {
 
     const message = userMessage.trim();
     setChatHistory(prev => [...prev, { role: "user", text: message }]);
+    setUserMessage("");
     setIsBotResponding(true);
     setStartTime(Date.now());
     setProcessingTime(0);
 
     try {
+      // 로딩 메시지 추가
+      setChatHistory(prev => [...prev, {
+        role: "bot",
+        text: "답변을 준비중입니다...",
+        loading: true
+      }]);
+
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: message,
         session_id: "default_session"
       }, { withCredentials: true });
 
-      const { message: botMessage, jobPostings, type } = response.data;
-      
-      const newBotMessage = {
-        role: "bot",
-        text: botMessage,
-        type: type,
-        jobPostings: jobPostings || [],
-        trainingCourses: response.data.trainingCourses || []
-      };
-
-      setChatHistory(prev => [...prev, newBotMessage]);
+      // 로딩 메시지 제거 및 실제 응답 추가
+      setChatHistory(prev => {
+        const filtered = prev.filter(msg => !msg.loading);
+        return [...filtered, {
+          role: "bot",
+          text: response.data.message,
+          type: response.data.type,
+          jobPostings: response.data.jobPostings || [],
+          trainingCourses: response.data.trainingCourses || []
+        }];
+      });
 
     } catch (error) {
       console.error("메시지 전송 오류:", error);
-      setChatHistory(prev => [...prev, {
-        role: "model",
-        text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.",
-        type: "error"
-      }]);
+      setChatHistory(prev => {
+        const filtered = prev.filter(msg => !msg.loading);
+        return [...filtered, {
+          role: "bot",
+          text: "죄송합니다. 메시지를 처리하는 중에 오류가 발생했습니다.",
+          type: "error"
+        }];
+      });
     } finally {
       setIsBotResponding(false);
-      setUserMessage("");
       setStartTime(null);
     }
   };
@@ -193,35 +212,40 @@ const Chat = () => {
     setIsModalOpen(false);
     setUserMessage("");
 
+    // 음성 모드 설정 업데이트
     if (response.mode === 'voice') {
       setIsVoiceMode(true);
       setInitialMode('voice');
+    } else if (response.mode === 'text') {
+      setIsVoiceMode(false);
+      setInitialMode(null);
     }
 
-    if (!response.mode || response.mode !== 'voice') {
-      const userMessage = {
-        role: "user",
-        text: response.originalText || "음성으로 검색하기",
-      };
-      setChatHistory((prev) => [...prev, userMessage]);
-    }
-
-    setIsBotResponding(true);
-    try {
-      const botMessage = {
-        role: "model",
-        text: response.message || response.text,
-        jobPostings: response.jobPostings || [],
-        trainingCourses: response.trainingCourses || [],
-        type: response.type
+    // 채팅 기록 업데이트
+    setChatHistory(prev => {
+      // 이전 로딩 메시지 제거
+      const filtered = prev.filter(msg => !msg.loading);
+      
+      // 새 메시지 추가
+      const newMessage = {
+        role: response.role,
+        text: response.text,
+        loading: response.loading || false,
+        mode: response.mode  // 모드 정보 유지
       };
 
-      setChatHistory((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error("Error processing bot response:", error);
-    } finally {
-      setIsBotResponding(false);
-    }
+      // 봇 메시지인 경우 추가 데이터 포함
+      if (response.role === "bot" && !response.loading) {
+        newMessage.jobPostings = response.jobPostings || [];
+        newMessage.trainingCourses = response.trainingCourses || [];
+        newMessage.type = response.type;
+      }
+
+      return [...filtered, newMessage];
+    });
+
+    // 봇 응답 상태 업데이트
+    setIsBotResponding(response.loading || false);
   };
 
   const handleModalClose = () => {
