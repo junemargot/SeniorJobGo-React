@@ -281,16 +281,16 @@ body {
       }
       
       a {
-        color: #2563eb;  // 파란색 링크
-        text-decoration: underline;
+        color: #ffffff;  // 파란색 링크
+        text-decoration: none;
         transition: color 0.2s ease;
         
         &:hover {
-          color: #1d4ed8;  // 더 진한 파란색
+          cursor: pointer;
         }
         
         &:visited {
-          color: #7c3aed;  // 보라색 (방문한 링크)
+          color: #ff1493;  // 보라색 (방문한 링크)
         }
       }
 
