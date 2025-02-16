@@ -174,45 +174,45 @@ body {
       
       .messageText {
         font-size: 15px;
-        line-height: 1.4;
+        line-height: 1.6;
         color: #333;
-
-        p {
-          margin: 0;
-          line-height: 1.4;
-          white-space: pre-wrap;
-          word-break: break-word;
-        }
 
         h3 {
           font-size: 17px;
           font-weight: 600;
           color: #1a1a1a;
-          margin: 16px 0 8px;
+          margin: 16px 0 12px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
           
           &:first-child {
             margin-top: 4px;
           }
         }
 
-        ul {
-          margin: 0;
-          padding-left: 1.2rem;
-          
-          li {
-            margin: 0;
-            padding: 0;
-            line-height: 1.4;
-            
-            ul {
-              margin: 0;
-            }
+        p {
+          margin: 12px 0;
+          line-height: 1.6;
+          white-space: pre-wrap;
+          word-break: break-word;
+
+          &:first-of-type {
+            margin-top: 8px;
           }
         }
 
         strong {
           color: #1a1a1a;
           font-weight: 600;
+          background: rgba(255, 188, 44, 0.1);
+          padding: 2px 4px;
+          border-radius: 4px;
+        }
+
+        span[role="img"] {
+          font-size: 1.2em;
+          margin: 0 2px;
+          vertical-align: middle;
         }
       }
       
