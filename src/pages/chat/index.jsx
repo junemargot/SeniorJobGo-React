@@ -7,6 +7,9 @@ import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
+import GuideModal from '@pages/modal/GuideModal';
+import JobSearchModal from '@pages/modal/JobSearchModal';
+import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -37,6 +40,11 @@ const Chat = () => {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [initialMode, setInitialMode] = useState(null);
+
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [isJobSearchModalOpen, setIsJobSearchModalOpen] = useState(false);
+  const [isTrainingSearchModalOpen, setIsTrainingSearchModalOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   // 메뉴 아이템
   const suggestions = [
@@ -147,9 +155,19 @@ const Chat = () => {
   };
 
   // 추천 메뉴 클릭 핸들러
-  const handleSuggestionClick = (suggestion) => {
-    setUserMessage(suggestion.text);
-    setTimeout(() => handleFormSubmit({ preventDefault: () => { } }), 0);
+  const handleSuggestionClick = (item) => {
+    switch (item.id) {
+      case 1:
+        setIsGuideModalOpen(true);
+        break;
+      case 2:
+        setIsJobSearchModalOpen(true);
+        break;
+      case 3:
+        setIsTrainingSearchModalOpen(true);
+        break;
+      // ... 다른 케이스들
+    }
   };
 
   // 채팅 내역 삭제
@@ -273,6 +291,107 @@ const Chat = () => {
     }
   };
 
+  // 맞춤 검색 제출 핸들러
+  const handleJobSearchSubmit = (formData) => {
+    setIsJobSearchModalOpen(false);
+
+    // 채팅 기록에 사용자 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "user",
+      text: "[AI맞춤채용정보]",
+    }]);
+
+    // 로딩 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "bot",
+      text: "맞춤 채용정보를 검색중입니다...",
+      loading: true
+    }]);
+
+    // 백엔드로 데이터 전송
+    const searchData = {
+      ...formData,
+      location: formData.city + (formData.district ? ` ${formData.district}` : ''),
+    };
+
+    axios.post(`${API_BASE_URL}/jobs/search`, searchData, {
+      withCredentials: true
+    })
+      .then(response => {
+        // 로딩 메시지 제거 및 실제 응답 추가
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, {
+            role: "bot",
+            text: response.data.message,
+            jobPostings: response.data.jobPostings || [],
+            type: "job_search"
+          }];
+        });
+      })
+      .catch(error => {
+        console.error("채용정보 검색 오류:", error);
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, {
+            role: "bot",
+            text: "죄송합니다. 채용정보를 검색하는 중에 오류가 발생했습니다.",
+            type: "error"
+          }];
+        });
+      });
+  };
+
+  // 훈련 검색 제출 핸들러
+  const handleTrainingSearchSubmit = (formData) => {
+    setIsTrainingSearchModalOpen(false);
+
+    // 채팅 기록에 사용자 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "user",
+      text: "[AI맞춤훈련정보]",
+    }]);
+
+    // 로딩 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "bot",
+      text: "맞춤 훈련정보를 검색중입니다...",
+      loading: true
+    }]);
+
+    // 백엔드로 데이터 전송
+    const searchData = {
+      ...formData,
+      location: formData.city + (formData.district ? ` ${formData.district}` : ''),
+    };
+
+    axios.post(`${API_BASE_URL}/trainings/search`, searchData, {
+      withCredentials: true
+    })
+      .then(response => {
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, {
+            role: "bot",
+            text: response.data.message,
+            trainingCourses: response.data.trainingCourses || [],
+            type: "training_search"
+          }];
+        });
+      })
+      .catch(error => {
+        console.error("훈련정보 검색 오류:", error);
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, {
+            role: "bot",
+            text: "죄송합니다. 훈련정보를 검색하는 중에 오류가 발생했습니다.",
+            type: "error"
+          }];
+        });
+      });
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -346,6 +465,25 @@ const Chat = () => {
             </button>
           )}
         </div>
+
+        <GuideModal 
+          isOpen={isGuideModalOpen}
+          onClose={() => setIsGuideModalOpen(false)}
+        />
+        
+        <JobSearchModal
+          isOpen={isJobSearchModalOpen}
+          onClose={() => setIsJobSearchModalOpen(false)}
+          onSubmit={handleJobSearchSubmit}
+          userProfile={userProfile}
+        />
+
+        <TrainingSearchModal
+          isOpen={isTrainingSearchModalOpen}
+          onClose={() => setIsTrainingSearchModalOpen(false)}
+          onSubmit={handleTrainingSearchSubmit}
+          userProfile={userProfile}
+        />
       </main>
     </div>
   );
