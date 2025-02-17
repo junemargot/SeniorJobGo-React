@@ -1,0 +1,229 @@
+@use 'sass:color';
+@use '@assets/styles/_variables' as *;
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  input, select {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    
+    &:disabled {
+      background: #f8f9fa;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  
+  button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.submitButton {
+  background: #ffbc2c;
+  color: white;
+  
+  &:hover {
+    background: color.adjust(#ffbc2c, $lightness: -5%);
+  }
+}
+
+.editButton {
+  background: #4F6EF7;
+  color: white;
+  
+  &:hover {
+    background: color.adjust(#4F6EF7, $lightness: -5%);
+  }
+}
+
+.cancelButton {
+  background: #f8f9fa;
+  color: #666;
+  
+  &:hover {
+    background: color.adjust(#f8f9fa, $lightness: -5%);
+  }
+}
+
+.ageButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+  
+  .ageButton {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.active {
+      background: #ffbc2c;
+      color: white;
+      border-color: #ffbc2c;
+    }
+    
+    &:hover:not(.active) {
+      background: #f8f9fa;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.genderButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  .genderButton {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.active {
+      background: #ffbc2c;
+      color: white;
+      border-color: #ffbc2c;
+    }
+    
+    &:hover:not(.active) {
+      background: #f8f9fa;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.locationInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  select, input {
+    width: 100%;
+  }
+}
+
+.voiceInputGroup {
+  display: flex;
+  gap: 0.5rem;
+  
+  input {
+    flex: 1;
+  }
+  
+  .voiceButton {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: #ffbc2c;
+      color: white;
+    }
+    
+    &.recording {
+      background: #dc3545;
+      color: white;
+      animation: pulse 1.5s infinite;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    span {
+      font-size: 20px;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+} 

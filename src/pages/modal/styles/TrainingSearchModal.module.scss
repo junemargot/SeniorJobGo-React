@@ -1,0 +1,212 @@
+@use 'sass:color';
+@use '@assets/styles/_variables' as *;
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 1.5rem;
+  }
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  
+  label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+}
+
+.locationInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  select, input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    
+    &:disabled {
+      background: #f8f9fa;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.interestButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  
+  .interestButton {
+    padding: 0.6rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.active {
+      background: #ffbc2c;
+      color: white;
+      border-color: #ffbc2c;
+    }
+    
+    &:hover:not(.active):not(:disabled) {
+      background: #f8f9fa;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.customInterestInput {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  
+  input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    
+    &:disabled {
+      background: #f8f9fa;
+      cursor: not-allowed;
+    }
+  }
+  
+  .addButton {
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    background: #f8f9fa;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover:not(:disabled) {
+      background: #ffbc2c;
+      color: white;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  
+  &:disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  
+  button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.submitButton {
+  background: #ffbc2c;
+  color: white;
+  
+  &:hover {
+    background: color.adjust(#ffbc2c, $lightness: -5%);
+  }
+}
+
+.editButton {
+  background: #4F6EF7;
+  color: white;
+  
+  &:hover {
+    background: color.adjust(#4F6EF7, $lightness: -5%);
+  }
+}
+
+.cancelButton {
+  background: #f8f9fa;
+  color: #666;
+  
+  &:hover {
+    background: color.adjust(#f8f9fa, $lightness: -5%);
+  }
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .interestButtons {
+    .interestButton {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+    }
+  }
+} 

@@ -133,6 +133,7 @@
   border-radius: 50%;
   background-color: #f8f9fa;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -141,11 +142,20 @@
   border: 3px solid #007bff;
   font-size: 0.9rem;
   color: #007bff;
+  gap: 0.5rem;
+
+  span {
+    font-size: 2.5rem;
+  }
 
   @media (max-width: 768px) {
     width: 120px;
     height: 120px;
     font-size: 0.8rem;
+
+    span {
+      font-size: 2rem;
+    }
   }
 
   &.active {
@@ -171,25 +181,45 @@
   background-color: #f8f9fa;
   padding: 1.5rem;
   border-radius: 10px;
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 1.5rem auto 0;
   text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
 
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 0.9rem;
-    max-width: 100%;
+    margin-top: 1rem;
   }
 
   h4 {
     color: #495057;
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background-color: #dc3545;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
   }
 
   p {
     color: #212529;
     line-height: 1.5;
     margin-bottom: 1rem;
+    min-height: 3em;
+    padding: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
   }
 
   .confirmRecording {
@@ -201,11 +231,23 @@
     border: none;
     border-radius: 8px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 
     &:hover {
       background-color: #218838;
+      transform: translateY(-1px);
+    }
+
+    &::before {
+      content: 'check';
+      font-family: 'Material Symbols Rounded';
+      font-size: 1.2rem;
     }
 
     @media (max-width: 768px) {
@@ -213,6 +255,16 @@
       font-size: 0.9rem;
     }
   }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .processing {
@@ -308,27 +360,11 @@
 
 .summaryActions {
   display: flex;
-  gap: 1rem;
   justify-content: center;
+  margin-top: 1.5rem;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  button {
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    @media (max-width: 768px) {
-      width: 100%;
-      padding: 0.8rem;
-      font-size: 0.9rem;
-    }
+    margin-top: 1rem;
   }
 }
 
@@ -337,9 +373,16 @@
   color: white;
   position: relative;
   overflow: hidden;
-  min-width: 180px;
-  min-height: 3em;
-  padding: 0.8em 2.5em;
+  width: 100%;
+  max-width: 300px;
+  min-height: 3.5em;
+  padding: 1em 2em;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -349,8 +392,11 @@
   }
 
   &.loading {
-    cursor: wait;
-    background-color: #1e7e34;
+    background-color: #dc3545;  // 빨간색으로 변경
+    
+    &:hover {
+      background-color: #c82333;  // 더 진한 빨간색
+    }
     
     &::before {
       content: '';
@@ -372,61 +418,31 @@
     }
   }
 
-  .loadingContainer {
+  .loadingText {
     position: relative;
-    width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .loadingText {
+    gap: 0.5rem;
+    font-weight: 500;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    white-space: nowrap;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .loadingTimer {
-    position: absolute;
-    bottom: -0.8em;
-    right: -1.5em;
-    font-size: 0.7em;
+    font-size: 0.8em;
     opacity: 0.9;
-    z-index: 1;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    line-height: 1;
-  }
-
-  &:disabled {
-    opacity: 0.8;
+    margin-left: 0.5em;
   }
 
   @media (max-width: 768px) {
-    min-width: 140px;
-    min-height: 2.8em;
-    padding: 0.7em 2em;
-
-    .loadingText {
-      font-size: 0.9em;
-    }
+    max-width: 250px;
+    min-height: 3em;
+    padding: 0.8em 1.5em;
+    font-size: 0.9rem;
 
     .loadingTimer {
-      bottom: -0.6em;
-      right: -1.2em;
-      font-size: 0.65em;
+      font-size: 0.75em;
     }
-  }
-}
-
-@keyframes metallicSlide {
-  0% {
-    transform: translateX(0%) skewX(-10deg);
-  }
-  100% {
-    transform: translateX(1000%) skewX(-10deg);
   }
 }
 
