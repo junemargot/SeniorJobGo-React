@@ -283,7 +283,17 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         {!mode ? (
           // 초기 선택 화면
           <div className={styles.modeSelection}>
-            <h2>입력 방식을 선택해주세요</h2>
+            <div className={styles.introContainer}>
+              <h2 className={styles.introTitle}>
+                시니어잡고는 AI 기술이 적용된 <br/>고령층을 위한 <span className={styles.highlighted}>대화형 도우미</span>입니다.
+              </h2>
+              <p className={styles.introSubtitle}>
+                최적화된 채용 정보와 훈련 정보 등을 안내해 드립니다.<br/>
+                대화 방식을 선택하여 지금 바로 사용해보세요!
+              </p>
+            </div>
+
+            {/* <h3 className={styles.chooseTitle}>대화 방식을 선택해주세요</h3> */}
             <div className={styles.modeButtons}>
               <button 
                 className={styles.modeButton}
@@ -298,15 +308,15 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                   }
                 }}
               >
-                <span className="material-symbols-rounded">mic</span>
-                음성
+                <span className="material-symbols-rounded">record_voice_over</span>
+                음성으로 주고 받는 대화
               </button>
               <button 
                 className={styles.modeButton}
                 onClick={handleTextModeSelect}
               >
-                <span className="material-symbols-rounded">chat</span>
-                문자
+                <span className="material-symbols-rounded">forum</span>
+                입력하는 채팅 대화
               </button>
             </div>
           </div>
