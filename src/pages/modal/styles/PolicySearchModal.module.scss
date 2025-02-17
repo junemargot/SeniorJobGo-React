@@ -1,0 +1,346 @@
+@use '@assets/styles/_variables' as *;
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;&display=swap');
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: $white-color;
+  width: 100%;
+  max-width: 600px;
+  height: 90vh;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid $border-light-color;
+
+  h2 {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $text-color;
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    color: $text-color;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.policyList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.policyCard {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid $border-light-color;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: $color-background-light;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  &__department {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $text-color;
+    font-weight: $font-weight-semibold;
+
+    span {
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__date {
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+  }
+
+  &__title {
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-color;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__tag {
+    color: $primary-color;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+
+  &__content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+
+    &.visible {
+      max-height: 1000px;
+      transition: max-height 0.5s ease-in;
+    }
+
+    p {
+      margin: 0.75rem 0;
+      line-height: 1.5;
+      color: $text-color;
+      font-size: $font-size-sm;
+
+      strong {
+        color: $text-color;
+        font-weight: $font-weight-semibold;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &__description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-light-color;
+    font-size: $font-size-sm;
+    line-height: 1.6;
+    color: $text-color;
+  }
+
+  &__footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-light-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__source {
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: $primary-color;
+    font-size: $font-size-sm;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: $radius-xxl;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba($primary-color, 0.1);
+    }
+
+    span {
+      font-size: $font-size-sm;
+    }
+  }
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 500;
+    color: $text-color;
+  }
+}
+
+.locationInputs {
+  display: flex;
+  gap: 0.5rem;
+
+  select, input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid $border-light-color;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+
+    &:focus {
+      border-color: $primary-color;
+      outline: none;
+    }
+
+    &:disabled {
+      background-color: $light-primary-color;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.categoryButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.categoryButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid $border-light-color;
+  border-radius: $radius-xxl;
+  background: $white-color;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    border-color: $primary-color;
+    color: $primary-color;
+  }
+
+  &.active {
+    background: $primary-color;
+    color: $white-color;
+    border-color: $primary-color;
+  }
+
+  &:disabled {
+    background-color: $light-primary-color;
+    cursor: not-allowed;
+  }
+}
+
+.customCategoryInput {
+  display: flex;
+  gap: 0.5rem;
+
+  input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid $border-light-color;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+
+    &:focus {
+      border-color: $primary-color;
+      outline: none;
+    }
+
+    &:disabled {
+      background-color: $light-primary-color;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.addButton {
+  padding: 0.75rem 1rem;
+  background: $primary-color;
+  color: $white-color;
+  border: none;
+  border-radius: $radius-md;
+  cursor: pointer;
+  font-size: $font-size-sm;
+
+  &:hover:not(:disabled) {
+    background: $primary-hover-color;
+  }
+
+  &:disabled {
+    background-color: $light-primary-color;
+    cursor: not-allowed;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  button {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.submitButton {
+  background: $primary-color;
+  color: $white-color;
+  border: none;
+
+  &:hover {
+    background: $primary-hover-color;
+  }
+}
+
+.editButton {
+  background: $white-color;
+  color: $primary-color;
+  border: 1px solid $primary-color;
+
+  &:hover {
+    background: $light-primary-color;
+  }
+}
+
+.cancelButton {
+  background: $white-color;
+  color: $secondary-text-color;
+  border: 1px solid $border-light-color;
+
+  &:hover {
+    background: $light-primary-color;
+  }
+} 

@@ -10,6 +10,8 @@ import ChatInput from './components/ChatInput';
 import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
+import PolicySearchModal from '@pages/modal/PolicySearchModal';
+import { samplePolicies } from '../../data/samplePolicies';
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -44,6 +46,7 @@ const Chat = () => {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isJobSearchModalOpen, setIsJobSearchModalOpen] = useState(false);
   const [isTrainingSearchModalOpen, setIsTrainingSearchModalOpen] = useState(false);
+  const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
   // 메뉴 아이템
@@ -51,7 +54,9 @@ const Chat = () => {
     { text: "시니어JobGo 이용안내", icon: "help", id: 1 },
     { text: "AI 맞춤 채용정보 검색", icon: "work", id: 2 },
     { text: "맞춤 훈련정보 검색", icon: "school", id: 3 },
-    { text: "이력서 관리", icon: "description", id: 4 },
+    { text: "정책 정보 알리미", icon: "info", id: 4 },
+    { text: "이력서 관리", icon: "description", id: 5 },
+    
   ];
 
   // 스크롤 이벤트 핸들러
@@ -165,6 +170,9 @@ const Chat = () => {
         break;
       case 3:
         setIsTrainingSearchModalOpen(true);
+        break;
+      case 4:
+        setIsPolicySearchModalOpen(true);
         break;
       // ... 다른 케이스들
     }
@@ -392,6 +400,46 @@ const Chat = () => {
       });
   };
 
+  const handlePolicySearchSubmit = async (formData) => {
+    setIsPolicySearchModalOpen(false);
+    setUserMessage('');
+    setIsBotResponding(true);
+
+    // 로딩 메시지 추가
+    const loadingMessage = {
+      role: 'assistant',
+      content: '정책 정보를 검색 중입니다...',
+      timestamp: new Date().toISOString(),
+    };
+    setChatHistory(prev => [...prev, loadingMessage]);
+
+    try {
+      // 실제 API 호출 대신 샘플 데이터 사용
+      const policies = samplePolicies;
+      
+      // 정책 정보 응답 메시지 생성
+      const responseMessage = {
+        role: 'assistant',
+        content: '검색하신 정책 정보입니다:',
+        policies: policies,
+        timestamp: new Date().toISOString(),
+      };
+
+      // 채팅 히스토리 업데이트 (로딩 메시지 제거 후 응답 추가)
+      setChatHistory(prev => [...prev.slice(0, -1), responseMessage]);
+    } catch (error) {
+      console.error('정책 검색 중 오류 발생:', error);
+      const errorMessage = {
+        role: 'assistant',
+        content: '죄송합니다. 정책 정보를 가져오는 중 오류가 발생했습니다.',
+        timestamp: new Date().toISOString(),
+      };
+      setChatHistory(prev => [...prev.slice(0, -1), errorMessage]);
+    }
+
+    setIsBotResponding(false);
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -484,6 +532,15 @@ const Chat = () => {
           onSubmit={handleTrainingSearchSubmit}
           userProfile={userProfile}
         />
+
+        {isPolicySearchModalOpen && (
+          <PolicySearchModal
+            isOpen={isPolicySearchModalOpen}
+            onClose={() => setIsPolicySearchModalOpen(false)}
+            onSubmit={handlePolicySearchSubmit}
+            userProfile={userProfile}
+          />
+        )}
       </main>
     </div>
   );

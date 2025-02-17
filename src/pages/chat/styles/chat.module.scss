@@ -1444,3 +1444,120 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     }
   }
 }
+
+.policyCard {
+  background: $white-color;
+  border: 1px solid $border-light-color;
+  border-radius: $radius-lg;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: $primary-color;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  &__department {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+
+    .material-symbols-rounded {
+      font-size: 1.1rem;
+    }
+  }
+
+  &__date {
+    color: $secondary-text-color;
+    font-size: $font-size-xs;
+  }
+
+  &__title {
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-color;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  &__tag {
+    background: $light-primary-color;
+    color: $secondary-text-color;
+    padding: 0.25rem 0.75rem;
+    border-radius: $radius-lg;
+    font-size: $font-size-xs;
+  }
+
+  &__description {
+    display: none;
+    border-top: 1px solid $border-light-color;
+    margin-top: 1rem;
+    padding-top: 1rem;
+
+    &.visible {
+      display: block;
+    }
+
+    p {
+      margin-bottom: 0.75rem;
+      line-height: 1.5;
+      font-size: $font-size-sm;
+
+      &[data-label]::before {
+        content: attr(data-label);
+        font-weight: $font-weight-semibold;
+        color: $secondary-text-color;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    border-top: 1px solid $border-light-color;
+    margin-top: 1rem;
+    padding-top: 1rem;
+
+    &.visible {
+      display: block;
+    }
+  }
+
+  &__button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: $primary-color;
+    color: $white-color;
+    border-radius: $radius-md;
+    text-decoration: none;
+    font-size: $font-size-sm;
+    transition: background 0.2s;
+
+    &:hover {
+      background: $primary-hover-color;
+    }
+  }
+}
