@@ -11,6 +11,7 @@ const ChatMessage = ({
   selectedTraining,
   onJobClick,
   onTrainingClick,
+  onResumeAction,
   selectedCardRef,
   isLast
 }) => {
@@ -54,6 +55,44 @@ const ChatMessage = ({
       </div>
     );
   };
+
+  const handleResumeAction = (action) => {
+    if (onResumeAction && message.html_content) {
+      onResumeAction(action, {
+        ...message.resume_data,
+        html_content: message.html_content
+      });
+    }
+  };
+
+  if (message.type === "resume_advisor") {
+    return (
+      <div className={`${styles.message} ${styles.botMessage}`}>
+        <img src={Avatar} alt="Bot" className={styles.avatar} />
+        <div className={styles.messageContent}>
+          <p>{message.message}</p>
+          {message.html_content && (
+            <div className={styles.resumePreview}>
+              <div dangerouslySetInnerHTML={{ __html: message.html_content }} />
+            </div>
+          )}
+          {message.suggestions && (
+            <div className={styles.suggestions}>
+              {message.suggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  className={styles.suggestionButton}
+                  onClick={() => handleResumeAction(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.message} ${isBot ? styles.botMessage : ''} ${isUser ? styles.userMessage : ''} ${isLoading ? styles.loading : ''}`}>

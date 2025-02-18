@@ -49,61 +49,38 @@ body {
 
   .suggestions {
     display: flex;
-    gap: 15px;
-    margin-top: 9.5vh;
-    list-style: none;
-    overflow-x: auto;
-    scrollbar-width: none;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
 
-    .suggestionsItem {
-      width: 228px;
-      // width: 32%;
-      padding: 18px;
-      flex-shrink: 0;
+    .suggestionsItem {  // 메인 메뉴 버튼들
+      width: calc(50% - 6px);
+      height: 80px;
+      padding: 20px;
+      background: white;
+      border-radius: 13px;
       display: flex;
-      cursor: pointer;
-      flex-direction: column;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      border-radius: 12px;
-      // background: $light-secondary-color;
-      background: linear-gradient(to right, #edbf4a, #eee2bf);
-
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
 
       &:hover {
-        // background: $light-secondary-hover-color;
-        // background: rgba($primary-color, 0);
-        background: linear-gradient(to right, #eee2bf, #edbf4a);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
       .text {
-        font-size: $font-size-20;
-        line-height: 1.5rem;
+        font-size: 15px;
+        font-weight: 500;
+        color: $light-text-color;
       }
 
       span {
-        height: 45px;
-        width: 45px;
-        margin-top: 35px;
-        display: flex;
-        align-self: flex-end;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #1d7efd;
-        background: $light-primary-color;
-      }
-
-      &:nth-child(2) {
-        span {
-          color: #ffc107;
-        }
-      }
-
-      &:nth-child(3) {
-        span {
-          color: #6f42c1;
-        }
+        font-size: 24px;
+        color: $light-text-color;
       }
     }
   }
@@ -1443,4 +1420,13 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
       color: white;
     }
   }
+}
+
+.resumePreview {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
