@@ -472,34 +472,14 @@ const Chat = () => {
         break;
       
       case "이력서 다운로드":
-        // 이벤트 리스너 추가
-        const handleMessage = (event) => {
-          if (event.data === "download") {
-            // PDF 다운로드 로직
-            const downloadUrl = `${API_BASE_URL}/resume/download/temp`;
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `이력서_${new Date().getTime()}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          } else if (event.data === "cancel") {
-            // 취소 시 단순 메시지만 표시
-            setChatHistory(prev => {
-              const filtered = prev.filter(msg => !msg.loading);
-              return [...filtered, {
-                role: "bot",
-                type: "text",  // type을 text로 설정
-                text: "이력서 작성을 취소합니다.",
-                suggestions: []  // 버튼 제거를 위해 빈 배열로 설정
-              }];
-            });
-          }
-        };
-
-        window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
-
+        // 직접 다운로드 실행
+        const downloadUrl = `${API_BASE_URL}/resume/download/temp`;
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `이력서_${new Date().getTime()}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         break;
       
       case "수정하기":
