@@ -400,46 +400,6 @@ const Chat = () => {
       });
   };
 
-  const handlePolicySearchSubmit = async (formData) => {
-    setIsPolicySearchModalOpen(false);
-    setUserMessage('');
-    setIsBotResponding(true);
-
-    // 로딩 메시지 추가
-    const loadingMessage = {
-      role: 'assistant',
-      content: '정책 정보를 검색 중입니다...',
-      timestamp: new Date().toISOString(),
-    };
-    setChatHistory(prev => [...prev, loadingMessage]);
-
-    try {
-      // 실제 API 호출 대신 샘플 데이터 사용
-      const policies = samplePolicies;
-      
-      // 정책 정보 응답 메시지 생성
-      const responseMessage = {
-        role: 'assistant',
-        content: '검색하신 정책 정보입니다:',
-        policies: policies,
-        timestamp: new Date().toISOString(),
-      };
-
-      // 채팅 히스토리 업데이트 (로딩 메시지 제거 후 응답 추가)
-      setChatHistory(prev => [...prev.slice(0, -1), responseMessage]);
-    } catch (error) {
-      console.error('정책 검색 중 오류 발생:', error);
-      const errorMessage = {
-        role: 'assistant',
-        content: '죄송합니다. 정책 정보를 가져오는 중 오류가 발생했습니다.',
-        timestamp: new Date().toISOString(),
-      };
-      setChatHistory(prev => [...prev.slice(0, -1), errorMessage]);
-    }
-
-    setIsBotResponding(false);
-  };
-
   return (
     <div className={styles.page}>
       <Header />
@@ -533,14 +493,11 @@ const Chat = () => {
           userProfile={userProfile}
         />
 
-        {isPolicySearchModalOpen && (
-          <PolicySearchModal
-            isOpen={isPolicySearchModalOpen}
-            onClose={() => setIsPolicySearchModalOpen(false)}
-            onSubmit={handlePolicySearchSubmit}
-            userProfile={userProfile}
-          />
-        )}
+        <PolicySearchModal 
+          isOpen={isPolicySearchModalOpen}
+          onClose={() => setIsPolicySearchModalOpen(false)}
+          userProfile={userProfile}
+        />
       </main>
     </div>
   );

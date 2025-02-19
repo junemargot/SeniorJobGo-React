@@ -8,181 +8,246 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(5px);
 }
 
 .modalContent {
-  background: $white-color;
-  width: 100%;
-  max-width: 600px;
-  height: 90vh;
-  border-radius: $radius-lg;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    h2 {
+      font-size: 1.5rem;
+      color: #333;
+      margin: 0;
+    }
+    
+    .closeButton {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: #666;
+      cursor: pointer;
+      padding: 0.5rem;
+      
+      &:hover {
+        color: #333;
+      }
+    }
+  }
 }
 
-.modalHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid $border-light-color;
-
-  h2 {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: $text-color;
-  }
-
-  .closeButton {
-    background: none;
-    border: none;
-    color: $text-color;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 50%;
+.modalBody {
+  .searchBox {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+    margin: -2rem -2rem 0 -2rem;
+    z-index: 10;
+    border-bottom: 1px solid #eee;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    
+    .searchInput {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #ffbc2c;
+        box-shadow: 0 0 0 3px rgba(255, 188, 44, 0.1);
+      }
 
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.1);
+      &::placeholder {
+        color: #999;
+      }
+    }
+    
+    .searchButton {
+      padding: 1rem 2rem;
+      background: #ffbc2c;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      
+      span {
+        font-size: 1.5rem;
+      }
+      
+      &:hover:not(:disabled) {
+        background: #ffa500;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 188, 44, 0.2);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
     }
   }
 }
 
 .policyList {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .policyCard {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid $border-light-color;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: $color-background-light;
-  }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-  }
-
-  &__department {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: $text-color;
-    font-weight: $font-weight-semibold;
-
-    span {
-      font-size: $font-size-sm;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  .policyHeader {
+    padding: 1.5rem;
+    cursor: pointer;
+    
+    h3 {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 0.5rem;
     }
-  }
-
-  &__date {
-    color: $secondary-text-color;
-    font-size: $font-size-sm;
-  }
-
-  &__title {
-    font-size: $font-size-16;
-    font-weight: $font-weight-semibold;
-    color: $text-color;
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-  }
-
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  &__tag {
-    color: $primary-color;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-  }
-
-  &__content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-
-    &.visible {
-      max-height: 1000px;
-      transition: max-height 0.5s ease-in;
-    }
-
-    p {
-      margin: 0.75rem 0;
-      line-height: 1.5;
-      color: $text-color;
-      font-size: $font-size-sm;
-
-      strong {
-        color: $text-color;
-        font-weight: $font-weight-semibold;
-        margin-right: 0.5rem;
+    
+    .policyMeta {
+      display: flex;
+      gap: 1rem;
+      color: #666;
+      font-size: 0.9rem;
+      
+      span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
       }
     }
   }
-
-  &__description {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid $border-light-color;
-    font-size: $font-size-sm;
-    line-height: 1.6;
-    color: $text-color;
-  }
-
-  &__footer {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid $border-light-color;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  &__source {
-    color: $secondary-text-color;
-    font-size: $font-size-sm;
-  }
-
-  &__link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: $primary-color;
-    font-size: $font-size-sm;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: $radius-xxl;
-    transition: background-color 0.2s;
-
-    &:hover {
-      background-color: rgba($primary-color, 0.1);
+  
+  .policyDetails {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    
+    &.expanded {
+      padding: 1.5rem;
+      max-height: 1000px;
+      border-top: 1px solid #eee;
     }
-
-    span {
-      font-size: $font-size-sm;
+    
+    .detailsGrid {
+      display: grid;
+      gap: 1rem;
+      
+      .detailItem {
+        h4 {
+          font-size: 1rem;
+          color: #333;
+          margin-bottom: 0.5rem;
+        }
+        
+        p {
+          color: #666;
+          line-height: 1.5;
+        }
+      }
+    }
+    
+    .actionButtons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      
+      .viewButton {
+        flex: 1;
+        text-align: center;
+        padding: 0.8rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        background: #ffbc2c;
+        color: white;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: color.adjust(#ffbc2c, $lightness: -5%);
+        }
+      }
     }
   }
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.loadingSpinner {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  
+  &::before {
+    content: '조금만 기다려주세요~';
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #ffbc2c;
+  }
+}
+
+.noResults {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.errorMessage {
+  text-align: center;
+  padding: 1.5rem;
+  background: #FFF5EE;
+  border: 2px solid #ffbc2c;
+  border-radius: 12px;
+  color: #ffbc2c;
+  font-size: 1.1rem;
+  margin: 1rem 0;
 }
 
 .searchForm {
@@ -342,5 +407,39 @@
 
   &:hover {
     background: $light-primary-color;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.searchTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  padding: 1rem 0;
+  margin: 0 1rem;
+  
+  .tagButton {
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 20px;
+    color: #666;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #ffbc2c;
+      color: white;
+      border-color: #ffbc2c;
+    }
+    
+    &:active {
+      transform: translateY(1px);
+    }
   }
 } 
