@@ -1,17 +1,19 @@
 // pages/chat/index.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import styles from './styles/chat.module.scss';
-import Header from '@components/Header/Header';
-import axios from 'axios';
-import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
+import { useNavigate } from 'react-router-dom';
+import { samplePolicies } from '../../data/samplePolicies';
+import styles from './styles/chat.module.scss';
+import axios from 'axios';
+import Header from '@components/Header/Header';
+import IntentModal from '@pages/modal/IntentModal';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
 import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 import PolicySearchModal from '@pages/modal/PolicySearchModal';
-import { samplePolicies } from '../../data/samplePolicies';
+// import ReactMarkdown from 'react-markdown';
 
 const Chat = () => {
   const [userMessage, setUserMessage] = useState("");
@@ -48,6 +50,11 @@ const Chat = () => {
   const [isTrainingSearchModalOpen, setIsTrainingSearchModalOpen] = useState(false);
   const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+
+  const chatEndIndex = useRef(0);
+  const limit = 10;
+
+  const navigate = useNavigate();
 
   // 메뉴 아이템
   const suggestions = [
@@ -106,6 +113,148 @@ const Chat = () => {
     }
   }, [isBotResponding]);
 
+  // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
+  const typingEffect = (text, updateCallback, onComplete) => {
+    // 기존 인터벌 있으면 정리
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    const words = text.split(" ");
+    let wordIndex = 0;
+    let currentText = "";
+
+    const intervalId = setInterval(() => {
+      if (wordIndex < words.length) {
+        currentText += (currentText ? " " : "") + words[wordIndex];
+        updateCallback(currentText);
+        wordIndex++;
+        scrollToBottom();
+      } else {
+        clearInterval(intervalId);
+        typingIntervalRef.current = null;
+        if (onComplete) onComplete();
+      }
+    }, 50);
+    typingIntervalRef.current = intervalId;
+  };
+
+  // 채팅 기록 불러오기
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      if (chatEndIndex.current === 0) return;
+
+      try {
+        let id = null;
+        let provider = null;
+        try {
+          id = document.cookie.split('; ')
+            .find(row => row.startsWith('sjgid='))
+            .split('=')[1];
+
+          provider = document.cookie.split('; ')
+            .find(row => row.startsWith('sjgpr='))
+            .split('=')[1];
+
+          if (!await axios.get(`${API_BASE_URL}/auth/check`, {
+            withCredentials: true
+          })) throw new Error();
+        } catch (error) {
+          alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
+          document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          navigate('/');
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
+          params: {
+            end: chatEndIndex.current,
+            limit: limit
+          },
+          withCredentials: true
+        });
+        // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
+        const messages = response.data.messages ? response.data.messages : response.data;
+
+        const newMessages = []
+
+        // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
+        for (const msg of messages) {
+          const role = msg.role === "user" ? "user" : "model";
+          let newMsg = { role, text: "" };
+
+          // 문자열인 경우
+          if (typeof msg.content === "string") {
+            newMsg.text = msg.content;
+          }
+          // 객체인 경우
+          else if (typeof msg.content === "object" && msg.content !== null) {
+            // 메시지 텍스트 설정
+            if (msg.content.message) {
+              newMsg.text = msg.content.message;
+            } else if (msg.content.text) {
+              newMsg.text = msg.content.text;
+            }
+
+            // 채용정보 추가
+            if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
+              newMsg.jobPostings = msg.content.jobPostings;
+            }
+
+            // 훈련과정 정보 추가
+            if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
+              newMsg.trainingCourses = msg.content.trainingCourses;
+            }
+
+            // 메시지 타입 추가
+            if (msg.content.type) {
+              newMsg.type = msg.content.type;
+            }
+
+            // 음성 입력 모드 추가
+            if (msg.content.mode === 'voice') {
+              setIsVoiceMode(true);
+            }
+          }
+
+          // 채팅 내역에 추가
+          newMessages.push(newMsg);
+        }
+        setChatHistory(prev => [...newMessages, ...prev]);
+        chatEndIndex.current = response.data.index;
+      } catch (error) {
+        console.error('채팅 내역 불러오기 오류:', error);
+      }
+    };
+    fetchChatHistory();
+
+    // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
+    setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+
+    // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
+    const container = chatsContainerRef.current;
+    const handleScrollToTop = async () => {
+      const scrollPosition = container.scrollTop;
+      if (scrollPosition <= 0) {
+        const prevScrollHeight = container.scrollHeight;
+        await fetchChatHistory();
+        requestAnimationFrame(() => {
+          const newScrollHeight = container.scrollHeight;
+          const scrollDifference = newScrollHeight - prevScrollHeight;
+          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
+          container.scrollTop = scrollDifference;
+        });
+      }
+    }
+    container.addEventListener('scroll', handleScrollToTop);
+
+    return () => {
+      container.removeEventListener('scroll', handleScrollToTop);
+    };
+  }, [navigate]);
+
   // 폼 제출 핸들러
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -128,20 +277,46 @@ const Chat = () => {
 
       const response = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: message,
-        session_id: "default_session"
+        session_id: "default_session",
+        chat_history: chatHistory.map(msg => ({
+          role: msg.role,
+          content: msg.text
+        }))
       }, { withCredentials: true });
 
-      // 로딩 메시지 제거 및 실제 응답 추가
+      // 빈 봇 메시지를 먼저 추가
+      const newBotMessage = {
+        role: "bot",
+        text: "",
+        type: response.data.type,
+        jobPostings: response.data.jobPostings || [],
+        trainingCourses: response.data.trainingCourses || []
+      };
+
+      // 로딩 메시지 제거 및 빈 봇 메시지 추가
       setChatHistory(prev => {
         const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, {
-          role: "bot",
-          text: response.data.message,
-          type: response.data.type,
-          jobPostings: response.data.jobPostings || [],
-          trainingCourses: response.data.trainingCourses || []
-        }];
+        return [...filtered, newBotMessage];
       });
+
+      // 타이핑 효과로 메시지 표시
+      typingEffect(
+        response.data.message,
+        (currentText) => {
+          setChatHistory(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              text: currentText
+            };
+            return updated;
+          });
+        },
+        () => {
+          // 타이핑 완료 후 처리할 작업
+          scrollToBottom();
+        }
+      );
 
     } catch (error) {
       console.error("메시지 전송 오류:", error);

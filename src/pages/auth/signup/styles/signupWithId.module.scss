@@ -73,7 +73,7 @@
     font-size: $font-size-sm;
     
     &::placeholder {
-      color: $color-text-placeholder;
+      color: $placeholder-color;
     }
 
     &:focus {
@@ -125,10 +125,10 @@
 }
 
 .errorMessage {
-  color: $color-primary-hover;
+  color: $primary-hover-color;
   margin-top: 2px;
   display: none;
-  font-size: 12px;
+  font-size: $font-size-xs;
 }
 
 .agreement {
