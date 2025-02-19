@@ -1,18 +1,18 @@
 // pages/chat/index.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import styles from './styles/chat.module.scss';
-import Header from '@components/Header/Header';
-import axios from 'axios';
-import IntentModal from '@pages/modal/IntentModal';
 import { API_BASE_URL } from '@/config';
+import { useNavigate } from 'react-router-dom';
+import { samplePolicies } from '../../data/samplePolicies';
+import styles from './styles/chat.module.scss';
+import axios from 'axios';
+import Header from '@components/Header/Header';
+import IntentModal from '@pages/modal/IntentModal';
 import ChatMessage from './components/ChatMessage';
 import ChatInput from './components/ChatInput';
 import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 import PolicySearchModal from '@pages/modal/PolicySearchModal';
-import { samplePolicies } from '../../data/samplePolicies';
-import { useNavigate } from 'react-router-dom';
 // import ReactMarkdown from 'react-markdown';
 
 const Chat = () => {
