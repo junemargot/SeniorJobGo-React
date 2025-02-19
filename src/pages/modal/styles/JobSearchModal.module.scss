@@ -16,17 +16,17 @@
 }
 
 .modalContent {
-  background: white;
+  background: $white-color;
   padding: 2rem;
-  border-radius: 15px;
+  border-radius: $radius-lg;
   width: 90%;
   max-width: 500px;
   
   h2 {
     text-align: center;
     margin-bottom: 2rem;
-    color: #333;
-    font-size: 1.5rem;
+    color: $text-title-color;
+    font-size: $font-size-lg;
   }
 }
 
@@ -42,19 +42,19 @@
   gap: 0.5rem;
   
   label {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 500;
+    font-size: $font-size-sm;
+    color: $secondary-text-color;
+    font-weight: $font-weight-medium;
   }
   
   input, select {
     padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
     
     &:disabled {
-      background: #f8f9fa;
+      background: $color-background-light;
       cursor: not-allowed;
     }
   }
@@ -69,26 +69,26 @@
     flex: 1;
     padding: 1rem;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     transition: all 0.2s;
   }
 }
 
 .submitButton {
-  background: #ffbc2c;
-  color: white;
+  background: $primary-color;
+  color: $white-color;
   
   &:hover {
-    background: color.adjust(#ffbc2c, $lightness: -5%);
+    background: color.adjust($primary-color, $lightness: -5%);
   }
 }
 
 .editButton {
   background: #4F6EF7;
-  color: white;
+  color: $white-color;
   
   &:hover {
     background: color.adjust(#4F6EF7, $lightness: -5%);
@@ -96,11 +96,11 @@
 }
 
 .cancelButton {
-  background: #f8f9fa;
-  color: #666;
+  background: $color-background-light;
+  color: $secondary-text-color;
   
   &:hover {
-    background: color.adjust(#f8f9fa, $lightness: -5%);
+    background: color.adjust($color-background-light, $lightness: -5%);
   }
 }
 
@@ -111,20 +111,20 @@
   
   .ageButton {
     padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    background: $white-color;
     cursor: pointer;
     transition: all 0.2s;
     
     &.active {
-      background: #ffbc2c;
-      color: white;
-      border-color: #ffbc2c;
+      background: $primary-color;
+      color: $white-color;
+      border-color: $primary-color;
     }
     
     &:hover:not(.active) {
-      background: #f8f9fa;
+      background: $color-background-light;
     }
     
     &:disabled {
@@ -141,20 +141,20 @@
   
   .genderButton {
     padding: 0.8rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: white;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    background: $white-color;
     cursor: pointer;
     transition: all 0.2s;
     
     &.active {
-      background: #ffbc2c;
-      color: white;
-      border-color: #ffbc2c;
+      background: $primary-color;
+      color: $white-color;
+      border-color: $primary-color;
     }
     
     &:hover:not(.active) {
-      background: #f8f9fa;
+      background: $color-background-light;
     }
     
     &:disabled {
@@ -189,19 +189,19 @@
     align-items: center;
     justify-content: center;
     border: none;
-    border-radius: 8px;
-    background: #f8f9fa;
+    border-radius: $radius-md;
+    background: $color-background-light;
     cursor: pointer;
     transition: all 0.2s;
     
     &:hover {
-      background: #ffbc2c;
-      color: white;
+      background: $primary-color;
+      color: $white-color;
     }
     
     &.recording {
-      background: #dc3545;
-      color: white;
+      background: $danger-color;
+      color: $white-color;
       animation: pulse 1.5s infinite;
     }
     
@@ -211,7 +211,7 @@
     }
     
     span {
-      font-size: 20px;
+      font-size: $font-size-20;
     }
   }
 }
