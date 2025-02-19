@@ -51,7 +51,8 @@ const Chat = () => {
   const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  const chatEndIndex = useRef(0);
+  // 채팅 기록 불러오기 관련 상태
+  const chatEndIndex = useRef(-1);
   const limit = 10;
 
   const navigate = useNavigate();
@@ -357,6 +358,7 @@ const Chat = () => {
   const handleDeleteChats = () => {
     setChatHistory([]);
     setIsBotResponding(false);
+    chatEndIndex.current = 0;
   };
 
   // 채용 공고 클릭 핸들러
