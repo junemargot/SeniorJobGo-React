@@ -177,47 +177,39 @@ const Chat = () => {
         setIsTrainingSearchModalOpen(true);
         break;
       case 4:
-        // 이력서 작성 시작 메시지 추가
-        setChatHistory(prev => [...prev, {
-          role: "user",
-          text: "이력서 작성을 시작하고 싶습니다."
-        }]);
-        
-        // 로딩 메시지 추가
-        setChatHistory(prev => [...prev, {
-          role: "bot",
-          text: "이력서 작성을 도와드리겠습니다...",
-          loading: true
-        }]);
-
-        // 이력서 작성 시작 요청
-        axios.post(`${API_BASE_URL}/resume/start`, {
-          session_id: "default_session"
-        }, { withCredentials: true })
-          .then(response => {
-            setChatHistory(prev => {
-              const filtered = prev.filter(msg => !msg.loading);
-              return [...filtered, {
-                role: "bot",
-                text: response.data.message,
-                type: "resume_advisor",
-                suggestions: response.data.suggestions,
-                html_content: response.data.html_content,
-                resume_data: response.data.resume_data
-              }];
-            });
-          })
-          .catch(error => {
-            console.error("이력서 작성 시작 오류:", error);
-            setChatHistory(prev => {
-              const filtered = prev.filter(msg => !msg.loading);
-              return [...filtered, {
-                role: "bot",
-                text: "죄송합니다. 이력서 작성을 시작하는 중에 오류가 발생했습니다.",
-                type: "error"
-              }];
-            });
-          });
+        // 이력서 작성하기
+        // 이력서 수정 모드 요청
+        axios.post(
+          `${API_BASE_URL}/resume/edit`,
+          { resume_id: "temp" },
+          { withCredentials: true }
+        )
+        .then(response => {
+          // 팝업 창에 이력서 편집기 표시
+          const popupWindow = window.open("", "_blank", "width=800,height=800");
+          if (popupWindow) {
+            popupWindow.document.write(`
+              <!DOCTYPE html>
+              <html lang="ko">
+              <head>
+                <meta charset="UTF-8">
+                <title>이력서 작성</title>
+                <style>
+                  body { margin: 0; padding: 20px; font-family: 'Pretendard', sans-serif; }
+                </style>
+              </head>
+              <body>
+                ${response.data.html_content}
+              </body>
+              </html>
+            `);
+            popupWindow.document.close();
+          }
+        })
+        .catch(error => {
+          console.error("이력서 작성 시작 오류:", error);
+          alert("이력서 작성을 시작할 수 없습니다.");
+        });
         break;
     }
   };
