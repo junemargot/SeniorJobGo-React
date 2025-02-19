@@ -1,0 +1,212 @@
+@use 'sass:color';
+@use '@assets/styles/_variables' as *;
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: $white-color;
+  padding: 2rem;
+  border-radius: $radius-xl;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: $text-title-color;
+    font-size: $font-size-lg;
+  }
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  
+  label {
+    font-size: $font-size-sm;
+    color: $secondary-text-color;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.locationInputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  
+  select, input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    
+    &:disabled {
+      background: $color-background-light;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.interestButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  
+  .interestButton {
+    padding: 0.6rem 1rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-xxl;
+    background: $white-color;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &.active {
+      background: $primary-color;
+      color: $white-color;
+      border-color: $primary-color;
+    }
+    
+    &:hover:not(.active):not(:disabled) {
+      background: $color-background-light;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.customInterestInput {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  
+  input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    
+    &:disabled {
+      background: $color-background-light;
+      cursor: not-allowed;
+    }
+  }
+  
+  .addButton {
+    padding: 0.8rem 1.2rem;
+    border: none;
+    border-radius: $radius-md;
+    background: $color-background-light;
+    color: $secondary-text-color;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover:not(:disabled) {
+      background: $primary-color;
+      color: $white-color;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+select {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  font-size: $font-size-16;
+  background: $white-color;
+  
+  &:disabled {
+    background: $color-background-light;
+    cursor: not-allowed;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  
+  button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.submitButton {
+  background: $primary-color;
+  color: $white-color;
+  
+  &:hover {
+    background: color.adjust($primary-color, $lightness: -5%);
+  }
+}
+
+.editButton {
+  background: #4F6EF7;
+  color: $white-color;
+  
+  &:hover {
+    background: color.adjust(#4F6EF7, $lightness: -5%);
+  }
+}
+
+.cancelButton {
+  background: $color-background-light;
+  color: $secondary-text-color;
+  
+  &:hover {
+    background: color.adjust($color-background-light, $lightness: -5%);
+  }
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .interestButtons {
+    .interestButton {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+    }
+  }
+} 

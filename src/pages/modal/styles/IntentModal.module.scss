@@ -1,3 +1,5 @@
+@use '@assets/styles/_variables' as *;
+
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -13,11 +15,11 @@
 }
 
 .modalContent {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
+  background: $white-color;
+  padding: 1.6rem;
+  border-radius: $radius-lg;
   width: 90%;
-  max-width: 500px;
+  max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -30,11 +32,11 @@
 
   h2 {
     text-align: center;
-    margin-bottom: 1.5rem;
-    color: #333;
+    margin-bottom: $font-size-20;
+    color: $text-title-color;
     
     @media (max-width: 768px) {
-      font-size: 1.3rem;
+      font-size: $font-size-20;
       margin-bottom: 1rem;
     }
   }
@@ -45,11 +47,40 @@
   text-align: center;
   padding: 2rem 0;
 
-  h2 {
-    margin-bottom: 2rem;
-    font-size: 1.5rem;
-    color: #333;
+  .introContainer {
+    text-align: center;
+    margin-bottom: 12px;
+    padding: 0 16px 16px 16px;
   }
+  
+  .introTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;  // 굵게
+    margin-bottom: 12px;
+    line-height: 1.4;
+
+    .highlighted {
+      text-decoration: underline;
+      text-decoration-color: #4F6EF7;
+      text-decoration-thickness: 3px;
+    }
+  }
+  
+  .introSubtitle {
+    font-size: $font-size-18;
+    font-weight: $font-weight-normal;
+    color: $text-title-color;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .chooseTitle {
+    text-align: center;
+    font-size: $font-size-18;
+    font-weight: $font-weight-semibold;
+    margin-bottom: 20px;
+  }
+  
 }
 
 .modeButtons {
@@ -64,11 +95,11 @@
 }
 
 .modeButton {
-  width: 160px;
-  height: 160px;
-  border-radius: 20px;
+  width: 240px;
+  height: 140px;
+  border-radius: $radius-xl;
   border: none;
-  font-size: 1.1rem;
+  font-size: $font-size-18;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -79,37 +110,37 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
-    width: 140px;
+    width: 200px;
     height: 140px;
-    font-size: 1rem;
+    font-size: $font-size-16;
   }
 
   &:first-child {
-    background-color: #FF8A3D;  // 주황색 (메인 컬러)
-    color: white;
+    background-color: $secondary-accent-color;  // 주황색 (메인 컬러)
+    color: $white-color;
 
     &:hover {
-      background-color: #FF7425;
+      background-color: $secondary-hover-color;
       transform: translateY(-2px);
     }
   }
 
   &:last-child {
-    background-color: #4F6EF7;  // 부드러운 파란색
-    color: white;
+    background-color: #627efa;
+    color: $white-color;
 
     &:hover {
-      background-color: #3D5CE5;
+      background-color: #92a0e1;
       transform: translateY(-2px);
     }
   }
 
   // 아이콘 스타일
   span {
-    font-size: 2.5rem;
+    font-size: $font-size-40;
 
     @media (max-width: 768px) {
-      font-size: 2rem;
+      font-size: $font-size-32;
     }
   }
 }
@@ -130,27 +161,37 @@
 .recordingIndicator {
   width: 150px;
   height: 150px;
-  border-radius: 50%;
-  background-color: #f8f9fa;
+  border-radius: $radius-round;
+  background-color: $color-background-light;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
-  border: 3px solid #007bff;
+  border: 3px solid #627efa;
   font-size: 0.9rem;
-  color: #007bff;
+  color: #627efa;
+  gap: 0.5rem;
+
+  span {
+    font-size: 2.5rem;
+  }
 
   @media (max-width: 768px) {
     width: 120px;
     height: 120px;
-    font-size: 0.8rem;
+    font-size: $font-size-xs;
+
+    span {
+      font-size: $font-size-40;
+    }
   }
 
   &.active {
     background-color: #dc3545;
-    color: white;
+    color: $white-color;
     border-color: #dc3545;
     animation: pulse 1.5s infinite;
 
@@ -168,56 +209,98 @@
 
 // 텍스트 표시
 .transcript {
-  background-color: #f8f9fa;
+  background-color: $color-background-light;
   padding: 1.5rem;
-  border-radius: 10px;
+  border-radius: $radius-lg;
+  width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 1.5rem auto 0;
   text-align: left;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
 
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 0.9rem;
-    max-width: 100%;
+    margin-top: 1rem;
   }
 
   h4 {
     color: #495057;
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background-color: #dc3545;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
   }
 
   p {
-    color: #212529;
+    color: $text-color;
     line-height: 1.5;
     margin-bottom: 1rem;
+    min-height: 3em;
+    padding: 0.5rem;
+    background: $white-color;
+    border-radius: $radius-md;
+    border: 1px solid $border-color;
   }
 
   .confirmRecording {
     width: 100%;
     padding: 12px;
     margin-top: 16px;
-    background-color: #28a745;
-    color: white;
+    background-color: #74c98e;
+    color: $white-color;
     border: none;
-    border-radius: 8px;
-    font-size: 1rem;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    font-weight: $font-weight-medium;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 
     &:hover {
       background-color: #218838;
+      transform: translateY(-1px);
+    }
+
+    &::before {
+      content: 'check';
+      font-family: 'Material Symbols Rounded';
+      font-size: 1.2rem;
     }
 
     @media (max-width: 768px) {
       padding: 10px;
-      font-size: 0.9rem;
+      font-size: $font-icon-xs;
     }
   }
 }
 
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .processing {
-  color: #6c757d;
-  font-size: 0.9rem;
+  color: $secondary-text-grey;
+  font-size: $font-size-sm;
   margin-top: 0.5rem;
   display: flex;
   align-items: center;
@@ -228,8 +311,8 @@
     content: '';
     width: 12px;
     height: 12px;
-    border: 2px solid #6c757d;
-    border-radius: 50%;
+    border: 2px solid $secondary-text-grey;
+    border-radius: $radius-round;
     border-top-color: transparent;
     animation: spin 1s linear infinite;
   }
@@ -242,14 +325,14 @@
   h3 {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: #333;
+    color: $text-title-color;
   }
 }
 
 .summaryContent {
-  background-color: #f8f9fa;
+  background-color: $color-background-light;
   padding: 1.5rem;
-  border-radius: 10px;
+  border-radius: $radius-lg;
   margin-bottom: 2rem;
   text-align: left;
 
@@ -261,7 +344,7 @@
   .originalText {
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid $border-color;
 
     @media (max-width: 768px) {
       margin-bottom: 1rem;
@@ -269,37 +352,37 @@
     }
 
     h4 {
-      color: #495057;
+      color: $secondary-text-color;
       margin-bottom: 0.5rem;
     }
 
     p {
-      color: #212529;
+      color: $text-color;
       line-height: 1.5;
     }
   }
 
   .extractedInfo {
     h4 {
-      color: #495057;
+      color: $secondary-text-color;
       margin-bottom: 0.5rem;
 
       @media (max-width: 768px) {
-        font-size: 0.9rem;
+        font-size: $font-size-sm;
       }
     }
 
     p {
       margin-bottom: 0.75rem;
-      font-size: 1rem;
+      font-size: $font-size-16;
       
       @media (max-width: 768px) {
-        font-size: 0.9rem;
+        font-size: $font-size-sm;
         margin-bottom: 0.5rem;
       }
 
       strong {
-        color: #007bff;
+        color: #257cd8;
         margin-right: 0.5rem;
       }
     }
@@ -308,27 +391,11 @@
 
 .summaryActions {
   display: flex;
-  gap: 1rem;
   justify-content: center;
+  margin-top: 1.5rem;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  button {
-    padding: 0.75rem 2rem;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    @media (max-width: 768px) {
-      width: 100%;
-      padding: 0.8rem;
-      font-size: 0.9rem;
-    }
+    margin-top: 1rem;
   }
 }
 
@@ -337,20 +404,30 @@
   color: white;
   position: relative;
   overflow: hidden;
-  min-width: 180px;
-  min-height: 3em;
-  padding: 0.8em 2.5em;
+  width: 100%;
+  max-width: 300px;
+  min-height: 3.5em;
+  padding: 1em 2em;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
-    background-color: #218838;
+    background-color: #74c98e;
   }
 
   &.loading {
-    cursor: wait;
-    background-color: #1e7e34;
+    background-color: $danger-color;
+    
+    &:hover {
+      background-color: #d63d4c;
+    }
     
     &::before {
       content: '';
@@ -372,70 +449,40 @@
     }
   }
 
-  .loadingContainer {
+  .loadingText {
     position: relative;
-    width: 100%;
-    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .loadingText {
+    gap: 0.5rem;
+    font-weight: $font-weight-medium;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    white-space: nowrap;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
   }
 
   .loadingTimer {
-    position: absolute;
-    bottom: -0.8em;
-    right: -1.5em;
-    font-size: 0.7em;
+    font-size: 0.8em;
     opacity: 0.9;
-    z-index: 1;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-    line-height: 1;
-  }
-
-  &:disabled {
-    opacity: 0.8;
+    margin-left: 0.5em;
   }
 
   @media (max-width: 768px) {
-    min-width: 140px;
-    min-height: 2.8em;
-    padding: 0.7em 2em;
-
-    .loadingText {
-      font-size: 0.9em;
-    }
+    max-width: 250px;
+    min-height: 3em;
+    padding: 0.8em 1.5em;
+    font-size: 0.9rem;
 
     .loadingTimer {
-      bottom: -0.6em;
-      right: -1.2em;
-      font-size: 0.65em;
+      font-size: $font-size-sm;
     }
-  }
-}
-
-@keyframes metallicSlide {
-  0% {
-    transform: translateX(0%) skewX(-10deg);
-  }
-  100% {
-    transform: translateX(1000%) skewX(-10deg);
   }
 }
 
 .retryButton {
-  background-color: #6c757d;
-  color: white;
+  background-color: $secondary-text-grey;
+  color: $white-color;
 
   &:hover {
-    background-color: #5a6268;
+    background-color: #626262;
   }
 }
 

@@ -1,28 +1,14 @@
-// 수정 전
-$color-primary: #ffbc2c; // primary-color
-$color-primary-hover: #ed6444; // primary-hover-color
-$color-text: #222; // text-color
-$color-text-secondary: #666; // secondary-text-color
-$color-text-grey: #6f6f6f;
-$color-button-hover: #ed6444; // primary-hover-color
-$color-button-background: #fff; // background
-$color-background: #fff; // background
-
-$color-border: #b6b6b6; // border-color
-$color-text-placeholder: #b6b6b6; // placeholder-color
-$color-text-point: #ed6444; // primary-hover-color
-
-$color-white: #fff; // white-color
-$scrollbar-color: #626a7f;
-
-// 수정 후
+// 색상 관련
 $primary-color: #ffbc2c;
 $primary-hover-color: #ed6444;
+$secondary-color: #f9e1c7;
+$secondary-hover-color: #f1b874;;
+$secondary-accent-color: #f2af5c;
 $text-color: #222;
 $text-title-color: #333;
 $text-subheading-color: #97a7ca;
 $secondary-text-color: #666;
-$secondary-text-grey: #6f6f6f;
+$secondary-text-grey: #616060;
 $background-color: #fff;
 $card-color: #f3f7ff;
 
@@ -35,7 +21,9 @@ $white-color: #fff;
 $message-color: rgb(252, 241, 217);
 $danger-color: #d62939;
 
-// 폰트 관련
+$violet-color: #ac8aee;
+
+// 폰트 관련(사이즈, 굵기)
 $font-family-eng: 'Roboto', sans-serif;
 $font-size-base: 15px;
 $font-size-xs: 12px;
@@ -46,7 +34,11 @@ $font-size-18: 18px;
 $font-size-20: 20px;
 $font-size-22: 22px;
 $font-size-lg: 24px;
+$font-size-26: 26px;
 $font-size-xxl: 30px;
+$font-size-32: 32px;
+$font-size-40: 40px;
+
 $font-icon-xs: 18px;
 $font-icon-base: 28px;
 $font-weight-normal: 400;
@@ -62,13 +54,14 @@ $radius-xl: 16px;  // 매우 큰 둥근 모서리
 $radius-xxl: 20px;
 $radius-round: 50%; // 완전 원형 (버튼, 프로필 이미지 등)
 
+// Light Mode Theme
 $light-primary-color: #f3f7ff;
 $light-secondary-color: #dce6f9;
 $light-placeholder-color: #606982;
 $light-secondary-hover-color: #d2ddf2;
 $light-text-color: #090c13;
 
-// 다크모드
+// Dark Mode Theme
 $dark-primary-color: #101623;
 $dark-background-color: #101623;
 $dark-text-color: #edf3ff;
@@ -76,28 +69,4 @@ $dark-secondary-color: #283045;
 $dark-placeholder-color: #c3cdde;
 
 
-// 수정
-// :root {
-//   // --text-color: #edf3ff;
-//   --subheading-color: #97a7ca;
-//   --placeholder-color: #c3cdde;
-//   --primary-color: #101623;
-//   --secondary-color: #283045;
-//   --secondary-hover-color: #333e58;
-//   --scrollbar-color: #626a7f;
-// }
-
-// body {
-//   &.light-theme {
-//     --text-color: #090c13;
-//     --subheading-color: #7b8cae;
-//     --placeholder-color: #606982;
-//     --primary-color: #f3f7ff;
-//     --secondary-color: #dce6f9;
-//     --secondary-hover-color: #d2ddf2;
-//     --scrollbar-color: #a2aac2;
-//   }
-
-//   background-color: var(--primary-color);
-//   color: $text-color;
-// }
+$color-background-light: #f8f9fa;
