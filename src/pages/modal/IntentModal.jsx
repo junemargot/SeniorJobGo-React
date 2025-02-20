@@ -280,6 +280,14 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
+        <button 
+          className={styles.closeButton}
+          onClick={onClose}
+          type="button"
+        >
+          <span className="material-symbols-rounded">close</span>
+        </button>
+
         {!mode ? (
           // 초기 선택 화면
           <div className={styles.modeSelection}>
