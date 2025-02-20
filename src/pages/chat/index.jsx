@@ -178,38 +178,7 @@ const Chat = () => {
         break;
       case 4:
         // 이력서 작성하기
-        // 이력서 수정 모드 요청
-        axios.post(
-          `${API_BASE_URL}/resume/edit`,
-          { resume_id: "temp" },
-          { withCredentials: true }
-        )
-        .then(response => {
-          // 팝업 창에 이력서 편집기 표시
-          const popupWindow = window.open("", "_blank", "width=800,height=800");
-          if (popupWindow) {
-            popupWindow.document.write(`
-              <!DOCTYPE html>
-              <html lang="ko">
-              <head>
-                <meta charset="UTF-8">
-                <title>이력서 작성</title>
-                <style>
-                  body { margin: 0; padding: 20px; font-family: 'Pretendard', sans-serif; }
-                </style>
-              </head>
-              <body>
-                ${response.data.html_content}
-              </body>
-              </html>
-            `);
-            popupWindow.document.close();
-          }
-        })
-        .catch(error => {
-          console.error("이력서 작성 시작 오류:", error);
-          alert("이력서 작성을 시작할 수 없습니다.");
-        });
+        openResumePopup();
         break;
     }
   };
@@ -436,95 +405,41 @@ const Chat = () => {
       });
   };
 
-  // 이력서 액션 핸들러
+  // 이력서 관련 핸들러 수정
   const handleResumeAction = async (action, resumeData) => {
     switch (action) {
       case "이력서 미리보기":
         // 새 창에서 이력서 미리보기
-        const previewWindow = window.open("", "_blank");
-        if (previewWindow && resumeData.html_content) {
-          previewWindow.document.write(`
-            <!DOCTYPE html>
-            <html lang="ko">
-            <head>
-              <meta charset="UTF-8">
-              <title>이력서 미리보기</title>
-              <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-            </head>
-            <body>
-              ${resumeData.html_content}
-              <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-            </body>
-            </html>
-          `);
-          previewWindow.document.close();
-        } else {
-          alert('이력서 내용을 불러올 수 없습니다.');
-        }
+        openResumePopup('preview', resumeData);
         break;
       
       case "이력서 다운로드":
-        // 직접 다운로드 실행
-        const downloadUrl = `${API_BASE_URL}/resume/download/temp`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `이력서_${new Date().getTime()}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+          const response = await axios.post(
+            `${API_BASE_URL}/resume/download/temp`,
+            resumeData,
+            { 
+              responseType: 'blob',
+              withCredentials: true 
+            }
+          );
+          
+          // PDF 다운로드
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `이력서_${new Date().getTime()}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error("이력서 다운로드 중 오류:", error);
+          alert("이력서 다운로드에 실패했습니다.");
+        }
         break;
       
       case "수정하기":
-        try {
-          const response = await axios.post(
-            `${API_BASE_URL}/resume/edit`,
-            { resume_id: "temp" },
-            { withCredentials: true }
-          );
-
-          // 수정 모드의 이력서 표시
-          setChatHistory(prev => {
-            const filtered = prev.filter(msg => !msg.loading);
-            return [...filtered, {
-              role: "bot",
-              type: "resume_advisor",
-              text: response.data.message,
-              html_content: response.data.html_content,
-              suggestions: []  // 작은 버튼들 제거를 위해 빈 배열로 설정
-            }];
-          });
-
-          // 이벤트 리스너 추가
-          const handleMessage = (event) => {
-            if (event.data === "download") {
-              // PDF 다운로드 로직
-              const downloadUrl = `${API_BASE_URL}/resume/download/temp`;
-              const link = document.createElement('a');
-              link.href = downloadUrl;
-              link.download = `이력서_${new Date().getTime()}.pdf`;
-              document.createElement('a');
-              link.click();
-              document.body.removeChild(link);
-            } else if (event.data === "cancel") {
-              // 취소 시 단순 메시지만 표시
-              setChatHistory(prev => {
-                const filtered = prev.filter(msg => !msg.loading);
-                return [...filtered, {
-                  role: "bot",
-                  type: "text",  // type을 text로 설정
-                  text: "이력서 작성을 취소합니다.",
-                  suggestions: []  // 버튼 제거를 위해 빈 배열로 설정
-                }];
-              });
-            }
-          };
-
-          window.addEventListener("message", handleMessage);
-          return () => window.removeEventListener("message", handleMessage);
-
-        } catch (error) {
-          console.error("이력서 수정 중 오류:", error);
-        }
+        openResumePopup('edit', resumeData);
         break;
       
       case "취소":
@@ -533,14 +448,99 @@ const Chat = () => {
           const filtered = prev.filter(msg => !msg.loading);
           return [...filtered, {
             role: "bot",
-            type: "text",  // type을 text로 설정
+            type: "text",
             text: "이력서 작성을 취소합니다.",
-            suggestions: []  // 버튼 제거를 위해 빈 배열로 설정
+            suggestions: []
           }];
         });
         break;
+      
+      case "이메일로 보내기":
+        try {
+          // 로딩 메시지 추가
+          setChatHistory(prev => [...prev, {
+            role: "bot",
+            text: "이력서를 이메일로 전송중입니다...",
+            loading: true
+          }]);
+
+          const response = await axios.post(
+            `${API_BASE_URL}/resume/send-email`,
+            resumeData,
+            { withCredentials: true }
+          );
+          
+          // 성공 메시지로 교체
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              type: "text",
+              text: "이력서가 이메일로 전송되었습니다.",
+              suggestions: ["이력서 미리보기", "이력서 다운로드", "수정하기"]
+            }];
+          });
+        } catch (error) {
+          console.error("이메일 전송 중 오류:", error);
+          // 에러 메시지로 교체
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              type: "error",
+              text: "이메일 전송에 실패했습니다. 다시 시도해주세요.",
+              suggestions: ["이력서 미리보기", "이력서 다운로드", "수정하기"]
+            }];
+          });
+        }
+        break;
     }
   };
+
+  // 이력서 팝업 창 열기 함수 수정
+  const openResumePopup = (mode = 'create', data = null) => {
+    const width = 1200;
+    const height = 800;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    // URL에 모드와 데이터 전달
+    const url = new URL('/resume', window.location.origin);
+    url.searchParams.set('mode', mode);
+    if (data) {
+      url.searchParams.set('data', JSON.stringify(data));
+    }
+
+    const popup = window.open(
+      url.toString(),
+      'resumePopup',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
+
+    // 팝업 창에서 메시지 수신
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'resume_save') {
+        // 저장된 이력서 데이터 처리
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, {
+            role: "bot",
+            type: "resume_complete",
+            text: "이력서가 저장되었습니다.",
+            resumeData: event.data.resumeData,
+            suggestions: ["이력서 미리보기", "이력서 다운로드", "수정하기"]
+          }];
+        });
+      }
+    });
+  };
+
+  // 이메일 메시지 수신 처리 추가
+  window.addEventListener('message', (event) => {
+    if (event.data.type === 'resume_email') {
+      handleResumeAction("이메일로 보내기", event.data.resumeData);
+    }
+  });
 
   return (
     <div className={styles.page}>

@@ -5,6 +5,7 @@ import styles from './styles/main.module.scss';
 import Header from '@components/Header/Header';
 import ChatbotIcon from '@assets/images/icon-robot.svg'
 import { API_BASE_URL } from '@/config';
+import { useNavigate } from 'react-router-dom';
 
 const JobCard = ({ job, onClick, isSelected, cardRef }) => (
   <div 
@@ -90,6 +91,8 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
 );
 
 const Main = () => {
+  const navigate = useNavigate();
+
   // 상태 관리
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [userInfo, setUserInfo] = useState({ age: '', gender: '', location: '', jobType: '' });
@@ -392,6 +395,16 @@ const Main = () => {
     }
   }, [messages]);
 
+  const handleResumeClick = () => {
+    console.log('이력서 작성 버튼 클릭');
+    try {
+      console.log('이력서 페이지로 이동 시도');
+      navigate('/resume');
+      console.log('이력서 페이지로 이동 완료');
+    } catch (error) {
+      console.error('이력서 페이지 이동 실패:', error);
+    }
+  };
 
   return (
     <div className={styles.page}>
