@@ -246,6 +246,31 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     };
   }, []);
 
+  // onClose 함수를 감싸서 녹음 중지 로직 추가
+  const handleClose = () => {
+    // 녹음 중지
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      isListeningRef.current = false;
+      setIsListening(false);
+    }
+    
+    // 상태 초기화
+    setTranscript('');
+    setFinalTranscript('');
+    setSummary(null);
+    setMode(null);
+    
+    // 타이머 정리
+    if (searchTimerRef.current) {
+      clearInterval(searchTimerRef.current);
+      searchTimerRef.current = null;
+    }
+    
+    // 모달 닫기
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -253,7 +278,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       <div className={styles.modalContent}>
         <button 
           className={styles.closeButton}
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="닫기"
         >
           <span className="material-symbols-rounded">close</span>
