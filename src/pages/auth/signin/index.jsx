@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './styles/signin.module.scss';
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
+import { API_BASE_URL } from '@/config';
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -20,6 +21,14 @@ const Signin = () => {
     if (savedId) {
       setFormData(prev => ({ ...prev, userId: savedId }));
       setSaveId(true);
+    }
+
+    // 쿠키에 로그인 정보가 있고 비회원이 아니면 채팅 페이지로 이동
+    const cookie = document.cookie;
+    const sjgpr = cookie.split('; ').find(row => row.startsWith('sjgpr='));
+
+    if (cookie.includes("sjgid") && !sjgpr.includes("none")) {
+      navigate('/chat');
     }
   }, []);
 
@@ -44,7 +53,7 @@ const Signin = () => {
 
     // 이하 실제 로그인 로직
     try {
-        const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

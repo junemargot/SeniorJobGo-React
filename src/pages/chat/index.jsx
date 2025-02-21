@@ -157,11 +157,13 @@ const Chat = () => {
             .find(row => row.startsWith('sjgpr='))
             .split('=')[1];
 
-          if (!await axios.get(`${API_BASE_URL}/auth/check`, {
+          const response = await axios.get(`${API_BASE_URL}/auth/check`, {
             withCredentials: true
-          })) throw new Error();
+          });
+
+          if (!response.data) throw new Error();
         } catch (error) {
-          alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
+          alert('세션이 만료되었습니다.\n다시 로그인 해주세요.');
           document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/');
