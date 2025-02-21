@@ -100,7 +100,7 @@
 
 .buttonGroup {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
   margin-top: 1.5rem;
   
   button {
@@ -117,7 +117,7 @@
 
 .submitButton {
   background: $primary-color;
-  color: $white-color;
+  color: $text-color;
   
   &:hover {
     background: color.adjust($primary-color, $lightness: -5%);
@@ -136,6 +136,7 @@
 .cancelButton {
   background: $color-background-light;
   color: $secondary-text-color;
+  font-weight: $font-weight-medium;
   
   &:hover {
     background: color.adjust($color-background-light, $lightness: -5%);
