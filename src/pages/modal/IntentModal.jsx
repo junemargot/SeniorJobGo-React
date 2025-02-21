@@ -116,64 +116,35 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     }
   }, [isOpen, initialMode]);
 
-  // 텍스트 처리 함수
+  // 음성 입력 처리
   const processTranscript = async (text) => {
+    if (!text.trim()) return;
+
     try {
-      console.log('텍스트 처리 시작:', text);
       setIsProcessing(true);
       
-      // 1. 사용자의 음성 입력 텍스트를 채팅 기록에 추가
-      onSubmit({
-        role: "user",
-        text: text,
-        mode: 'voice'
-      });
-
-      // 2. 봇의 로딩 메시지 추가
-      onSubmit({
-        role: "bot",
-        text: "답변을 준비중입니다...",
-        loading: true,
-        mode: 'voice'
-      });
-
-      // 3. 백엔드로 텍스트 데이터 전송
-      const searchResponse = await axios.post(`${API_BASE_URL}/chat/`, {
-        user_message: text,
-        session_id: "default_session"
-      }, {
-        withCredentials: true
-      });
-
-      // 4. 로딩 상태의 메시지를 실제 응답으로 교체
-      onSubmit({
-        role: "bot",
-        text: searchResponse.data.message,
-        jobPostings: searchResponse.data.jobPostings || [],
-        trainingCourses: searchResponse.data.trainingCourses || [],
-        policyPostings: searchResponse.data.policyPostings || [],
-        mealPostings: searchResponse.data.mealPostings || [],
-        type: searchResponse.data.type,
-        loading: false,
-        mode: 'voice'
-      });
-
-      // 5. 모달 닫기
-      onClose();
+      // 음성 입력 텍스트를 바로 전달
+      onSubmit('voice', text);
       
-    } catch (error) {
-      console.error('처리 중 오류:', error);
-      onSubmit({
-        role: "bot",
-        text: "죄송합니다. 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
-        type: "error",
-        loading: false,
-        mode: 'voice'
-      });
+      // 상태 초기화 및 모달 닫기
+      setTranscript('');
+      setFinalTranscript('');
+      setSummary(null);
+      setIsProcessing(false);
+      onClose();
 
-    } finally {
+    } catch (error) {
+      console.error('음성 입력 처리 중 오류:', error);
       setIsProcessing(false);
     }
+  };
+
+  // 녹음 완료 버튼 클릭 핸들러
+  const handleRecordingComplete = () => {
+    if (!transcript.trim()) return;
+    
+    stopListening();
+    processTranscript(transcript);
   };
 
   // 음성 입력 시작
@@ -328,90 +299,47 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         ) : mode === 'voice' ? (
           // 음성 입력 화면
           <div className={styles.voiceMode}>
-            <button className={styles.closeButton} onClick={onClose}>
-              <span className="material-symbols-rounded">close</span>
-            </button>
-            {!summary ? (
-              // 음성 녹음 화면
-              <div className={styles.recordingSection}>
-                <div 
-                  className={`${styles.recordingIndicator} ${isListening ? styles.active : ''}`}
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (isListening) {
-                      stopListening();
-                    } else {
-                      await startListening();
-                    }
-                  }}
-                >
-                  {isListening ? (
+            <div className={styles.recordingSection}>
+              <div 
+                className={`${styles.recordingIndicator} ${isListening ? styles.active : ''}`}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (isListening) {
+                    stopListening();
+                  } else {
+                    await startListening();
+                  }
+                }}
+              >
+                {isListening ? (
+                  <span className="material-symbols-rounded">mic</span>
+                ) : (
+                  <>
                     <span className="material-symbols-rounded">mic</span>
-                  ) : (
-                    <>
-                      <span className="material-symbols-rounded">mic</span>
-                      녹음 시작
-                    </>
-                  )}
-                </div>
-                {isListening && (
-                  <div className={styles.transcript}>
-                    <h4>음성 인식 중...</h4>
-                    <p>{transcript || "말씀해 주세요..."}</p>
-                    <button 
-                      className={styles.confirmRecording}
-                      onClick={() => {
-                        stopListening();
-                        processTranscript(transcript);
-                      }}
-                      disabled={!transcript.trim()}
-                    >
-                      {isProcessing ? (
-                        <div className={styles.loadingText}>
-                          처리 중...
-                          <span className={styles.loadingTimer}>{searchTime}s</span>
-                        </div>
-                      ) : '녹음 완료'}
-                    </button>
-                  </div>
+                    녹음 시작
+                  </>
                 )}
               </div>
-            ) : (
-              // 요약 확인 화면
-              <div className={styles.summarySection}>
-                <h3>입력 내용 확인</h3>
-                <div className={styles.summaryContent}>
-                  <div className={styles.originalText}>
-                    <h4>원본 텍스트:</h4>
-                    <p>{summary.originalText}</p>
-                  </div>
-                  <div className={styles.extractedInfo}>
-                    <h4>추출된 정보:</h4>
-                    <p><strong>지역:</strong> {summary.지역 || "없음"}</p>
-                    <p><strong>직무:</strong> {summary.직무 || "없음"}</p>
-                    {summary.연령대 && (
-                      <p><strong>연령대:</strong> {summary.연령대}</p>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.summaryActions}>
+              {isListening && (
+                <div className={styles.transcript}>
+                  <h4>음성 인식 중...</h4>
+                  <p>{transcript || "말씀해 주세요..."}</p>
                   <button 
-                    onClick={isSearching ? handleCancel : handleConfirm}
-                    className={`${styles.confirmButton} ${isSearching ? styles.loading : ''}`}
+                    className={styles.confirmRecording}
+                    onClick={handleRecordingComplete}
+                    disabled={!transcript.trim()}
                   >
-                    <div className={styles.loadingText}>
-                      {isSearching ? (
-                        <>
-                          검색 중...
-                          <span className={styles.loadingTimer}>{searchTime}s</span>
-                        </>
-                      ) : '검색하기'}
-                    </div>
+                    {isProcessing ? (
+                      <div className={styles.loadingText}>
+                        처리 중...
+                        <span className={styles.loadingTimer}>{searchTime}s</span>
+                      </div>
+                    ) : '녹음 완료'}
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ) : null}
       </div>
