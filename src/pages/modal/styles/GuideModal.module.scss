@@ -27,13 +27,14 @@
     margin-bottom: 2rem;
     color: $text-title-color;
     font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
   }
 }
 
 .guideList {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .guideItem {
@@ -46,20 +47,39 @@
   
   span {
     font-size: $font-size-32;
-    color: $primary-color;
+  }
+
+  &:nth-child(1) {
+    span {
+      color: $primary-color;
+    }
+  }
+
+  &:nth-child(2) {
+    span {
+      color: #ff865e;
+    }
+  }
+
+  &:nth-child(3) {
+    span {
+      color: #8db7de;
+    }
   }
   
   .guideText {
     h3 {
       font-size: $font-size-18;
-      margin-bottom: 0.5rem;
+      font-weight: $font-weight-normal;
+      margin-bottom: 8px;
       color: $text-title-color;
     }
     
     p {
-      font-size: $font-size-base;
+      font-size: $font-size-16;
       color: $secondary-text-color;
       line-height: 1.4;
+      white-space: pre-line;
     }
   }
 }
@@ -69,11 +89,12 @@
   padding: 1rem;
   margin-top: 2rem;
   background: $primary-color;
-  color: $white-color;
+  // background: color.adjust($primary-color, $lightness: -5%);
+  color: $text-color;
   border: none;
   border-radius: $radius-md;
   font-size: $font-size-16;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
   transition: background 0.2s;
   

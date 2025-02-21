@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { samplePolicies } from '../../data/samplePolicies';
 import styles from './styles/chat.module.scss';
 import axios from 'axios';
+import PropTypes from 'prop-types';
+
 import Header from '@components/Header/Header';
 import IntentModal from '@pages/modal/IntentModal';
 import ChatMessage from './components/ChatMessage';
@@ -13,9 +15,12 @@ import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 import PolicySearchModal from '@pages/modal/PolicySearchModal';
+import MealServiceMessage from './components/MealServiceMessage';
 // import ReactMarkdown from 'react-markdown';
 
 const Chat = () => {
+  const navigate = useNavigate();
+
   const [userMessage, setUserMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isBotResponding, setIsBotResponding] = useState(false);
@@ -51,20 +56,22 @@ const Chat = () => {
   const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  // 채팅 기록 불러오기 관련 상태
-  const chatEndIndex = useRef(-1);
-  const limit = 10;
+  // 무료급식소 관련 상태 추가
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  // 정책 정보 관련 상태
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
 
-  const navigate = useNavigate();
+  const chatEndIndex = useRef(0);
+  const limit = 10;
 
   // 메뉴 아이템
   const suggestions = [
-    { text: "시니어JobGo 이용안내", icon: "help", id: 1 },
-    { text: "AI 맞춤 채용정보 검색", icon: "work", id: 2 },
-    { text: "맞춤 훈련정보 검색", icon: "school", id: 3 },
-    { text: "정책 정보 알리미", icon: "info", id: 4 },
-    { text: "이력서 관리", icon: "description", id: 5 },
-    
+    { text: "시니어JobGo 이용안내", description: "서비스 이용방법을 확인해보세요.", icon: "help", id: 1 },
+    { text: "AI 맞춤 채용정보 검색", description: "AI가 맞춤형 채용정보를 찾아드립니다.", icon: "work", id: 2 },
+    { text: "맞춤 훈련정보 검색", description: "새로운 경력을 위한 교육과정을 찾아드립니다.", icon: "school", id: 3 },
+    { text: "이력서 관리", description: "이력서 작성부터 지원까지 한번에", icon: "description", id: 4 },
+    { text: "정책 정보 알리미", description: "도움되는 정부지원 정보 모음을 제공합니다.", icon: "info", id: 5 },
+    { text: "무료급식소 안내", description: "가까운 급식소를 찾아보세요.", icon: "restaurant", id: 6 },
   ];
 
   // 스크롤 이벤트 핸들러
@@ -195,7 +202,7 @@ const Chat = () => {
               newMsg.text = msg.content.message;
             } else if (msg.content.text) {
               newMsg.text = msg.content.text;
-            }
+            } 
 
             // 채용정보 추가
             if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
@@ -205,6 +212,11 @@ const Chat = () => {
             // 훈련과정 정보 추가
             if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
               newMsg.trainingCourses = msg.content.trainingCourses;
+            }
+
+            // 무료급식소 정보 추가
+            if (msg.content.mealServices && msg.content.mealServices.length > 0) {
+              newMsg.mealServices = msg.content.mealServices;
             }
 
             // 메시지 타입 추가
@@ -291,33 +303,80 @@ const Chat = () => {
         text: "",
         type: response.data.type,
         jobPostings: response.data.jobPostings || [],
-        trainingCourses: response.data.trainingCourses || []
+        trainingCourses: response.data.trainingCourses || [],
+        policyPostings: response.data.policyPostings || [],
+        mealPostings: response.data.mealPostings || []
       };
 
-      // 로딩 메시지 제거 및 빈 봇 메시지 추가
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, newBotMessage];
-      });
+        // 데이터 구조 변환
+        const botMessage = {
+          role: "bot",
+          // answer 객체에서 answer 필드 추출
+          text: response.data.answer.answer || "응답 메시지가 없습니다.",
+          type: "meal_service",
+          // data 배열 변환
+          data: Array.isArray(response.data.answer.data) 
+            ? response.data.answer.data.map(item => ({
+                name: item.fcltyNm,          // 시설명
+                location: item.lnmadr,       // 지번주소 전체
+                address: item.rdnmadr,       // 도로명 주소
+                date: item.mlsvDate,         // 급식 요일
+                time: item.mlsvTime || '',   // 급식 시간
+                target: item.mlsvTrget || '', // 급식 대상
+                phoneNumber: item.phoneNumber || '' // 전화번호 추가
+              })) 
+            : []
+        };
 
-      // 타이핑 효과로 메시지 표시
-      typingEffect(
-        response.data.message,
-        (currentText) => {
-          setChatHistory(prev => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              text: currentText
-            };
-            return updated;
-          });
-        },
-        () => {
-          // 타이핑 완료 후 처리할 작업
-          scrollToBottom();
-        }
-      );
+        // 로딩 메시지 제거 및 응답 추가
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, botMessage];
+        });
+      } else {
+        // 기존 채팅 처리 로직
+        response = await axios.post(`${API_BASE_URL}/chat/`, {
+          user_message: message,
+          session_id: "default_session",
+          chat_history: chatHistory.map(msg => ({
+            role: msg.role,
+            content: msg.text
+          }))
+        }, { withCredentials: true });
+
+        // 빈 봇 메시지를 먼저 추가
+        const newBotMessage = {
+          role: "bot",
+          text: "",
+          type: response.data.type,
+          jobPostings: response.data.jobPostings || [],
+          trainingCourses: response.data.trainingCourses || []
+        };
+
+        // 로딩 메시지 제거 및 빈 봇 메시지 추가
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, newBotMessage];
+        });
+
+        // 타이핑 효과로 메시지 표시
+        typingEffect(
+          response.data.message,
+          (currentText) => {
+            setChatHistory(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                text: currentText
+              };
+              return updated;
+            });
+          },
+          () => {
+            scrollToBottom();
+          }
+        );
+      }
 
     } catch (error) {
       console.error("메시지 전송 오류:", error);
@@ -348,9 +407,24 @@ const Chat = () => {
         setIsTrainingSearchModalOpen(true);
         break;
       case 4:
+        // 이력서 관련 추가하기
+      break;
+      case 5:
         setIsPolicySearchModalOpen(true);
         break;
-      // ... 다른 케이스들
+      case 6:
+        // 무료급식소 안내 매세지 추가
+        setChatHistory(prev => [...prev,
+          { role: "user", text: "[무료급식소 안내]" },
+          {
+            role: "bot",
+            text: "어느 지역의 무료급식소를 찾으시는지 말씀해주세요.\n\n예시: '서울시 종로구 무료급식소 알려줘'와 같이 말씀해 주세요.",
+            type: "meal_service_intro"
+          }
+        ]);
+        break;
+      default:
+        break;
     }
   };
 
@@ -358,10 +432,9 @@ const Chat = () => {
   const handleDeleteChats = () => {
     setChatHistory([]);
     setIsBotResponding(false);
-    chatEndIndex.current = 0;
   };
 
-  // 채용 공고 클릭 핸들러
+  // =========== 채용 공고 클릭 핸들러 ===========
   const handleJobClick = (job) => {
     setSelectedJob(prev => {
       const newSelected = prev?.id === job.id ? null : job;
@@ -381,7 +454,7 @@ const Chat = () => {
     });
   };
 
-  // 응답 중단 핸들러
+  // =========== 응답 중단 핸들러 ===========
   const handleStopResponse = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -390,7 +463,7 @@ const Chat = () => {
     setUserMessage("");
   };
 
-  // 훈련 공고 클릭 핸들러
+  // =========== 훈련 공고 클릭 핸들러 ===========
   const handleTrainingClick = (training) => {
     setSelectedTraining(prev => {
       const newSelected = prev?.id === training.id ? null : training;
@@ -410,7 +483,7 @@ const Chat = () => {
     });
   };
 
-  // 모달 핸들러
+  // =========== 모달 핸들러 ===========
   const handleModalSubmit = async (response) => {
     setIsModalOpen(false);
     setUserMessage("");
@@ -476,14 +549,14 @@ const Chat = () => {
     }
   };
 
-  // 맞춤 검색 제출 핸들러
+  // =========== 맞춤 검색 제출 핸들러 ===========
   const handleJobSearchSubmit = (formData) => {
     setIsJobSearchModalOpen(false);
 
     // 채팅 기록에 사용자 메시지 추가
     setChatHistory(prev => [...prev, {
       role: "user",
-      text: "[AI맞춤채용정보]",
+      text: "AI 맞춤 채용 정보",
     }]);
 
     // 로딩 메시지 추가
@@ -527,14 +600,14 @@ const Chat = () => {
       });
   };
 
-  // 훈련 검색 제출 핸들러
+  // =========== 훈련 검색 제출 핸들러 ===========
   const handleTrainingSearchSubmit = (formData) => {
     setIsTrainingSearchModalOpen(false);
 
     // 채팅 기록에 사용자 메시지 추가
     setChatHistory(prev => [...prev, {
       role: "user",
-      text: "[AI맞춤훈련정보]",
+      text: "AI 맞춤 훈련 정보",
     }]);
 
     // 로딩 메시지 추가
@@ -577,22 +650,53 @@ const Chat = () => {
       });
   };
 
+ // 정책 클릭 핸들러
+ const handlePolicyClick = (policy) => {
+  setSelectedPolicy(prev => {
+    const newSelected = prev?.id === policy.id ? null : policy;
+    if (newSelected) {
+      setTimeout(() => {
+        const cardElement = document.querySelector(`[data-policy-id="${policy.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
+  // 무료급식소 클릭 핸들러 추가
+  const handleMealClick = (meal) => {
+    setSelectedMeal(prev => {
+      const newSelected = prev?.fcltyNm === meal.fcltyNm ? null : meal;
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-meal-id="${meal.fcltyNm}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
   return (
     <div className={styles.page}>
       <Header />
       <main className={styles.content}>
-        <IntentModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          onSubmit={handleModalSubmit}
-          initialMode={initialMode}
-        />
+        <IntentModal isOpen={isModalOpen} onClose={handleModalClose} onSubmit={handleModalSubmit} initialMode={initialMode} />
 
-        <div
-          className={styles.container}
-          ref={chatsContainerRef}
-          onScroll={handleScroll}
-        >
+        <div className={styles.container} ref={chatsContainerRef} onScroll={handleScroll}>
           {chatHistory.length === 0 && (
             <>
               <div className={styles.appHeader}>
@@ -602,19 +706,17 @@ const Chat = () => {
 
               <ul className={styles.suggestions}>
                 {suggestions.map((item) => (
-                  <li
-                    key={item.id}
-                    className={styles.suggestionsItem}
-                    onClick={() => handleSuggestionClick(item)}
-                  >
-                    <p className={styles.text}>{item.text}</p>
-                    <span className={`material-symbols-rounded`}>{item.icon}</span>
+                  <li key={item.id} className={styles.suggestionsItem} onClick={() => handleSuggestionClick(item)}>
+                    <div className={styles.textWrapper}>
+                      <p className={styles.text}>{item.text}</p>
+                      <p className={styles.description}>{item.description}</p>
+                    </div>
+                    <span className={`material-symbols-rounded ${item.icon}`}>{item.icon}</span>
                   </li>
                 ))}
               </ul>
             </>
           )}
-
           <div className={styles.chatsContainer}>
             {chatHistory.map((message, index) => (
               <ChatMessage
@@ -622,52 +724,52 @@ const Chat = () => {
                 message={message}
                 selectedJob={selectedJob}
                 selectedTraining={selectedTraining}
+                selectedPolicy={selectedPolicy}
+                selectedMeal={selectedMeal}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
+                onMealClick={handleMealClick}
+                onPolicyClick={handlePolicyClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}
           </div>
 
-          <ChatInput
-            userMessage={userMessage}
-            isBotResponding={isBotResponding}
-            isVoiceMode={isVoiceMode}
-            onSubmit={handleFormSubmit}
-            onChange={handleInputChange}
-            onVoiceInputClick={handleVoiceInputClick}
-            onStopResponse={handleStopResponse}
-            onDeleteChats={handleDeleteChats}
+          <ChatInput 
+            userMessage={userMessage} 
+            isBotResponding={isBotResponding} 
+            isVoiceMode={isVoiceMode} 
+            onSubmit={handleFormSubmit} 
+            onChange={handleInputChange} 
+            onVoiceInputClick={handleVoiceInputClick} 
+            onStopResponse={handleStopResponse} 
+            onDeleteChats={handleDeleteChats} 
           />
 
-          {showScrollButton && (
-            <button
-              className={`${styles.scrollButton} ${styles.visible}`}
-              onClick={scrollToBottom}
-            >
+          {showScrollButton && chatHistory.length > 0 && (
+            <button className={`${styles.scrollButton} ${styles.visible}`} onClick={scrollToBottom}>
               <span className="material-symbols-rounded">arrow_downward</span>
-              최근 메시지 보기
             </button>
           )}
         </div>
 
         <GuideModal 
-          isOpen={isGuideModalOpen}
-          onClose={() => setIsGuideModalOpen(false)}
+          isOpen={isGuideModalOpen} 
+          onClose={() => setIsGuideModalOpen(false)} 
         />
         
-        <JobSearchModal
-          isOpen={isJobSearchModalOpen}
-          onClose={() => setIsJobSearchModalOpen(false)}
-          onSubmit={handleJobSearchSubmit}
-          userProfile={userProfile}
+        <JobSearchModal 
+          isOpen={isJobSearchModalOpen} 
+          onClose={() => setIsJobSearchModalOpen(false)} 
+          onSubmit={handleJobSearchSubmit} 
+          userProfile={userProfile} 
         />
 
-        <TrainingSearchModal
-          isOpen={isTrainingSearchModalOpen}
-          onClose={() => setIsTrainingSearchModalOpen(false)}
-          onSubmit={handleTrainingSearchSubmit}
-          userProfile={userProfile}
+        <TrainingSearchModal 
+          isOpen={isTrainingSearchModalOpen} 
+          onClose={() => setIsTrainingSearchModalOpen(false)} 
+          onSubmit={handleTrainingSearchSubmit} 
+          userProfile={userProfile} 
         />
 
         <PolicySearchModal 
