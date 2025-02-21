@@ -358,6 +358,7 @@ const Chat = () => {
   const handleDeleteChats = () => {
     setChatHistory([]);
     setIsBotResponding(false);
+    chatEndIndex.current = 0;
   };
 
   // 채용 공고 클릭 핸들러
