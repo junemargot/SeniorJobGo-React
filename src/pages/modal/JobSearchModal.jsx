@@ -14,8 +14,15 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [currentField, setCurrentField] = useState(null);
 
-  const ageGroups = ['40대', '50대', '60대', '70대', '80대', '90대'];
-  const cities = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
+  const ageGroups = ['40대', '50대', '60대', '70대', '80대~'];
+  const cities = ['서울', '경기', '인천', '강원', '대전', '세종', '충남', '충북', '부산', '울산', '경남', '경북', '대구', '광주', '전남', '전북', '제주'];
+
+  const [errors, setErrors] = useState({
+    ageGroup: false,
+    gender: false,
+    district: false,
+    city: false,
+  });
 
   useEffect(() => {
     if (userProfile) {
@@ -26,6 +33,21 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // 유효성 검증 업데이트
+    const newErrors = {
+      ageGroup: !formData.ageGroup,
+      gender: !formData.gender,
+      district: !formData.district,
+      city: !formData.city,
+    };
+
+    setErrors(newErrors);
+  
+    // 필수 필드 검증
+    if(Object.values(newErrors).some(error => error)) {
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -66,30 +88,37 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
       <div className={styles.modalContent}>
         <h2>{userProfile ? '맞춤 정보 확인' : '정보 입력'}</h2>
         <form onSubmit={handleSubmit} className={styles.searchForm}>
-          <div className={styles.formGroup}>
-            <label>연령대</label>
+        <div className={`${styles.formGroup} ${errors.ageGroup ? styles.hasError : ''}`}>
+        <label>연령대<span className={styles.required}>*</span></label>
             <div className={styles.ageButtons}>
               {ageGroups.map(age => (
                 <button
                   key={age}
                   type="button"
                   className={`${styles.ageButton} ${formData.ageGroup === age ? styles.active : ''}`}
-                  onClick={() => setFormData(prev => ({ ...prev, ageGroup: age }))}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, ageGroup: age }));
+                    setErrors(prev => ({ ...prev, ageGroup: false }));
+                  }}
                   disabled={!isEditing}
                 >
                   {age}
                 </button>
               ))}
             </div>
+            {errors.ageGroup && <p className={styles.errorText}>연령대를 선택해주세요.</p>}
           </div>
 
-          <div className={styles.formGroup}>
-            <label>성별</label>
+          <div className={`${styles.formGroup} ${errors.gender ? styles.hasError : ''}`}>
+          <label>성별<span className={styles.required}>*</span></label>
             <div className={styles.genderButtons}>
               <button
                 type="button"
                 className={`${styles.genderButton} ${formData.gender === 'male' ? styles.active : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, gender: 'male' }))}
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, gender: 'male' }));
+                  setErrors(prev => ({ ...prev, gender: false }));
+                }}
                 disabled={!isEditing}
               >
                 남자
@@ -97,24 +126,30 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
               <button
                 type="button"
                 className={`${styles.genderButton} ${formData.gender === 'female' ? styles.active : ''}`}
-                onClick={() => setFormData(prev => ({ ...prev, gender: 'female' }))}
+                onClick={() => {
+                  setFormData(prev => ({ ...prev, gender: 'female' }));
+                  setErrors(prev => ({ ...prev, gender: false }));
+                }}
                 disabled={!isEditing}
               >
                 여자
               </button>
             </div>
+            {errors.gender && <p className={styles.errorText}>성별을 선택해주세요.</p>}
           </div>
 
-          <div className={styles.formGroup}>
-            <label>희망근무지역</label>
+          <div className={`${styles.formGroup} ${errors.city || errors.district ? styles.hasError : ''}`}>
+          <label>희망근무지역<span className={styles.required}>*</span></label>
             <div className={styles.locationInputs}>
               <select
                 value={formData.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, city: e.target.value }));
+                  setErrors(prev => ({ ...prev, city: false }));
+                }}
                 disabled={!isEditing}
-                required
               >
-                <option value="">시/도 선택</option>
+                <option value="">시/도</option>
                 {cities.map(city => (
                   <option key={city} value={city}>{city}</option>
                 ))}
@@ -122,12 +157,17 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
               <input
                 type="text"
                 value={formData.district}
-                onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, district: e.target.value }));
+                  setErrors(prev => ({ ...prev, district: false }));
+                }}
                 disabled={!isEditing}
                 placeholder="군/구 입력"
-                
               />
             </div>
+            {(errors.city || errors.district) && 
+              <p className={styles.errorText}>희망근무지역을 입력해주세요.</p>
+            }
           </div>
 
           <div className={styles.formGroup}>
@@ -138,8 +178,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 value={formData.jobType}
                 onChange={(e) => setFormData(prev => ({ ...prev, jobType: e.target.value }))}
                 disabled={!isEditing}
-                required
-                placeholder="예: 사무직"
+                placeholder="예: 사무직, 미화, 경비"
               />
               <button
                 type="button"
@@ -178,6 +217,9 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
           </div>
 
           <div className={styles.buttonGroup}>
+            <button type="button" onClick={onClose} className={styles.cancelButton}>
+              취소
+            </button>
             {userProfile && !isEditing ? (
               <>
                 <button type="button" onClick={handleEdit} className={styles.editButton}>
@@ -192,9 +234,6 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 검색하기
               </button>
             )}
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
-              취소
-            </button>
           </div>
         </form>
       </div>

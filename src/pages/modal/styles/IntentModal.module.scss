@@ -15,7 +15,7 @@
 }
 
 .modalContent {
-  position: relative;
+  position: absolute;
   background: $white-color;
   padding: 1.6rem;
   border-radius: $radius-lg;
@@ -24,10 +24,11 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
 
   @media (max-width: 768px) {
     padding: 1.5rem;
-    width: 95%;
+    width: 90%;
     margin: 1rem;
   }
 
@@ -79,24 +80,63 @@
   }
   
   .introTitle {
+    text-align: center;
     font-size: $font-size-lg;
-    font-weight: $font-weight-bold;  // 굵게
-    margin-bottom: 12px;
-    line-height: 1.4;
+    font-weight: $font-weight-semibold;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+    color: $text-title-color;
+
+    @media (max-width: 768px) {
+      font-size: $font-size-22;
+    }
 
     .highlighted {
       text-decoration: underline;
-      text-decoration-color: #4F6EF7;
+      text-decoration-color: $primary-color-2;
       text-decoration-thickness: 3px;
+    }
+  }
+
+  .closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+  
+    span {
+      font-size: 24px;
+      color: #666;
+    }
+  
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  
+    &:active {
+      background-color: rgba(0, 0, 0, 0.1);
     }
   }
   
   .introSubtitle {
     font-size: $font-size-18;
     font-weight: $font-weight-normal;
-    color: $text-title-color;
-    line-height: 1.6;
-    margin-bottom: 10px;
+    color: $secondary-text-color;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    white-space: pre-line;
+
+    @media (max-width: 768px) {
+      font-size: $font-size-16;
+    }
   }
 
   .chooseTitle {
@@ -105,12 +145,11 @@
     font-weight: $font-weight-semibold;
     margin-bottom: 20px;
   }
-  
 }
 
 .modeButtons {
   display: flex;
-  gap: 2rem;
+  gap: 1.4rem;
   justify-content: center;
   padding: 0 1rem;
 
@@ -122,9 +161,10 @@
 .modeButton {
   width: 240px;
   height: 140px;
-  border-radius: $radius-xl;
+  border-radius: $radius-lg;
   border: none;
   font-size: $font-size-18;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -135,13 +175,13 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
-    width: 200px;
+    width: 170px;
     height: 140px;
     font-size: $font-size-16;
   }
 
   &:first-child {
-    background-color: $secondary-accent-color;  // 주황색 (메인 컬러)
+    background-color: #f3bd72;
     color: $white-color;
 
     &:hover {
@@ -151,7 +191,7 @@
   }
 
   &:last-child {
-    background-color: #627efa;
+    background-color: #8ab4db;
     color: $white-color;
 
     &:hover {
@@ -172,8 +212,34 @@
 
 // 음성 녹음 화면
 .voiceMode {
+  position: relative;
   text-align: center;
   padding: 1rem;
+
+  .closeButton {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-round;
+    transition: background-color .2s ease;
+    z-index: 10;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, .05);
+    }
+
+    span {
+      font-size: 24px;
+      color: $secondary-text-grey;
+    }
+  }
 }
 
 .recordingSection {
@@ -537,5 +603,39 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+
+  span {
+    font-size: 1.5rem;
+    color: #666;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    
+    span {
+      color: #333;
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
   }
 } 

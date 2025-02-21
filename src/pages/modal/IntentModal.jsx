@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styles from './styles/IntentModal.module.scss';
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
+import styles from './styles/IntentModal.module.scss';
 
 const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'
@@ -9,7 +9,6 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [transcript, setTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');  // finalTranscript를 state로 관리
   const [summary, setSummary] = useState(null);
-  const [recognition, setRecognition] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);  // 검색 중 상태
   const [searchTime, setSearchTime] = useState(0);  // 검색 시간 (초)
@@ -79,9 +78,9 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           console.log('인식된 텍스트:', newTranscript);
           setTranscript(newTranscript);
         };
-
         recognitionRef.current = recognition;
         console.log('음성 인식 초기화 완료');
+
       } else {
         console.error('SpeechRecognition이 지원되지 않음');
         alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome 브라우저를 사용해주세요.');
@@ -127,7 +126,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       onSubmit({
         role: "user",
         text: text,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
       // 2. 봇의 로딩 메시지 추가
@@ -135,10 +134,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         role: "bot",
         text: "답변을 준비중입니다...",
         loading: true,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
-      // 3. 정보 추출 및 검색 요청
+      // 3. 백엔드로 텍스트 데이터 전송
       const searchResponse = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: text,
         session_id: "default_session"
@@ -152,12 +151,14 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         text: searchResponse.data.message,
         jobPostings: searchResponse.data.jobPostings || [],
         trainingCourses: searchResponse.data.trainingCourses || [],
+        policyPostings: searchResponse.data.policyPostings || [],
+        mealPostings: searchResponse.data.mealPostings || [],
         type: searchResponse.data.type,
         loading: false,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
-      // 5. 모달 닫기 (음성 모드 유지)
+      // 5. 모달 닫기
       onClose();
       
     } catch (error) {
@@ -167,15 +168,11 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         text: "죄송합니다. 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
         type: "error",
         loading: false,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
+
     } finally {
       setIsProcessing(false);
-      setIsSearching(false);
-      if (searchTimerRef.current) {
-        clearInterval(searchTimerRef.current);
-        searchTimerRef.current = null;
-      }
     }
   };
 
@@ -238,8 +235,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       } catch (error) {
         console.error('검색 중 오류:', error);
         alert('검색 중 오류가 발생했습니다.');
+
       } finally {
         setIsSearching(false);  // 검색 종료
+
         if (searchTimerRef.current) {
           clearInterval(searchTimerRef.current);  // 타이머 정지
           searchTimerRef.current = null;
@@ -261,9 +260,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     startListening();
   };
 
-  // 텍스트 모드 선택 시 모달 닫기
+  // 텍스트 모드 선택 시
   const handleTextModeSelect = () => {
-    onClose();  // 모달 닫기
+    setMode('text');
+    onClose();  // 모달 닫고 채팅 입력으로 전환
   };
 
   // 컴포넌트 언마운트 시 타이머 정리
@@ -283,7 +283,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         <button 
           className={styles.closeButton}
           onClick={onClose}
-          type="button"
+          aria-label="닫기"
         >
           <span className="material-symbols-rounded">close</span>
         </button>
@@ -291,21 +291,21 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         {!mode ? (
           // 초기 선택 화면
           <div className={styles.modeSelection}>
+            <button className={styles.closeButton} onClick={onClose}>
+              <span className="material-symbols-rounded">close</span>
+            </button>
             <div className={styles.introContainer}>
               <h2 className={styles.introTitle}>
                 시니어잡고는 AI 기술이 적용된 <br/>고령층을 위한 <span className={styles.highlighted}>대화형 도우미</span>입니다.
               </h2>
               <p className={styles.introSubtitle}>
-                최적화된 채용 정보와 훈련 정보 등을 안내해 드립니다.<br/>
-                대화 방식을 선택하여 지금 바로 사용해보세요!
+                AI가 맞춤 추천하는 채용정보와 교육과정을 만나보세요.<br />
+                말로 하거나 글로 쓰거나, 편하신 방법으로 시작해보세요!
               </p>
             </div>
 
-            {/* <h3 className={styles.chooseTitle}>대화 방식을 선택해주세요</h3> */}
             <div className={styles.modeButtons}>
-              <button 
-                className={styles.modeButton}
-                onClick={async () => {
+              <button className={styles.modeButton} onClick={async () => {
                   setMode('voice');
                   // 권한 확인 후 녹음 시작
                   const hasPermission = await requestMicrophonePermission();
@@ -317,12 +317,9 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                 }}
               >
                 <span className="material-symbols-rounded">record_voice_over</span>
-                음성으로 주고 받는 대화
+                말로 주고 받는 대화
               </button>
-              <button 
-                className={styles.modeButton}
-                onClick={handleTextModeSelect}
-              >
+              <button className={styles.modeButton} onClick={handleTextModeSelect}>
                 <span className="material-symbols-rounded">forum</span>
                 입력하는 채팅 대화
               </button>
@@ -331,6 +328,9 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         ) : mode === 'voice' ? (
           // 음성 입력 화면
           <div className={styles.voiceMode}>
+            <button className={styles.closeButton} onClick={onClose}>
+              <span className="material-symbols-rounded">close</span>
+            </button>
             {!summary ? (
               // 음성 녹음 화면
               <div className={styles.recordingSection}>
