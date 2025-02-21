@@ -1,0 +1,614 @@
+.container {
+  width: 100%;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.formSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+}
+
+.section {
+  margin-bottom: 3.5rem;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  h2, h3 {
+    font-size: 1.8rem;
+    color: #333;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 2rem;
+    font-weight: 500;
+  }
+
+  .description {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #555;
+    line-height: 1.6;
+  }
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input, .textarea {
+  width: 100%;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  
+  &::placeholder {
+    font-size: 1.5rem;
+    color: #888;
+    opacity: 0.8;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+  }
+}
+
+.input {
+  height: 50px;
+  padding: 0 1.5rem;
+}
+
+.textarea {
+  min-height: 150px;
+  padding: 1.5rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.buttonContainer {
+  display: none;
+}
+
+.button {
+  background: #1a73e8;
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.4rem;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background: #1557b0;
+  }
+
+  &.delete {
+    background-color: #dc3545;
+    
+    &:hover {
+      background-color: #c82333;
+    }
+  }
+}
+
+.educationItem, .experienceItem {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+
+  input, textarea {
+    margin-bottom: 1rem;
+  }
+
+  textarea {
+    min-height: 100px;
+  }
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.jobSelect {
+  width: 100%;
+  min-height: 200px;
+  padding: 1.2rem;
+  font-size: 1.8rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  
+  option {
+    padding: 1rem;
+    font-size: 1.8rem;
+    
+    &:checked {
+      background-color: #4a5568;
+      color: white;
+    }
+  }
+}
+
+.hint {
+  font-size: 1.4rem;
+  color: #666;
+  margin-top: 1rem;
+}
+
+.basicInfo {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 15px;
+}
+
+.introContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.aiButton {
+  width: 100%;
+  height: 60px;
+  font-size: 1.5rem;
+  background-color: #34a853;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #2d8e47;
+  }
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.aiIntroSection {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border: 2px solid #e3f2fd;
+  border-radius: 8px;
+
+  h4 {
+    font-size: 1.5rem;
+    color: #34a853;
+    margin-bottom: 1rem;
+  }
+}
+
+.aiIntroContent {
+  font-size: 1.4rem;
+  line-height: 1.8;
+  color: #333;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  white-space: pre-wrap;
+  border: 1px solid #e0e0e0;
+}
+
+.applyButton {
+  width: 100%;
+  height: 50px;
+  font-size: 1.4rem;
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #1557b0;
+  }
+}
+
+.downloadButton {
+  background-color: #48bb78;
+  
+  &:hover {
+    background-color: #38a169;
+  }
+}
+
+.previewSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 2rem;
+}
+
+.previewTitle {
+  font-size: 2rem;
+  color: #1a73e8;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e3f2fd;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.previewButton,
+.downloadButton,
+.emailButton {
+  flex: 1;
+  height: 48px;
+  padding: 0 2rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  color: white;
+  
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.previewButton {
+  background-color: #4a5568;
+  &:hover { background-color: #2d3748; }
+}
+
+.emailButton {
+  background-color: #ffd54f;
+  &:hover { 
+    background-color: #ffca28;
+  }
+}
+
+.emailInputContainer {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.emailInput {
+  flex: 1;
+  height: 50px;
+  padding: 0 1.5rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  
+  &:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+  }
+}
+
+.previewContainer {
+  margin-top: 2rem;
+  padding: 3rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .previewContent {
+    :global {
+      h1 {
+        font-size: 2.8rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 4rem;
+        color: #333;
+      }
+
+      h2 {
+        font-size: 2.2rem;
+        font-weight: 500;
+        color: #333;
+        padding-bottom: 1.2rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e0e0e0;
+      }
+
+      section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 2rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        &.basic-info {
+          p {
+            display: flex;
+            margin-bottom: 1.2rem;
+            font-size: 1.6rem;
+            line-height: 1.6;
+            color: #444;
+
+            &::before {
+              content: attr(data-label);
+              width: 8rem;
+              font-weight: 500;
+              color: #333;
+            }
+          }
+        }
+
+        .content {
+          break-inside: avoid;
+          page-break-inside: avoid;
+          
+          font-size: 1.6rem;
+          line-height: 1.8;
+          color: #444;
+          white-space: pre-wrap;
+
+          strong, b {
+            color: #333;
+            font-weight: 500;
+          }
+
+          p {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 0.8rem;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+
+          &.empty-message {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2rem;
+  
+  p {
+    font-size: 1.6rem;
+    line-height: 1.6;
+    color: #333;
+  }
+}
+
+.infoItem {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+
+  p {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.expHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.company {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.8rem;
+}
+
+.period {
+  font-size: 1.5rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.position {
+  font-size: 1.7rem;
+  color: #333;
+  margin-bottom: 0.8rem;
+}
+
+.description {
+  font-size: 1.5rem;
+  color: #444;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.coverLetter {
+  font-size: 1.6rem;
+  line-height: 1.8;
+  color: #333;
+  
+  p {
+    margin-bottom: 1rem;
+  }
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.skillItem {
+  font-size: 1.6rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.year {
+  font-size: 1.5rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.school {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.major, .degree {
+  font-size: 1.6rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.desired_job {
+  font-size: 1.8rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.skillsSection {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: #444;
+  white-space: pre-wrap;
+}
+
+.inputRow {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+
+  .inputField {
+    flex: 1;
+  }
+}
+
+.inputField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  label {
+    font-size: 1.6rem;
+    color: #333;
+    font-weight: 500;
+  }
+
+  input[type="number"] {
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      opacity: 1;
+      height: 2rem;
+    }
+  }
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+
+  label {
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .input {
+    width: 100%;
+    height: 4.5rem;
+    padding: 0 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 0.8rem;
+    font-size: 1.5rem;
+    
+    &:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+
+    &::placeholder {
+      color: #aaa;
+    }
+  }
+
+  input[type="number"] {
+    &::-webkit-inner-spin-button {
+      opacity: 1;
+      height: 2.8rem;
+    }
+  }
+}
+
+.inputWithHint {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .hint {
+    font-size: 1.4rem;
+    color: #666;
+    white-space: nowrap;
+  }
+}
+
+.formField {
+  .inputWithHint & {
+    .input {
+      width: 12rem;
+    }
+  }
+} 
