@@ -153,6 +153,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         jobPostings: searchResponse.data.jobPostings || [],
         trainingCourses: searchResponse.data.trainingCourses || [],
         policyPostings: searchResponse.data.policyPostings || [],
+        mealPostings: searchResponse.data.mealPostings || [],
         type: searchResponse.data.type,
         loading: false,
         mode: 'voice'
