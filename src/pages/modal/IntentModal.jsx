@@ -9,7 +9,6 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [transcript, setTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');  // finalTranscript를 state로 관리
   const [summary, setSummary] = useState(null);
-  const [recognition, setRecognition] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);  // 검색 중 상태
   const [searchTime, setSearchTime] = useState(0);  // 검색 시간 (초)
