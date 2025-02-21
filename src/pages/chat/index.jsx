@@ -307,57 +307,11 @@ const Chat = () => {
         policyPostings: response.data.policyPostings || [],
         mealPostings: response.data.mealPostings || []
       };
-
-        // 데이터 구조 변환
-        const botMessage = {
-          role: "bot",
-          // answer 객체에서 answer 필드 추출
-          text: response.data.answer.answer || "응답 메시지가 없습니다.",
-          type: "meal_service",
-          // data 배열 변환
-          data: Array.isArray(response.data.answer.data) 
-            ? response.data.answer.data.map(item => ({
-                name: item.fcltyNm,          // 시설명
-                location: item.lnmadr,       // 지번주소 전체
-                address: item.rdnmadr,       // 도로명 주소
-                date: item.mlsvDate,         // 급식 요일
-                time: item.mlsvTime || '',   // 급식 시간
-                target: item.mlsvTrget || '', // 급식 대상
-                phoneNumber: item.phoneNumber || '' // 전화번호 추가
-              })) 
-            : []
-        };
-
-        // 로딩 메시지 제거 및 응답 추가
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, botMessage];
-        });
-      } else {
-        // 기존 채팅 처리 로직
-        response = await axios.post(`${API_BASE_URL}/chat/`, {
-          user_message: message,
-          session_id: "default_session",
-          chat_history: chatHistory.map(msg => ({
-            role: msg.role,
-            content: msg.text
-          }))
-        }, { withCredentials: true });
-
-        // 빈 봇 메시지를 먼저 추가
-        const newBotMessage = {
-          role: "bot",
-          text: "",
-          type: response.data.type,
-          jobPostings: response.data.jobPostings || [],
-          trainingCourses: response.data.trainingCourses || []
-        };
-
         // 로딩 메시지 제거 및 빈 봇 메시지 추가
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, newBotMessage];
-        });
+      setChatHistory(prev => {
+        const filtered = prev.filter(msg => !msg.loading);
+        return [...filtered, newBotMessage];
+      });
 
         // 타이핑 효과로 메시지 표시
         typingEffect(
@@ -376,8 +330,6 @@ const Chat = () => {
             scrollToBottom();
           }
         );
-      }
-
     } catch (error) {
       console.error("메시지 전송 오류:", error);
       setChatHistory(prev => {
