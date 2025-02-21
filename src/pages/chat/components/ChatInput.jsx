@@ -45,11 +45,10 @@ const ChatInput = ({
               </button>
               <button
                 type="submit"
-                disabled={!userMessage.trim()}
-                className={`material-symbols-rounded ${styles.sendPromptBtn}`}
-                id="send-prompt-btn"
+                disabled={!userMessage.trim() || isBotResponding}
+                className={styles.sendPromptBtn}
               >
-                arrow_upward
+                <span className="material-symbols-rounded">arrow_upward</span>
               </button>
             </div>
           </form>
