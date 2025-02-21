@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styles from '../styles/signupWithId.module.scss';
 import Header from '@components/Header/Header';
 import Footer from '@components/Footer/Footer';
+import { API_BASE_URL } from '@/config';
 
 const SignupWithId = () => {
   const navigate = useNavigate();
@@ -16,9 +17,11 @@ const SignupWithId = () => {
   const [agreements, setAgreements] = useState({
     terms: false,
     privacy: false,
+    all: false,
   });
 
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isIdChecked, setIsIdChecked] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value }= e.target;
@@ -26,21 +29,31 @@ const SignupWithId = () => {
       ...prev,
       [name]: value
     }));
+
+    if (name === 'userId') {
+      idCheckMessage('', '');
+      setIsIdChecked(false);
+    }
   };
 
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
-    setAgreements(prev => ({
+    if (name === 'all') {
+      setAgreements({ terms: checked, privacy: checked, all: checked });
+    } else {
+      setAgreements(prev => ({
         ...prev,
         [name]: checked
-    }));
+      }));
+    }
   };
 
   const handleSubmit = async () => {
     console.log(formData);
-    const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
       body: JSON.stringify(formData),
+      credentials: 'include'
     });
 
     if (response.ok) {
@@ -64,18 +77,29 @@ const SignupWithId = () => {
       return;
     }
 
-    const response = await fetch('http://localhost:8000/api/v1/auth/check-id', {
+    const response = await fetch(`${API_BASE_URL}/auth/check-id`, {
       method: 'POST',
       body: JSON.stringify({ id: formData.userId }),
+      credentials: 'include'
     });
     const data = await response.json();
-    console.log(data);
     if (data.is_duplicate) {
       idCheckMessage('중복된 아이디입니다.', 'red');
     } else {
+      setIsIdChecked(true);
       idCheckMessage('사용 가능한 아이디입니다.', 'green');
     }
   };
+
+  // 쿠키에 로그인 정보가 있고 비회원이 아니면 채팅 페이지로 이동
+  useEffect(() => {
+    const cookie = document.cookie;
+    const sjgpr = cookie.split('; ').find(row => row.startsWith('sjgpr='));
+
+    if (cookie.includes("sjgid") && !sjgpr.includes("none")) {
+      navigate('/chat');
+    }
+  }, []);
 
   useEffect(() => {
     const isValid =
@@ -83,10 +107,11 @@ const SignupWithId = () => {
       formData.password.length >= 8 &&
       formData.password === formData.passwordConfirm &&
       agreements.terms &&
-      agreements.privacy;
+      agreements.privacy &&
+      isIdChecked;
 
     setIsFormValid(isValid);
-  }, [formData, agreements]);
+  }, [formData, agreements, isIdChecked]);
 
   return (
     <div className={styles.page}>
@@ -124,8 +149,13 @@ const SignupWithId = () => {
                 시니어잡고 이용을 위한<br />
                 약관에 <span>동의</span>해주세요.
               </h2>
-                
               <div className={styles.agreement__items}>
+                <div className={styles.agreement__item}>
+                  <label htmlFor="all">
+                    전체 동의
+                  </label>
+                  <input type="checkbox" id="all" name="all" checked={agreements.all} onChange={handleCheckboxChange} />
+                </div>
                 <div className={styles.agreement__item}>
                   <label htmlFor="terms">
                     플랫폼 이용약관 
