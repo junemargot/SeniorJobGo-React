@@ -53,6 +53,8 @@ const Chat = () => {
 
   // 무료급식소 관련 상태 추가
   const [selectedMeal, setSelectedMeal] = useState(null);
+  // 정책 정보 관련 상태
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
 
   const chatEndIndex = useRef(0);
   const limit = 10;
@@ -580,6 +582,27 @@ const Chat = () => {
       });
   };
 
+
+ // 정책 클릭 핸들러
+ const handlePolicyClick = (policy) => {
+  setSelectedPolicy(prev => {
+    const newSelected = prev?.id === policy.id ? null : policy;
+    if (newSelected) {
+      setTimeout(() => {
+        const cardElement = document.querySelector(`[data-policy-id="${policy.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
   // 무료급식소 클릭 핸들러 추가
   const handleMealClick = (meal) => {
     setSelectedMeal(prev => {
@@ -645,10 +668,12 @@ const Chat = () => {
                 message={message}
                 selectedJob={selectedJob}
                 selectedTraining={selectedTraining}
+                selectedPolicy={selectedPolicy}
                 selectedMeal={selectedMeal}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
                 onMealClick={handleMealClick}
+                onPolicyClick={handlePolicyClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}
