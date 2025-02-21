@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { API_BASE_URL } from '@/config';
 import styles from './styles/IntentModal.module.scss';
+import choiceInputMethodVoice from '@/assets/voice/choice_input_method.mp3';
+import startRecordingVoice from '@/assets/voice/start_recording.mp3';
 
 const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'
@@ -15,6 +17,8 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const searchTimerRef = useRef(null);  // 타이머 참조
   const recognitionRef = useRef(null);  // 음성 인식 객체 참조
   const isListeningRef = useRef(false);  // 녹음 중 여부 참조
+  const introAudioRef = useRef(new Audio(choiceInputMethodVoice));
+  const recordingAudioRef = useRef(new Audio(startRecordingVoice));
 
   // 음성 인식 초기화
   useEffect(() => {
@@ -147,24 +151,46 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     processTranscript(transcript);
   };
 
-  // 음성 입력 시작
-  const startListening = () => {
+  // 모든 음성 안내 중지 함수
+  const stopAllAudio = () => {
+    [introAudioRef, recordingAudioRef].forEach(ref => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+  };
+
+  // 음성 녹음 시작 함수 수정
+  const startListening = async () => {
     if (recognitionRef.current) {
-      setFinalTranscript('');  // finalTranscript 초기화
-      setTranscript('');  // transcript 초기화
-      recognitionRef.current.start();
-      isListeningRef.current = true;
-      setSummary(null);
+      // 먼저 모든 음성 안내 중지
+      stopAllAudio();
+      
+      // 약간의 지연 후 녹음 시작 (음성 안내가 완전히 중지되도록)
+      setTimeout(() => {
+        try {
+          setFinalTranscript('');
+          setTranscript('');
+          recognitionRef.current.start();
+          isListeningRef.current = true;
+          setSummary(null);
+        } catch (error) {
+          console.error('음성 인식 시작 중 오류:', error);
+        }
+      }, 100);
     } else {
       alert('이 브라우저는 음성 인식을 지원하지 않습니다.');
     }
   };
 
-  // 음성 입력 중지
+  // 음성 녹음 중지 함수 수정
   const stopListening = () => {
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       isListeningRef.current = false;
+      // 음성 안내도 함께 중지
+      stopAllAudio();
     }
   };
 
@@ -246,8 +272,57 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     };
   }, []);
 
-  // onClose 함수를 감싸서 녹음 중지 로직 추가
+  // mode가 변경될 때 음성 안내 재생
+  useEffect(() => {
+    if (mode === 'voice') {
+      const playRecordingGuide = async () => {
+        try {
+          // 이전 음성 안내 중지
+          introAudioRef.current.pause();
+          introAudioRef.current.currentTime = 0;
+          
+          // 녹음 시작 안내 재생
+          await recordingAudioRef.current.play();
+        } catch (error) {
+          console.error('음성 안내 재생 중 오류:', error);
+        }
+      };
+      
+      playRecordingGuide();
+    }
+    
+    return () => {
+      // 컴포넌트 정리 시 모든 음성 중지
+      recordingAudioRef.current.pause();
+      recordingAudioRef.current.currentTime = 0;
+    };
+  }, [mode]);
+
+  // 초기 선택 화면 음성 안내
+  useEffect(() => {
+    if (isOpen && !mode) {
+      const playIntroGuide = async () => {
+        try {
+          await introAudioRef.current.play();
+        } catch (error) {
+          console.error('음성 안내 재생 중 오류:', error);
+        }
+      };
+      
+      playIntroGuide();
+      
+      return () => {
+        introAudioRef.current.pause();
+        introAudioRef.current.currentTime = 0;
+      };
+    }
+  }, [isOpen, mode]);
+
+  // handleClose 함수 수정
   const handleClose = () => {
+    // 모든 음성 중지
+    stopAllAudio();
+    
     // 녹음 중지
     if (recognitionRef.current) {
       recognitionRef.current.stop();
