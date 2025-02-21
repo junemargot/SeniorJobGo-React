@@ -127,7 +127,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       onSubmit({
         role: "user",
         text: text,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
       // 2. 봇의 로딩 메시지 추가
@@ -135,10 +135,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         role: "bot",
         text: "답변을 준비중입니다...",
         loading: true,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
-      // 3. 정보 추출 및 검색 요청
+      // 3. 백엔드로 텍스트 데이터 전송
       const searchResponse = await axios.post(`${API_BASE_URL}/chat/`, {
         user_message: text,
         session_id: "default_session"
@@ -152,12 +152,13 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         text: searchResponse.data.message,
         jobPostings: searchResponse.data.jobPostings || [],
         trainingCourses: searchResponse.data.trainingCourses || [],
+        policyPostings: searchResponse.data.policyPostings || [],
         type: searchResponse.data.type,
         loading: false,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
 
-      // 5. 모달 닫기 (음성 모드 유지)
+      // 5. 모달 닫기
       onClose();
       
     } catch (error) {
@@ -167,15 +168,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         text: "죄송합니다. 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
         type: "error",
         loading: false,
-        mode: 'voice'  // 음성 모드 표시 추가
+        mode: 'voice'
       });
     } finally {
       setIsProcessing(false);
-      setIsSearching(false);
-      if (searchTimerRef.current) {
-        clearInterval(searchTimerRef.current);
-        searchTimerRef.current = null;
-      }
     }
   };
 
@@ -261,9 +257,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     startListening();
   };
 
-  // 텍스트 모드 선택 시 모달 닫기
+  // 텍스트 모드 선택 시
   const handleTextModeSelect = () => {
-    onClose();  // 모달 닫기
+    setMode('text');
+    onClose();  // 모달 닫고 채팅 입력으로 전환
   };
 
   // 컴포넌트 언마운트 시 타이머 정리

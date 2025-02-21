@@ -7,8 +7,8 @@ import Avatar from '@assets/images/icon-robot.svg';
 import PolicyCard from './PolicyCard';
 import MealCard from './MealCard';
 
-const ChatMessage = ({ 
-  message, 
+const ChatMessage = ({
+  message,
   selectedJob,
   selectedTraining,
   selectedPolicy,
@@ -23,6 +23,7 @@ const ChatMessage = ({
   const isBot = message.role === "bot";
   const isUser = message.role === "user";
   const isLoading = message.loading;
+  const isVoiceMode = message.mode === 'voice';
 
   const getMessageStyle = (msg) => {
     const baseStyle = styles.message;
@@ -62,150 +63,81 @@ const ChatMessage = ({
   };
 
   return (
-    <div className={`${styles.message} ${isBot ? styles.botMessage : ''} ${isUser ? styles.userMessage : ''} ${isLoading ? styles.loading : ''}`}>
+    <div className={`${styles.message} 
+      ${isBot ? styles.botMessage : ''} 
+      ${isUser ? styles.userMessage : ''} 
+      ${isLoading ? styles.loading : ''}
+      ${isVoiceMode ? styles.voiceMessage : ''}`}
+    >
       {isBot && <img src={Avatar} alt="Bot" className={styles.avatar} />}
       <div className={styles.messageContent}>
         {isLoading ? (
           <div className={styles.loadingContainer}>
             <div className={styles.loadingDots}>
-              <span></span>
-              <span></span>
-              <span></span>
+              <span></span><span></span><span></span>
             </div>
             <div className={styles.loadingText}>답변을 준비중입니다...</div>
           </div>
         ) : (
           <div className={styles.messageText}>
-            {!message.jobPostings?.length && !message.trainingCourses?.length && !message.policyPostings?.length && !message.mealPostings?.length && (
-              <ReactMarkdown
-                components={{
-                  a: ({ node, ...props }) => (
-                    <a
-                      {...props}
-                      className={styles.sourceLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    />
-                  ),
-                  p: ({ node, ...props }) => (
-                    <p {...props}  />
-                  )
-                }}
-              >
-                {message.text}
-              </ReactMarkdown>
-            )}
-            
-            {message.jobPostings?.length > 0 && (
-              <div className={styles.jobList}>
-                <ReactMarkdown
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <p {...props} className={styles.paragraph} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul {...props} />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li {...props} />
-                    ),
-                    strong: ({ node, ...props }) => (
-                      <strong {...props} />
-                    )
-                  }}
-                >
-                  {message.text}
-                </ReactMarkdown>
-                {message.jobPostings.map((job, index) => (
-                  <div key={job.id} className={styles.itemGroup}>
-                    <JobCard
-                      job={job}
-                      onClick={onJobClick}
-                      isSelected={selectedJob && selectedJob.id === job.id}
-                      cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {message.trainingCourses?.length > 0 && (
-              <div className={styles.trainingList}>
-                <ReactMarkdown
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <p {...props} className={styles.paragraph} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul {...props} className={styles.courseList} />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li {...props} className={styles.courseItem} />
-                    ),
-                    strong: ({ node, ...props }) => (
-                      <strong {...props} />
-                    )
-                  }}
-                >
-                  {message.text}
-                </ReactMarkdown>
-                <div className={styles.courseCards}>
-                  {message.trainingCourses.map((course, index) => (
-                    <div key={course.id} className={styles.itemGroup}>
-                      <TrainingCard
-                        training={{
-                          ...course,
-                          yardMan: course.yardMan || '미정'
+            {/* 정책 정보 카드 먼저 체크 */}
+            {message.policyPostings?.length > 0 ? (
+              <div className={styles.policyList}>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+                <div className={styles.policyCards}>
+                  {message.policyPostings.map((policy, index) => (
+                    <div key={`${policy.source}-${policy.title}-${index}`} className={styles.itemGroup}>
+                      <PolicyCard
+                        policy={{
+                          ...policy,
+                          id: `${policy.source}-${policy.title}-${index}`,  // 고유 ID 생성
+                          publishDate: new Date().toLocaleDateString(),  // 날짜 추가
+                          tags: [policy.target]  // 태그 추가
                         }}
-                        onClick={onTrainingClick}
-                        isSelected={selectedTraining && selectedTraining.id === course.id}
-                        cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
+                        onClick={onPolicyClick}
+                        isSelected={selectedPolicy && selectedPolicy.url === policy.url}
+                        cardRef={selectedPolicy && selectedPolicy.url === policy.url ? selectedCardRef : null}
                       />
                     </div>
                   ))}
                 </div>
               </div>
+            ) : !message.jobPostings?.length && !message.trainingCourses?.length ? (
+              // 다른 카드 타입이 없을 때만 일반 텍스트 표시
+              <ReactMarkdown>{message.text}</ReactMarkdown>
+            ) : null}
+
+            {/* 채용 정보 카드 */}
+            {message.jobPostings?.length > 0 && (
+              <div className={styles.jobList}>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+                <div className={styles.jobCards}>
+                  {message.jobPostings.map((job) => (
+                    <JobCard
+                      key={job.id}
+                      job={job}
+                      onClick={onJobClick}
+                      isSelected={selectedJob && selectedJob.id === job.id}
+                      cardRef={selectedJob && selectedJob.id === job.id ? selectedCardRef : null}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
-            {message.policyPostings?.length > 0 && (
-              <div className={styles.policyList}>
-                <ReactMarkdown
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <p {...props} className={styles.paragraph} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul {...props} className={styles.policyList} />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li {...props} className={styles.policyItem} />
-                    ),
-                    strong: ({ node, ...props }) => (
-                      <strong {...props} />
-                    )
-                  }}
-                >
-                  {message.text}
-                </ReactMarkdown>
-                <div className={styles.policyCards}>
-                  {message.policyPostings.map((policy, index) => (
-                    <div key={`${policy.source}-${policy.title}-${index}`} className={styles.itemGroup}>
-                      <PolicyCard
-                        policy={policy}
-                        onClick={onPolicyClick}
-                        isSelected={selectedPolicy && selectedPolicy.id === policy.id}
-                        cardRef={selectedPolicy && selectedPolicy.id === policy.id ? selectedCardRef : null}
-                      />
-                    </div>
+            {/* 훈련 정보 카드 */}
+            {message.trainingCourses?.length > 0 && (
+              <div className={styles.trainingList}>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
+                <div className={styles.trainingCards}>
+                  {message.trainingCourses.map((course) => (
+                    <TrainingCard
+                      key={course.id}
+                      training={course}
+                      onClick={onTrainingClick}
+                      isSelected={selectedTraining && selectedTraining.id === course.id}
+                      cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
+                    />
                   ))}
                 </div>
               </div>
