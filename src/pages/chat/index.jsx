@@ -668,10 +668,10 @@ const Chat = () => {
   // 무료급식소 클릭 핸들러 추가
   const handleMealClick = (meal) => {
     setSelectedMeal(prev => {
-      const newSelected = prev?.fcltyNm === meal.fcltyNm ? null : meal;
+      const newSelected = prev?.name === meal.name ? null : meal;  // name으로 비교
       if (newSelected) {
         setTimeout(() => {
-          const cardElement = document.querySelector(`[data-meal-id="${meal.fcltyNm}"]`);
+          const cardElement = document.querySelector(`[data-meal-id="${meal.name}"]`);
           if (cardElement) {
             cardElement.scrollIntoView({
               behavior: 'smooth',
