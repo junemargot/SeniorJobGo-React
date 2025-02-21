@@ -13,7 +13,12 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [customInterest, setCustomInterest] = useState('');
 
   const cities = ['서울', '경기', '인천', '강원', '대전', '세종', '충남', '충북', '부산', '울산', '경남', '경북', '대구', '광주', '전남', '전북', '제주'];
-  const commonInterests = ['사무행정', 'IT/컴퓨터', '요양보호', '조리/외식', '운전/운송', '생산/제조', '판매/영업', '건물관리', '경비'];
+  const commonInterests = ['사무행정', 'IT/컴퓨터', '요양보호', '조리/외식', '경비', '운전/운송', '생산/제조', '판매/영업', '건물관리'];
+
+  const [errors, setErrors] = useState({
+    city: false,
+    district: false,
+  });
 
   useEffect(() => {
     if (userProfile) {
@@ -24,6 +29,19 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const newErrors = {
+      city: !formData.city,
+      district: false,
+    };
+
+    setErrors(newErrors);
+
+    // 필수 필드 검증
+    if (Object.values(newErrors).some(error => error)) {
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -55,16 +73,18 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <h2>{userProfile ? '맞춤 훈련정보 확인' : '정보 입력'}</h2>
+        <h2>{userProfile ? '맞춤 훈련정보 확인' : '훈련정보 검색'}</h2>
         <form onSubmit={handleSubmit} className={styles.searchForm}>
           <div className={styles.formGroup}>
-            <label>희망 교육지역</label>
+            <label>희망 교육지역<span className={styles.required}>*</span></label>
             <div className={styles.locationInputs}>
               <select
                 value={formData.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, city: e.target.value }));
+                  setErrors(prev => ({ ...prev, city: false }));
+                }}
                 disabled={!isEditing}
-                required
               >
                 <option value="">시/도 선택</option>
                 {cities.map(city => (
@@ -74,11 +94,16 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
               <input
                 type="text"
                 value={formData.district}
-                onChange={(e) => setFormData(prev => ({ ...prev, district: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, district: e.target.value }));
+                }}
                 disabled={!isEditing}
                 placeholder="군/구 입력"
               />
             </div>
+            {errors.city && 
+              <p className={styles.errorText}>희망 교육지역을 선택해주세요.</p>
+            }
           </div>
 
           <div className={styles.formGroup}>
@@ -95,23 +120,6 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                   {interest}
                 </button>
               ))}
-            </div>
-            <div className={styles.customInterestInput}>
-              <input
-                type="text"
-                value={customInterest}
-                onChange={(e) => setCustomInterest(e.target.value)}
-                disabled={!isEditing}
-                placeholder="다른 관심 분야 입력"
-              />
-              <button
-                type="button"
-                onClick={addCustomInterest}
-                disabled={!isEditing || !customInterest.trim()}
-                className={styles.addButton}
-              >
-                추가
-              </button>
             </div>
           </div>
 
@@ -146,6 +154,9 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
           </div>
 
           <div className={styles.buttonGroup}>
+            <button type="button" onClick={onClose} className={styles.cancelButton}>
+              취소
+            </button>
             {userProfile && !isEditing ? (
               <>
                 <button type="button" onClick={handleEdit} className={styles.editButton}>
@@ -160,9 +171,6 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 검색하기
               </button>
             )}
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
-              취소
-            </button>
           </div>
         </form>
       </div>

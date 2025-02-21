@@ -86,7 +86,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <h2>{userProfile ? '맞춤 정보 확인' : '정보 입력'}</h2>
+        <h2>{userProfile ? '맞춤 정보 확인' : '채용정보 검색'}</h2>
         <form onSubmit={handleSubmit} className={styles.searchForm}>
         <div className={`${styles.formGroup} ${errors.ageGroup ? styles.hasError : ''}`}>
         <label>연령대<span className={styles.required}>*</span></label>
