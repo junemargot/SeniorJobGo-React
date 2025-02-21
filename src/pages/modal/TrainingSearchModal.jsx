@@ -12,7 +12,7 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [isEditing, setIsEditing] = useState(!userProfile);
   const [customInterest, setCustomInterest] = useState('');
 
-  const cities = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
+  const cities = ['서울', '경기', '인천', '강원', '대전', '세종', '충남', '충북', '부산', '울산', '경남', '경북', '대구', '광주', '전남', '전북', '제주'];
   const commonInterests = ['사무행정', 'IT/컴퓨터', '요양보호', '조리/외식', '운전/운송', '생산/제조', '판매/영업', '건물관리', '경비'];
 
   useEffect(() => {

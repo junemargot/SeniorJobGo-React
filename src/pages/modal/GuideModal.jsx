@@ -6,18 +6,18 @@ const GuideModal = ({ isOpen, onClose }) => {
 
   const guides = [
     {
-      title: "AI 맞춤 검색",
-      description: "AI가 회원님의 정보를 분석하여 맞춤형 채용정보와 훈련과정을 추천해드립니다.",
-      icon: "search"
+      title: "AI 맞춤 추천",
+      description: "AI가 경력, 관심사, 선호도를 분석하여\n최적화된 채용정보와 교육과정을 추천해드립니다.",
+      icon: "check_circle"
     },
     {
-      title: "음성 대화",
-      description: "마이크 버튼을 눌러 음성으로 편리하게 검색하실 수 있습니다.",
-      icon: "mic"
+      title: "음성 검색 기능",
+      description: "번거로운 타이핑 없이, 음성으로 편리하게\n챗봇과 대화를 이어나가세요.",
+      icon: "record_voice_over"
     },
     {
-      title: "실시간 채용정보",
-      description: "최신 채용정보가 실시간으로 업데이트됩니다.",
+      title: "실시간 채용·훈련정보",
+      description: "매일 업데이트되는 채용정보와 교육과정,\nAI를 통해 추천을 받아보세요.",
       icon: "update"
     }
   ];
