@@ -44,6 +44,30 @@
   }
 }
 
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $secondary-text-color;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 10;
+
+  &:hover {
+    color: $danger-color;
+  }
+
+  span {
+    font-size: 1.5rem;
+  }
+}
+
 // 모드 선택 화면
 .modeSelection {
   text-align: center;
