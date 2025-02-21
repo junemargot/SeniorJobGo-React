@@ -20,6 +20,20 @@ body {
   max-height: calc(100vh - 127px);
   scrollbar-color: var(--scrollbar-color) transparent;
 
+  // 채팅 내역이 없을 때 (초기 화면)
+  &:has(.appHeader) {
+    overflow: auto;  // 스크롤 허용
+
+    @media(min-width: 768px) {
+      overflow: hidden;
+    }
+  }
+
+  // 채팅 내역이 있을 때
+  &:not(:has(.appHeader)) {
+    overflow-y: auto;  // 스크롤 허용
+  }
+
   // 공통 레이아웃 (appHeader, suggestions, message, promptWrapper, disclaimerText)
   :where(.appHeader, .suggestions, .message, .promptWrapper, .disclaimerText) {
     margin: 0 auto;
@@ -32,77 +46,109 @@ body {
     margin-top: 4vh;
 
     .heading {
-      font-size: 3rem;
+      font-size: $font-size-52;
       width: fit-content;
       background: linear-gradient(to right, #ffbc2c, #8f6fff);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+
+      @media (max-width: 768px) {
+        font-size: $font-size-48;
+      }
     }
 
     .subHeading {
-      font-size: 2.6rem;
+      font-size: $font-size-48;
       margin-top: 3px;
       color: $text-subheading-color;
+
+      @media (max-width: 768px) {
+        font-size: $font-size-42;
+      }
     }
   }
 
   .suggestions {
     display: flex;
-    gap: 15px;
-    margin-top: 9.5vh;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 6.5vh;
     list-style: none;
-    overflow-x: auto;
-    scrollbar-width: none;
+    padding: 0 20px;
 
+    @media (min-width: 768px) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    // 메뉴 카드
     .suggestionsItem {
-      width: 228px;
-      // width: 32%;
-      padding: 18px;
-      flex-shrink: 0;
+      width: 100%;
+      padding: 20px;
       display: flex;
       cursor: pointer;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
       border-radius: 12px;
-      // background: $light-secondary-color;
-      background: linear-gradient(to right, #edbf4a, #eee2bf);
+      background: $white-color;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: $light-primary-color;
 
+      @media (min-width: 768px) {
+        width: calc(50% - 10px);
+        min-height: 120px;
+      }
 
       &:hover {
-        // background: $light-secondary-hover-color;
-        // background: rgba($primary-color, 0);
-        background: linear-gradient(to right, #eee2bf, #edbf4a);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      .text {
-        font-size: $font-size-20;
-        line-height: 1.5rem;
-      }
+      .textWrapper {
+        flex: 1;
+        
+        .text {
+          font-size: $font-size-20;
+          font-weight: $font-weight-medium;
+          color: $text-title-color;
+          margin-bottom: 12px;
+        }
 
-      span {
-        height: 45px;
-        width: 45px;
-        margin-top: 35px;
-        display: flex;
-        align-self: flex-end;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #1d7efd;
-        background: $light-primary-color;
-      }
-
-      &:nth-child(2) {
-        span {
-          color: #ffc107;
+        .description {
+          font-size: $font-size-16;
+          color: $text-subheading-color;
         }
       }
 
-      &:nth-child(3) {
-        span {
-          color: #6f42c1;
+      :global {
+        .material-symbols-rounded { 
+          height: 48px;
+          width: 48px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          flex-shrink: 0;
+          font-size: 24px;
+          color: $white-color;
+
+          // 각 아이콘별 클래스로 배경색 지정
+          &.help { background: #f8bd6a; }
+          &.work { background: #7295e1; }
+          &.school { background: #6ccca2; }
+          &.info { background: #fb9c9c; }
+          &.restaurant { background: #54d5d3; }
+          &.description { background: #dab94f; }
+
+          // &.help { color: #f8bd6a; }
+          // &.work { color: #7295e1; }
+          // &.school { color: #6ccca2; }
+          // &.info { color: #fb9c9c; }
+          // &.restaurant { color: #54d5d3; }
+          // &.description { color: #dab94f; }
         }
       }
     }
@@ -133,14 +179,27 @@ body {
           padding: 6px;
           align-self: flex-start;
           margin-right: -7px;
-          border-radius: 50%;
+          border-radius: $radius-round;
           background: $background-color;
           border: 1px solid $background-color;
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
         }
         
         &.loading {
           .avatar {
-            animation: pulse 2s infinite;
+            animation: rotate 1s linear infinite;
+            border: 2px solid rgba($primary-color, 0.1);
+            border-top-color: $primary-color;
+            padding: 0;
+            
+            img {
+              opacity: 0.5;
+            }
           }
         }
       }
@@ -150,12 +209,13 @@ body {
         align-items: flex-end;
 
         .messageContent {
-          padding: 12px 16px;
+          padding: 10px 16px;
           max-width: 75%;
-          border-radius: 13px 13px 3px 13px;
-          background: linear-gradient(to right, #f2c765, #eccd81, #e5d39d);
+          border-radius: 14px 14px 3px 14px;
+          // background: linear-gradient(to right, #f2c765, #eccd81, #e5d39d);
+          background: #f7d787;
           color: $light-text-color;
-          font-size: 14px;
+          font-size: $font-size-md;
           line-height: 1.5;
         }
       }
@@ -169,22 +229,22 @@ body {
       word-wrap: break-word;
       white-space: pre-wrap;
       word-break: break-word;
-      background: white;
-      border-radius: 13px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      background: $white-color;
+      border-radius: $radius-lg;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
       
       .messageText {
-        font-size: 15px;
+        font-size: $font-size-md;
         line-height: 1.6;
-        color: #333;
+        color: $text-title-color;
 
         h3 {
-          font-size: 17px;
-          font-weight: 600;
-          color: #1a1a1a;
+          font-size: $font-size-16;
+          font-weight: $font-weight-semibold;
+          color: $text-color;
           margin: 16px 0 12px;
           padding-bottom: 8px;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          border-bottom: 1px solid rgba(0, 0, 0, .1);
           
           &:first-child {
             margin-top: 4px;
@@ -204,14 +264,14 @@ body {
 
         strong {
           color: #1a1a1a;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           background: rgba(255, 188, 44, 0.1);
           padding: 2px 4px;
-          border-radius: 4px;
+          border-radius: $radius-sm;
         }
 
         span[role="img"] {
-          font-size: 1.2em;
+          font-size: $font-size-18;
           margin: 0 2px;
           vertical-align: middle;
         }
@@ -221,7 +281,7 @@ body {
         background: linear-gradient(90deg, rgba(255, 188, 44, 0.1), rgba(255, 188, 44, 0.2), rgba(255, 188, 44, 0.1));
         background-size: 200% 100%;
         animation: shimmer 2s infinite;
-        border-radius: 8px;
+        border-radius: $radius-md;
         padding: 12px 16px;
         width: 100%;
         
@@ -229,56 +289,19 @@ body {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: #666;
+          color: $secondary-text-color;
           margin: 0;
-          font-size: 14px;
+          font-size: $font-size-sm;
           
           &::before {
             content: '';
             width: 8px;
             height: 8px;
-            background-color: #ffbc2c;
-            border-radius: 50%;
+            background-color: $primary-color;
+            border-radius: $radius-round;
             animation: pulse 1s infinite;
           }
         }
-      }
-      
-      .loadingContainer {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      .loadingDots {
-        display: flex;
-        gap: 0.3rem;
-        padding: 0.5rem;
-
-        span {
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background-color: #ffbc2c;
-          opacity: 0.6;
-          animation: bounce 1.4s infinite ease-in-out both;
-          
-          &:nth-child(1) {
-            animation-delay: -0.32s;
-          }
-          
-          &:nth-child(2) {
-            animation-delay: -0.16s;
-          }
-        }
-      }
-
-      .loadingText {
-        color: #666;
-        font-size: 14px;
-        padding: 0 0.5rem;
       }
       
       h3, h4 {
@@ -287,11 +310,11 @@ body {
       }
 
       h3 {
-        font-size: 1.1rem;
+        font-size: $font-size-18;
       }
 
       h4 {
-        font-size: 1rem;
+        font-size: $font-size-16;
         color: #4a5568;
       }
 
@@ -301,24 +324,20 @@ body {
       }
       
       a {
-
-        color: #ffffff;  
-
+        color: $white-color;  
         text-decoration: none;
         transition: color 0.2s ease;
-        font-size: 0.9rem;
+        font-size: $font-size-sm;
         
         &:hover {
-
           cursor: pointer;
-
         }
       }
 
       em {
         display: block;
         color: #718096;
-        font-size: 0.85rem;
+        font-size: $font-size-sm;
         margin-top: 0.15rem;
         font-style: normal;
       }
@@ -332,7 +351,7 @@ body {
 
       // 마크다운 요소 스타일링
       .messageLink {
-        color: var(--color-primary);
+        color: $primary-color;
         text-decoration: none;
         transition: color 0.2s;
         
@@ -343,7 +362,7 @@ body {
       }
 
       .jobList {
-        margin-top: 24px;
+        margin-top: -5px;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -354,14 +373,13 @@ body {
         display: flex;
         flex-direction: column;
         gap: 24px;
-
       }
     }
   }
 
   .disclaimerText {
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 13px;
     line-height: 1rem;
     padding: 16px 20px;
     color: $placeholder-color;
@@ -422,8 +440,8 @@ body {
           width: 45px;
           border: none;
           cursor: pointer;
-          border-radius: 50%;
-          font-size: 1.4rem;
+          border-radius: $radius-round;
+          font-size: $font-size-22;
           flex-shrink: 0;
           color: $light-text-color;
           background: $light-primary-color;
@@ -465,12 +483,12 @@ body {
       height: 100%;
       border: none;
       cursor: pointer;
-      border-radius: 50%;
-      font-size: 1.4rem;
+      border-radius: $radius-round;
+      font-size: $font-size-22;
       flex-shrink: 0;
       color: $light-text-color;
       background: $light-secondary-color;
-      transition: all 0.3s ease;
+      transition: all .3s ease;
 
       &:hover:not(:disabled) {
         background: $light-placeholder-color;
@@ -482,9 +500,57 @@ body {
       }
 
       &.recording {
-        color: #fff;
+        color: $white-color;
         background: $primary-color;
         animation: pulse 1.5s infinite;
+      }
+    }
+
+    // 채팅창 삭제 버튼 툴팁 스타일
+    .deleteChatsBtn {
+      position: relative;
+      
+      &::before {
+        --space: '\2006';  // 좁은 공백 문자 (thin space)
+        content: '채팅' var(--space) '내역' var(--space) '삭제';
+        // content: '채팅 내역 삭제';
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, .8);
+        color: $white-color;
+        padding: 5px 12px 8px 12px;
+        border-radius: $radius-md;
+        font-size: $font-size-sm;
+        white-space: pre;
+        opacity: 0;
+        visibility: hidden;
+        transition: all .2s ease;
+        pointer-events: none;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-top: 6px solid rgba(0, 0, 0, .8);
+        opacity: 0;
+        visibility: hidden;
+        transition: all .2s ease;
+        pointer-events: none;
+      }
+
+      &:hover {
+        &::before,
+        &::after {
+          opacity: 1;
+          visibility: visible;
+        }
       }
     }
   }
@@ -513,14 +579,17 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
 
 @keyframes rotate {
-  100% {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
     transform: rotate(360deg);
   }
 }
 
 /* 채용 공고 리스트 */
 .jobList, .trainingList {
-  margin-top: 24px;
+  margin-top: -5px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -534,13 +603,13 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
 .paragraph {
   background: rgba(255, 188, 44, 0.1);
-  border-left: 4px solid #ffbc2c;
+  border-left: 4px solid $primary-color;
   padding: 16px;
   margin: 0 0 16px 0;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
   line-height: 1.6;
-  color: #333;
+  color: $text-title-color;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -578,7 +647,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     scroll-margin: 100px;
 
     &::after {
-      border-color: #ffbc2c;
+      border-color: $primary-color;
     }
   }
 
@@ -594,19 +663,19 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     align-items: center;
     gap: 4px;
     color: $primary-color;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
   }
 
   &__company {
-    color: #666;
-    font-size: 14px;
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
   }
 
   &__title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
     margin-bottom: 12px;
     line-height: 1.4;
   }
@@ -621,8 +690,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #666;
-    font-size: 14px;
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
 
     .icon {
       color: #888;
@@ -634,8 +703,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     margin-top: 16px;
     padding: 16px;
     border-top: 1px solid #eee;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: $color-background-light;
+    border-radius: $radius-md;
     transition: all 0.3s ease;
 
     &.visible {
@@ -646,9 +715,9 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     p {
       display: flex;
       margin: 8px 0;
-      font-size: 14px;
+      font-size: $font-size-sm;
       line-height: 1.6;
-      color: #333;
+      color: $text-title-color;
       word-break: break-all;
 
       &[data-label] {
@@ -661,7 +730,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
           position: absolute;
           left: 0;
           width: 110px;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: #555;
           
           &::after {
@@ -687,11 +756,11 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     .jobCard__button {
       display: inline-block;
       padding: 8px 16px;
-      background: #ffbc2c;
-      color: #fff;
-      border-radius: 6px;
+      background: $primary-color;
+      color: $white-color;
+      border-radius: $radius-md;
       text-decoration: none;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       transition: background 0.3s ease;
 
       &:hover {
@@ -715,8 +784,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: white;
-    border-radius: 13px;
+    background: $white-color;
+    border-radius: $font-size-sm;
     border: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     position: relative;
@@ -728,13 +797,13 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
       width: 28px;
       height: 28px;
       border: none;
-      background: white;
+      background: $white-color;
       color: $light-text-color;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
+      border-radius: $radius-round;
       transition: all 0.2s;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(0, 0, 0, 0.1);
@@ -745,7 +814,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
       }
 
       i {
-        font-size: 20px;
+        font-size: $font-size-20;
       }
     }
 
@@ -753,9 +822,9 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
       height: 48px;
       padding: 0 16px;
       border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      font-size: 14px;
-      background: white;
+      border-radius: $radius-md;
+      font-size: $font-size-sm;
+      background: $white-color;
 
       &:focus {
         border-color: $primary-color;
@@ -770,11 +839,11 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     button[type="submit"] {
       height: 48px;
       background: $primary-color;
-      color: white;
+      color: $white-color;
       border: none;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 14px;
+      border-radius: $radius-md;
+      font-weight: $font-weight-medium;
+      font-size: $font-size-sm;
       cursor: pointer;
       transition: all 0.2s;
 
@@ -814,16 +883,16 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   }
 }
 
-@keyframes bounce {
-  0%, 80%, 100% { 
-    transform: scale(0);
-    opacity: 0.3;
-  } 
-  40% { 
-    transform: scale(1.0);
-    opacity: 1;
-  }
-}
+// @keyframes bounce {
+//   0%, 80%, 100% { 
+//     transform: scale(0);
+//     opacity: 0.3;
+//   } 
+//   40% { 
+//     transform: scale(1.0);
+//     opacity: 1;
+//   }
+// }
 
 @keyframes pulse {
   0% {
@@ -855,10 +924,10 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
 // 훈련정보 카드 스타일
 .trainingCard {
-  background: white;
-  border-radius: 12px;
+  background: $white-color;
+  border-radius: $radius-lg;
   padding: 16px;
-  border: 1px solid #eee;
+  border: 1px solid $border-light-color;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   width: 100%;
   margin: 0;
@@ -874,7 +943,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 12px;
+    border-radius: $radius-lg;
     border: 2px solid transparent;
     transition: border-color 0.3s ease;
     pointer-events: none;
@@ -898,21 +967,21 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
   &__institute {
     font-size: 14px;
-    color: #666;
+    color: $secondary-text-color;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
   &__location {
-    font-size: 14px;
+    font-size: $font-size-sm;
     color: #0078d4;
   }
 
   &__title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
     margin-bottom: 12px;
     line-height: 1.4;
   }
@@ -927,7 +996,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
+    font-size: $font-size-sm;
     color: #444;
   }
 
@@ -936,8 +1005,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     margin-top: 16px;
     padding: 16px;
     border-top: 1px solid #eee;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: $color-background-light;
+    border-radius: $radius-md;
 
     &.visible {
       display: block;
@@ -947,9 +1016,9 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     p {
       display: flex;
       margin: 8px 0;
-      font-size: 14px;
+      font-size: $font-size-sm;
       line-height: 1.6;
-      color: #333;
+      color: $text-title-color;
       word-break: break-all;
 
       &[data-label] {
@@ -962,7 +1031,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
           position: absolute;
           left: 0;
           width: 110px;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: #555;
           
           &::after {
@@ -990,11 +1059,11 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: inline-block;
     padding: 8px 16px;
     background: #0078d4;
-    color: white;
+    color: $white-color;
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     transition: background 0.2s;
     text-decoration: none;
@@ -1002,27 +1071,27 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     
     &:hover {
       background: #006cbd;
-      color: white;
+      color: $white-color;
     }
 
     &:visited {
-      color: white;
+      color: $white-color;
     }
   }
 }
 
 // 확인 대화상자 스타일
 .confirmDialog {
-  background: #f5f5f5;
-  border-radius: 8px;
+  background: $white-color;
+  border-radius: $radius-md;
   padding: 16px;
   margin: 12px 0;
   text-align: center;
   
   p {
     margin-bottom: 12px;
-    font-size: 15px;
-    color: #333;
+    font-size: $font-size-md;
+    color: $text-title-color;
   }
 }
 
@@ -1033,14 +1102,14 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   
   button {
     padding: 8px 24px;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
     cursor: pointer;
     transition: all 0.2s;
     
     &.confirmButton {
       background: #0078d4;
-      color: white;
+      color: $white-color;
       border: none;
       
       &:hover {
@@ -1049,12 +1118,12 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     }
     
     &.cancelButton {
-      background: white;
-      color: #666;
+      background: $white-color;
+      color: $secondary-text-color;
       border: 1px solid #ddd;
       
       &:hover {
-        background: #f5f5f5;
+        background: $white-color;
       }
     }
   }
@@ -1067,7 +1136,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   border-radius: 130px;
   background: $light-secondary-color;
   color: $light-text-color;
-  font-size: 1.4rem;
+  font-size: $font-size-22;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1077,7 +1146,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   
   &::before {
     content: "음성으로 검색하기";
-    font-size: 1rem;
+    font-size: $font-size-16;
   }
   
   &:hover:not(:disabled) {
@@ -1090,7 +1159,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   }
   
   &.recording {
-    color: #fff;
+    color: $white-color;
     background: $primary-color;
     animation: pulse 1.5s infinite;
   }
@@ -1099,18 +1168,18 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 /* 최근 메시지로 이동 버튼 스타일 */
 .scrollButton {
   position: fixed;
-  bottom: 180px;
+  bottom: 148px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, .5);
-  color: white;
+  color: $white-color;
   border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
+  border-radius: $radius-round;
+  padding: 10px;
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
+  font-size: $font-size-sm;
   opacity: 0;
   visibility: hidden;
   transition: opacity .3s ease, visibility .3s ease;
@@ -1123,7 +1192,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
   }
 
   span {
-    font-size: 20px;
+    font-size: $font-size-20;
   }
 
   &:hover {
@@ -1139,7 +1208,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 .sourceLink {
   color: #007bff;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: $font-weight-medium;
   
   &:hover {
     text-decoration: underline;
@@ -1147,64 +1216,29 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 }
 
 .sourceText {
-  color: #666;
+  color: $secondary-text-color;
   font-style: italic;
   display: block;
   margin-top: 0.5em;
-  font-size: 0.9em;
+  font-size: $font-size-sm;
 }
 
 .searchResultTitle {
-  color: #333;
+  color: $text-title-color;
   margin: 1em 0 0.5em;
-  font-size: 1.1em;
-  font-weight: 600;
+  font-size: $font-size-16;
+  font-weight: $font-weight-semibold;
 }
 
 .paragraph {
   margin: 0.5em 0;
   line-height: 1.5;
-  color: #444;
-}
-
-.loadingContainer {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  background: white;
-  border-radius: 13px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.loadingDots {
-  display: flex;
-  gap: 0.3rem;
-  padding: 0.5rem;
-
-  span {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #ffbc2c;
-    opacity: 0.6;
-    animation: bounce 1.4s infinite ease-in-out both;
-    
-    &:nth-child(1) {
-      animation-delay: -0.32s;
-    }
-    
-    &:nth-child(2) {
-      animation-delay: -0.16s;
-    }
-  }
+  color: $text-title-color;
 }
 
 .loadingText {
-  color: #666;
-  font-size: 14px;
+  color: $secondary-text-color;
+  font-size: $font-size-sm;
   padding: 0 0.5rem;
 }
 
@@ -1250,7 +1284,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 }
 
 .trainingList {
-  margin-top: 24px;
+  margin-top: -5px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -1289,8 +1323,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 }
 
 .trainingCard {
-  background: white;
-  border-radius: 12px;
+  background: $white-color;
+  border-radius: $font-size-xs;
   padding: 16px;
   border: 1px solid #eee;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
@@ -1308,7 +1342,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     left: 0;
     right: 0;
     bottom: 0;
-    border-radius: 12px;
+    border-radius: $font-size-xs;
     border: 2px solid transparent;
     transition: border-color 0.3s ease;
     pointer-events: none;
@@ -1332,21 +1366,21 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
 
   &__institute {
     font-size: 14px;
-    color: #666;
+    color: $secondary-text-color;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
   &__location {
-    font-size: 14px;
+    font-size: $font-size-sm;
     color: #0078d4;
   }
 
   &__title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
     margin-bottom: 12px;
     line-height: 1.4;
   }
@@ -1361,8 +1395,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
-    color: #444;
+    font-size: $font-size-sm;
+    color: $text-title-color;
   }
 
   &__description {
@@ -1370,8 +1404,8 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     margin-top: 16px;
     padding: 16px;
     border-top: 1px solid #eee;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: $color-background-light;
+    border-radius: $radius-md;
 
     &.visible {
       display: block;
@@ -1381,9 +1415,9 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     p {
       display: flex;
       margin: 8px 0;
-      font-size: 14px;
+      font-size: $font-size-sm;
       line-height: 1.6;
-      color: #333;
+      color: $text-title-color;
       word-break: break-all;
 
       &[data-label] {
@@ -1396,7 +1430,7 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
           position: absolute;
           left: 0;
           width: 110px;
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
           color: #555;
           
           &::after {
@@ -1424,11 +1458,11 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     display: inline-block;
     padding: 8px 16px;
     background: #0078d4;
-    color: white;
+    color: $white-color;
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
     cursor: pointer;
     transition: background 0.2s;
     text-decoration: none;
@@ -1436,11 +1470,11 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     
     &:hover {
       background: #006cbd;
-      color: white;
+      color: $white-color;
     }
 
     &:visited {
-      color: white;
+      color: $white-color;
     }
   }
 }
@@ -1640,4 +1674,9 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
       }
     }
   }
+}
+
+.mealServiceWrapper {
+  width: 100%;
+  padding: 0.5rem;
 }

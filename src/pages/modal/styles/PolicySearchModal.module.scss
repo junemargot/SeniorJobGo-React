@@ -87,10 +87,10 @@
     
     .searchButton {
       padding: 1rem 2rem;
-      background: #ffbc2c;
-      color: white;
+      background: $primary-color;
+      color: $white-color;
       border: none;
-      border-radius: 12px;
+      border-radius: $radius-lg;
       cursor: pointer;
       font-weight: 500;
       font-size: 1.1rem;
