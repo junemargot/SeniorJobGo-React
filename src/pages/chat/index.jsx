@@ -51,8 +51,10 @@ const Chat = () => {
   const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  // 채팅 기록 불러오기 관련 상태
-  const chatEndIndex = useRef(-1);
+  // 정책 정보 관련 상태
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+
+  const chatEndIndex = useRef(0);
   const limit = 10;
 
   const navigate = useNavigate();
@@ -291,7 +293,8 @@ const Chat = () => {
         text: "",
         type: response.data.type,
         jobPostings: response.data.jobPostings || [],
-        trainingCourses: response.data.trainingCourses || []
+        trainingCourses: response.data.trainingCourses || [],
+        policyPostings: response.data.policyPostings || []
       };
 
       // 로딩 메시지 제거 및 빈 봇 메시지 추가
@@ -358,7 +361,6 @@ const Chat = () => {
   const handleDeleteChats = () => {
     setChatHistory([]);
     setIsBotResponding(false);
-    chatEndIndex.current = 0;
   };
 
   // 채용 공고 클릭 핸들러
@@ -577,6 +579,26 @@ const Chat = () => {
       });
   };
 
+  // 정책 클릭 핸들러
+  const handlePolicyClick = (policy) => {
+    setSelectedPolicy(prev => {
+      const newSelected = prev?.id === policy.id ? null : policy;
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-policy-id="${policy.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -622,8 +644,10 @@ const Chat = () => {
                 message={message}
                 selectedJob={selectedJob}
                 selectedTraining={selectedTraining}
+                selectedPolicy={selectedPolicy}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
+                onPolicyClick={handlePolicyClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}

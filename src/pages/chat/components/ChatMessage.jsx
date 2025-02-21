@@ -4,13 +4,16 @@ import styles from '../styles/chat.module.scss';
 import JobCard from './JobCard';
 import TrainingCard from './TrainingCard';
 import Avatar from '@assets/images/icon-robot.svg';
+import PolicyCard from './PolicyCard';
 
 const ChatMessage = ({ 
   message, 
   selectedJob,
   selectedTraining,
+  selectedPolicy,
   onJobClick,
   onTrainingClick,
+  onPolicyClick,
   selectedCardRef,
   isLast
 }) => {
@@ -70,7 +73,7 @@ const ChatMessage = ({
           </div>
         ) : (
           <div className={styles.messageText}>
-            {!message.jobPostings?.length && !message.trainingCourses?.length && (
+            {!message.jobPostings?.length && !message.trainingCourses?.length && !message.policyPostings?.length && (
               <ReactMarkdown
                 components={{
                   a: ({ node, ...props }) => (
@@ -160,6 +163,44 @@ const ChatMessage = ({
                         onClick={onTrainingClick}
                         isSelected={selectedTraining && selectedTraining.id === course.id}
                         cardRef={selectedTraining && selectedTraining.id === course.id ? selectedCardRef : null}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {message.policyPostings?.length > 0 && (
+              <div className={styles.policyList}>
+                <ReactMarkdown
+                  components={{
+                    p: ({ node, ...props }) => (
+                      <p {...props} className={styles.paragraph} />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 {...props} />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul {...props} className={styles.policyList} />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li {...props} className={styles.policyItem} />
+                    ),
+                    strong: ({ node, ...props }) => (
+                      <strong {...props} />
+                    )
+                  }}
+                >
+                  {message.text}
+                </ReactMarkdown>
+                <div className={styles.policyCards}>
+                  {message.policyPostings.map((policy, index) => (
+                    <div key={`${policy.source}-${policy.title}-${index}`} className={styles.itemGroup}>
+                      <PolicyCard
+                        policy={policy}
+                        onClick={onPolicyClick}
+                        isSelected={selectedPolicy && selectedPolicy.id === policy.id}
+                        cardRef={selectedPolicy && selectedPolicy.id === policy.id ? selectedCardRef : null}
                       />
                     </div>
                   ))}
