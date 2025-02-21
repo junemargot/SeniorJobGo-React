@@ -5,15 +5,18 @@ import JobCard from './JobCard';
 import TrainingCard from './TrainingCard';
 import Avatar from '@assets/images/icon-robot.svg';
 import PolicyCard from './PolicyCard';
+import MealCard from './MealCard';
 
 const ChatMessage = ({ 
   message, 
   selectedJob,
   selectedTraining,
   selectedPolicy,
+  selectedMeal,
   onJobClick,
   onTrainingClick,
   onPolicyClick,
+  onMealClick,
   selectedCardRef,
   isLast
 }) => {
@@ -73,7 +76,7 @@ const ChatMessage = ({
           </div>
         ) : (
           <div className={styles.messageText}>
-            {!message.jobPostings?.length && !message.trainingCourses?.length && !message.policyPostings?.length && (
+            {!message.jobPostings?.length && !message.trainingCourses?.length && !message.policyPostings?.length && !message.mealPostings?.length && (
               <ReactMarkdown
                 components={{
                   a: ({ node, ...props }) => (
@@ -201,6 +204,44 @@ const ChatMessage = ({
                         onClick={onPolicyClick}
                         isSelected={selectedPolicy && selectedPolicy.id === policy.id}
                         cardRef={selectedPolicy && selectedPolicy.id === policy.id ? selectedCardRef : null}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {message.mealPostings?.length > 0 && (
+              <div className={styles.mealList}>
+                <ReactMarkdown
+                  components={{
+                    p: ({ node, ...props }) => (
+                      <p {...props} className={styles.paragraph} />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <h3 {...props} />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul {...props} className={styles.mealList} />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li {...props} className={styles.mealItem} />
+                    ),
+                    strong: ({ node, ...props }) => (
+                      <strong {...props} />
+                    )
+                  }}
+                >
+                  {message.text}
+                </ReactMarkdown>
+                <div className={styles.mealCards}>
+                  {message.mealPostings.map((meal, index) => (
+                    <div key={`${meal.fcltyNm}-${index}`} className={styles.itemGroup}>
+                      <MealCard
+                        meal={meal}
+                        onClick={onMealClick}
+                        isSelected={selectedMeal && selectedMeal.fcltyNm === meal.fcltyNm}
+                        cardRef={selectedMeal && selectedMeal.fcltyNm === meal.fcltyNm ? selectedCardRef : null}
                       />
                     </div>
                   ))}

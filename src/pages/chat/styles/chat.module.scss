@@ -1560,3 +1560,84 @@ body.chatsActive .container :where(.appHeader, .suggestions) {
     background-color: #0056b3;
   }
 }
+
+.mealCard {
+  position: relative;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  &__facility {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+
+    span {
+      font-size: 1.2rem;
+      color: #ff6b6b;
+    }
+  }
+
+  &__info {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  &__target {
+    color: #ff6b6b;
+    font-weight: 500;
+  }
+
+  &__time, &__date {
+    margin-top: 0.25rem;
+  }
+
+  &__description {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+
+    &.visible {
+      display: block;
+    }
+
+    p {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+      color: #444;
+
+      &[data-label]::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #333;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}
