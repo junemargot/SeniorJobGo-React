@@ -112,14 +112,15 @@ const Chat = () => {
     } else {
       document.body.classList.remove('bot-responding');
 
-  
-  // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
-  const typingEffect = (text, updateCallback, onComplete) => {
-    // 기존 인터벌 있으면 정리
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
 
-    }}
+      // 타이핑 효과 (문장을 단어 단위로 점진적으로 채팅 상태 업데이트)
+      const typingEffect = (text, updateCallback, onComplete) => {
+        // 기존 인터벌 있으면 정리
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+
+        }
+      }
     }
   }, [isBotResponding]);
 
@@ -295,368 +296,363 @@ const Chat = () => {
       return newSelected;
     });
 
-  // 채팅 기록 불러오기
-  useEffect(() => {
-    const fetchChatHistory = async () => {
-      if (chatEndIndex.current === 0) return;
+    // 채팅 기록 불러오기
+    useEffect(() => {
+      const fetchChatHistory = async () => {
+        if (chatEndIndex.current === 0) return;
 
-      try {
-        let id = null;
-        let provider = null;
         try {
-          id = document.cookie.split('; ')
-            .find(row => row.startsWith('sjgid='))
-            .split('=')[1];
+          let id = null;
+          let provider = null;
+          try {
+            id = document.cookie.split('; ')
+              .find(row => row.startsWith('sjgid='))
+              .split('=')[1];
 
-          provider = document.cookie.split('; ')
-            .find(row => row.startsWith('sjgpr='))
-            .split('=')[1];
+            provider = document.cookie.split('; ')
+              .find(row => row.startsWith('sjgpr='))
+              .split('=')[1];
 
-          if (!await axios.get(`${API_BASE_URL}/auth/check`, {
+            if (!await axios.get(`${API_BASE_URL}/auth/check`, {
+              withCredentials: true
+            })) throw new Error();
+          } catch (error) {
+            alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
+            document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            navigate('/');
+          }
+
+          const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
+            params: {
+              end: chatEndIndex.current,
+              limit: limit
+            },
             withCredentials: true
-          })) throw new Error();
+          });
+          // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
+          const messages = response.data.messages ? response.data.messages : response.data;
+
+          const newMessages = []
+
+          // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
+          for (const msg of messages) {
+            const role = msg.role === "user" ? "user" : "model";
+            let newMsg = { role, text: "" };
+
+            // 문자열인 경우
+            if (typeof msg.content === "string") {
+              newMsg.text = msg.content;
+            }
+            // 객체인 경우
+            else if (typeof msg.content === "object" && msg.content !== null) {
+              // 메시지 텍스트 설정
+              if (msg.content.message) {
+                newMsg.text = msg.content.message;
+              } else if (msg.content.text) {
+                newMsg.text = msg.content.text;
+              }
+
+              // 채용정보 추가
+              if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
+                newMsg.jobPostings = msg.content.jobPostings;
+              }
+
+              // 훈련과정 정보 추가
+              if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
+                newMsg.trainingCourses = msg.content.trainingCourses;
+              }
+
+              // 메시지 타입 추가
+              if (msg.content.type) {
+                newMsg.type = msg.content.type;
+              }
+
+              // 음성 입력 모드 추가
+              if (msg.content.mode === 'voice') {
+                setIsVoiceMode(true);
+              }
+            }
+
+            // 채팅 내역에 추가
+            newMessages.push(newMsg);
+          }
+          setChatHistory(prev => [...newMessages, ...prev]);
+          chatEndIndex.current = response.data.index;
         } catch (error) {
-          alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
-          document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          navigate('/');
+          console.error('채팅 내역 불러오기 오류:', error);
+        }
+      };
+      fetchChatHistory();
+
+      // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+
+      // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
+      const container = chatsContainerRef.current;
+      const handleScrollToTop = async () => {
+        const scrollPosition = container.scrollTop;
+        if (scrollPosition <= 0) {
+          const prevScrollHeight = container.scrollHeight;
+          await fetchChatHistory();
+          requestAnimationFrame(() => {
+            const newScrollHeight = container.scrollHeight;
+            const scrollDifference = newScrollHeight - prevScrollHeight;
+            // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
+            container.scrollTop = scrollDifference;
+          });
+        }
+      }
+      container.addEventListener('scroll', handleScrollToTop);
+
+      return () => {
+        container.removeEventListener('scroll', handleScrollToTop);
+      };
+    }, []);
+
+    const handleInputChange = (e) => {
+      const text = e.target.value;
+      if (text.length <= 500) {  // 길이 제한을 500자로 늘리고 줄바꿈 제한 제거
+        setUserMessage(text);
+      }
+
+    };
+
+    // 모달 핸들러
+    const handleModalSubmit = async (response) => {
+      setIsModalOpen(false);
+      setUserMessage("");
+
+      // 음성 모드 설정 업데이트
+      if (response.mode === 'voice') {
+        setIsVoiceMode(true);
+        setInitialMode('voice');
+      } else if (response.mode === 'text') {
+        setIsVoiceMode(false);
+        setInitialMode(null);
+      }
+
+      // 채팅 기록 업데이트
+      setChatHistory(prev => {
+        // 이전 로딩 메시지 제거
+        const filtered = prev.filter(msg => !msg.loading);
+
+        // 새 메시지 추가
+        const newMessage = {
+          role: response.role,
+          text: response.text,
+          loading: response.loading || false,
+          mode: response.mode  // 모드 정보 유지
+        };
+
+        // 봇 메시지인 경우 추가 데이터 포함
+        if (response.role === "bot" && !response.loading) {
+          newMessage.jobPostings = response.jobPostings || [];
+          newMessage.trainingCourses = response.trainingCourses || [];
+          newMessage.type = response.type;
         }
 
-        const response = await axios.get(`${API_BASE_URL}/chat/get/limit/${id}`, {
-          params: {
-            end: chatEndIndex.current,
-            limit: limit
-          },
-          withCredentials: true
-        });
-        // 만약 응답 데이터가 { messages: [...] } 형태라면 messages 배열을 사용합니다.
-        const messages = response.data.messages ? response.data.messages : response.data;
+        return [...filtered, newMessage];
+      });
 
-        const newMessages = []
+      // 봇 응답 상태 업데이트
+      setIsBotResponding(response.loading || false);
+    };
 
-        // for문을 통해 index가 0인 메시지는 건너뛰고, 나머지 메시지를 변환하여 chatHistory에 추가합니다.
-        for (const msg of messages) {
-          const role = msg.role === "user" ? "user" : "model";
-          let newMsg = { role, text: "" };
-
-          // 문자열인 경우
-          if (typeof msg.content === "string") {
-            newMsg.text = msg.content;
-          }
-          // 객체인 경우
-          else if (typeof msg.content === "object" && msg.content !== null) {
-            // 메시지 텍스트 설정
-            if (msg.content.message) {
-              newMsg.text = msg.content.message;
-            } else if (msg.content.text) {
-              newMsg.text = msg.content.text;
-            }
-
-            // 채용정보 추가
-            if (msg.content.jobPostings && msg.content.jobPostings.length > 0) {
-              newMsg.jobPostings = msg.content.jobPostings;
-            }
-
-            // 훈련과정 정보 추가
-            if (msg.content.trainingCourses && msg.content.trainingCourses.length > 0) {
-              newMsg.trainingCourses = msg.content.trainingCourses;
-            }
-
-            // 메시지 타입 추가
-            if (msg.content.type) {
-              newMsg.type = msg.content.type;
-            }
-
-            // 음성 입력 모드 추가
-            if (msg.content.mode === 'voice') {
-              setIsVoiceMode(true);
-            }
-          }
-
-          // 채팅 내역에 추가
-          newMessages.push(newMsg);
-        }
-        setChatHistory(prev => [...newMessages, ...prev]);
-        chatEndIndex.current = response.data.index;
-      } catch (error) {
-        console.error('채팅 내역 불러오기 오류:', error);
+    const handleModalClose = () => {
+      setIsModalOpen(false);
+      if (!isVoiceMode) {
+        setInitialMode(null);
       }
     };
-    fetchChatHistory();
 
-    // 채팅 내역 불러오기 완료 후 바로 스크롤 하단으로 이동
-    setTimeout(() => {
-      scrollToBottom();
-    }, 100);
-
-    // 스크롤을 맨 위로 올리면 메시지를 불러오는 로직 추가
-    const container = chatsContainerRef.current;
-    const handleScrollToTop = async () => {
-      const scrollPosition = container.scrollTop;
-      if (scrollPosition <= 0) {
-        const prevScrollHeight = container.scrollHeight;
-        await fetchChatHistory();
-        requestAnimationFrame(() => {
-          const newScrollHeight = container.scrollHeight;
-          const scrollDifference = newScrollHeight - prevScrollHeight;
-          // 기존 스크롤 위치 보정: prepend된 메시지 높이만큼 보정
-          container.scrollTop = scrollDifference;
-        });
-      }
-    }
-    container.addEventListener('scroll', handleScrollToTop);
-
-    return () => {
-      container.removeEventListener('scroll', handleScrollToTop);
-    };
-  }, []);
-
-  const handleInputChange = (e) => {
-    const text = e.target.value;
-    if (text.length <= 500) {  // 길이 제한을 500자로 늘리고 줄바꿈 제한 제거
-      setUserMessage(text);
-    }
-
-  };
-
-  // 모달 핸들러
-  const handleModalSubmit = async (response) => {
-    setIsModalOpen(false);
-    setUserMessage("");
-
-    // 음성 모드 설정 업데이트
-    if (response.mode === 'voice') {
-      setIsVoiceMode(true);
+    const handleVoiceInputClick = () => {
+      setIsModalOpen(true);
       setInitialMode('voice');
-    } else if (response.mode === 'text') {
-      setIsVoiceMode(false);
-      setInitialMode(null);
-    }
+      setTimeout(() => {
+        const voiceButton = document.querySelector(`.${styles.recordingIndicator}`);
+        if (voiceButton) {
+          voiceButton.click();
+        }
+      }, 100);
+    };
 
-    // 채팅 기록 업데이트
-    setChatHistory(prev => {
-      // 이전 로딩 메시지 제거
-      const filtered = prev.filter(msg => !msg.loading);
-      
-      // 새 메시지 추가
-      const newMessage = {
-        role: response.role,
-        text: response.text,
-        loading: response.loading || false,
-        mode: response.mode  // 모드 정보 유지
+    
+
+    // 맞춤 검색 제출 핸들러
+    const handleJobSearchSubmit = (formData) => {
+      setIsJobSearchModalOpen(false);
+
+      // 채팅 기록에 사용자 메시지 추가
+      setChatHistory(prev => [...prev, {
+        role: "user",
+        text: "[AI맞춤채용정보]",
+      }]);
+
+      // 로딩 메시지 추가
+      setChatHistory(prev => [...prev, {
+        role: "bot",
+        text: "맞춤 채용정보를 검색중입니다...",
+        loading: true
+      }]);
+
+      // 백엔드로 데이터 전송
+      const searchData = {
+        ...formData,
+        location: formData.city + (formData.district ? ` ${formData.district}` : ''),
       };
 
-      // 봇 메시지인 경우 추가 데이터 포함
-      if (response.role === "bot" && !response.loading) {
-        newMessage.jobPostings = response.jobPostings || [];
-        newMessage.trainingCourses = response.trainingCourses || [];
-        newMessage.type = response.type;
-      }
-
-      return [...filtered, newMessage];
-    });
-
-    // 봇 응답 상태 업데이트
-    setIsBotResponding(response.loading || false);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    if (!isVoiceMode) {
-      setInitialMode(null);
-    }
-  };
-
-  const handleVoiceInputClick = () => {
-    setIsModalOpen(true);
-    setInitialMode('voice');
-    setTimeout(() => {
-      const voiceButton = document.querySelector(`.${styles.recordingIndicator}`);
-      if (voiceButton) {
-        voiceButton.click();
-      }
-    }, 100);
-  };
-
-  const handleInputChange = (e) => {
-    const text = e.target.value;
-    if (text.length <= 500) {
-      setUserMessage(text);
-    }
-  };
-
-  // 맞춤 검색 제출 핸들러
-  const handleJobSearchSubmit = (formData) => {
-    setIsJobSearchModalOpen(false);
-
-    // 채팅 기록에 사용자 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "user",
-      text: "[AI맞춤채용정보]",
-    }]);
-
-    // 로딩 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "bot",
-      text: "맞춤 채용정보를 검색중입니다...",
-      loading: true
-    }]);
-
-    // 백엔드로 데이터 전송
-    const searchData = {
-      ...formData,
-      location: formData.city + (formData.district ? ` ${formData.district}` : ''),
+      axios.post(`${API_BASE_URL}/jobs/search`, searchData, {
+        withCredentials: true
+      })
+        .then(response => {
+          // 로딩 메시지 제거 및 실제 응답 추가
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              text: response.data.message,
+              jobPostings: response.data.jobPostings || [],
+              type: "job_search"
+            }];
+          });
+        })
+        .catch(error => {
+          console.error("채용정보 검색 오류:", error);
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              text: "죄송합니다. 채용정보를 검색하는 중에 오류가 발생했습니다.",
+              type: "error"
+            }];
+          });
+        });
     };
 
-    axios.post(`${API_BASE_URL}/jobs/search`, searchData, {
-      withCredentials: true
-    })
-      .then(response => {
-        // 로딩 메시지 제거 및 실제 응답 추가
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, {
-            role: "bot",
-            text: response.data.message,
-            jobPostings: response.data.jobPostings || [],
-            type: "job_search"
-          }];
-        });
+
+    // 훈련 검색 제출 핸들러
+    const handleTrainingSearchSubmit = (formData) => {
+      setIsTrainingSearchModalOpen(false);
+
+      // 채팅 기록에 사용자 메시지 추가
+      setChatHistory(prev => [...prev, {
+        role: "user",
+        text: "[AI맞춤훈련정보]",
+      }]);
+
+      // 로딩 메시지 추가
+      setChatHistory(prev => [...prev, {
+        role: "bot",
+        text: "맞춤 훈련정보를 검색중입니다...",
+        loading: true
+      }]);
+
+      // 백엔드로 데이터 전송
+      const searchData = {
+        ...formData,
+        location: formData.city + (formData.district ? ` ${formData.district}` : ''),
+      };
+
+      axios.post(`${API_BASE_URL}/trainings/search`, searchData, {
+        withCredentials: true
       })
-      .catch(error => {
-        console.error("채용정보 검색 오류:", error);
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, {
-            role: "bot",
-            text: "죄송합니다. 채용정보를 검색하는 중에 오류가 발생했습니다.",
-            type: "error"
-          }];
+        .then(response => {
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              text: response.data.message,
+              trainingCourses: response.data.trainingCourses || [],
+              type: "training_search"
+            }];
+          });
+        })
+        .catch(error => {
+          console.error("훈련정보 검색 오류:", error);
+          setChatHistory(prev => {
+            const filtered = prev.filter(msg => !msg.loading);
+            return [...filtered, {
+              role: "bot",
+              text: "죄송합니다. 훈련정보를 검색하는 중에 오류가 발생했습니다.",
+              type: "error"
+            }];
+          });
         });
-      });
-  };
 
-
-  // 훈련 검색 제출 핸들러
-  const handleTrainingSearchSubmit = (formData) => {
-    setIsTrainingSearchModalOpen(false);
-
-    // 채팅 기록에 사용자 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "user",
-      text: "[AI맞춤훈련정보]",
-    }]);
-
-    // 로딩 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "bot",
-      text: "맞춤 훈련정보를 검색중입니다...",
-      loading: true
-    }]);
-
-    // 백엔드로 데이터 전송
-    const searchData = {
-      ...formData,
-      location: formData.city + (formData.district ? ` ${formData.district}` : ''),
     };
 
-    axios.post(`${API_BASE_URL}/trainings/search`, searchData, {
-      withCredentials: true
-    })
-      .then(response => {
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, {
-            role: "bot",
-            text: response.data.message,
-            trainingCourses: response.data.trainingCourses || [],
-            type: "training_search"
-          }];
-        });
-      })
-      .catch(error => {
-        console.error("훈련정보 검색 오류:", error);
-        setChatHistory(prev => {
-          const filtered = prev.filter(msg => !msg.loading);
-          return [...filtered, {
-            role: "bot",
-            text: "죄송합니다. 훈련정보를 검색하는 중에 오류가 발생했습니다.",
-            type: "error"
-          }];
-        });
-      });
-
-  };
-
-  return (
-    <div className={styles.page}>
-      <Header />
-      <main className={styles.content}>
-        <IntentModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          onSubmit={handleModalSubmit}
-          initialMode={initialMode}
-        />
-
-        <div
-          className={styles.container}
-          ref={chatsContainerRef}
-          onScroll={handleScroll}
-        >
-          {chatHistory.length === 0 && (
-            <>
-
-              {/* 앱 헤더 */}
-
-              <div className={styles.appHeader}>
-                <h1 className={styles.heading}>안녕하세요!</h1>
-                <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
-              </div>
-
-
-              {/* 추천 문구 */}
-
-              <ul className={styles.suggestions}>
-                {suggestions.map((item) => (
-                  <li
-                    key={item.id}
-                    className={styles.suggestionsItem}
-                    onClick={() => handleSuggestionClick(item)}
-                  >
-                    <p className={styles.text}>{item.text}</p>
-                    <span className={`material-symbols-rounded`}>{item.icon}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          <div className={styles.chatsContainer}>
-
-            {chatHistory.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
-                selectedJob={selectedJob}
-                selectedTraining={selectedTraining}
-                onJobClick={handleJobClick}
-                onTrainingClick={handleTrainingClick}
-                selectedCardRef={selectedCardRef}
-              />
-            ))}
-          </div>
-
-          <ChatInput
-            userMessage={userMessage}
-            isBotResponding={isBotResponding}
-            isVoiceMode={isVoiceMode}
-            onSubmit={handleFormSubmit}
-            onChange={handleInputChange}
-            onVoiceInputClick={handleVoiceInputClick}
-            onStopResponse={handleStopResponse}
-            onDeleteChats={handleDeleteChats}
+    return (
+      <div className={styles.page}>
+        <Header />
+        <main className={styles.content}>
+          <IntentModal
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            onSubmit={handleModalSubmit}
+            initialMode={initialMode}
           />
+
+          <div
+            className={styles.container}
+            ref={chatsContainerRef}
+            onScroll={handleScroll}
+          >
+            {chatHistory.length === 0 && (
+              <>
+
+                {/* 앱 헤더 */}
+
+                <div className={styles.appHeader}>
+                  <h1 className={styles.heading}>안녕하세요!</h1>
+                  <h2 className={styles.subHeading}>무엇을 도와드릴까요?</h2>
+                </div>
+
+
+                {/* 추천 문구 */}
+
+                <ul className={styles.suggestions}>
+                  {suggestions.map((item) => (
+                    <li
+                      key={item.id}
+                      className={styles.suggestionsItem}
+                      onClick={() => handleSuggestionClick(item)}
+                    >
+                      <p className={styles.text}>{item.text}</p>
+                      <span className={`material-symbols-rounded`}>{item.icon}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            <div className={styles.chatsContainer}>
+
+              {chatHistory.map((message, index) => (
+                <ChatMessage
+                  key={index}
+                  message={message}
+                  selectedJob={selectedJob}
+                  selectedTraining={selectedTraining}
+                  onJobClick={handleJobClick}
+                  onTrainingClick={handleTrainingClick}
+                  selectedCardRef={selectedCardRef}
+                />
+              ))}
+            </div>
+
+            <ChatInput
+              userMessage={userMessage}
+              isBotResponding={isBotResponding}
+              isVoiceMode={isVoiceMode}
+              onSubmit={handleFormSubmit}
+              onChange={handleInputChange}
+              onVoiceInputClick={handleVoiceInputClick}
+              onStopResponse={handleStopResponse}
+              onDeleteChats={handleDeleteChats}
+            />
 
             {chatHistory.map((msg, index) => (
               <div key={index} className={getMessageStyle(msg)}>
@@ -770,41 +766,41 @@ const Chat = () => {
               본 챗봇은 상담원과의 실시간 채팅 서비스는 운영되지 않습니다.<br />
               AI채용도우미와 자유롭게 대화하며 나에게 맞는 채용 정보를 받아보세요!
             </p>
+
+
+
+            {showScrollButton && (
+              <button
+                className={`${styles.scrollButton} ${styles.visible}`}
+                onClick={scrollToBottom}
+              >
+                <span className="material-symbols-rounded">arrow_downward</span>
+                최근 메시지 보기
+              </button>
+            )}
           </div>
 
+          <GuideModal
+            isOpen={isGuideModalOpen}
+            onClose={() => setIsGuideModalOpen(false)}
+          />
 
-          {showScrollButton && (
-            <button
-              className={`${styles.scrollButton} ${styles.visible}`}
-              onClick={scrollToBottom}
-            >
-              <span className="material-symbols-rounded">arrow_downward</span>
-              최근 메시지 보기
-            </button>
-          )}
-        </div>
+          <JobSearchModal
+            isOpen={isJobSearchModalOpen}
+            onClose={() => setIsJobSearchModalOpen(false)}
+            onSubmit={handleJobSearchSubmit}
+            userProfile={userProfile}
+          />
 
-        <GuideModal 
-          isOpen={isGuideModalOpen}
-          onClose={() => setIsGuideModalOpen(false)}
-        />
-        
-        <JobSearchModal
-          isOpen={isJobSearchModalOpen}
-          onClose={() => setIsJobSearchModalOpen(false)}
-          onSubmit={handleJobSearchSubmit}
-          userProfile={userProfile}
-        />
-
-        <TrainingSearchModal
-          isOpen={isTrainingSearchModalOpen}
-          onClose={() => setIsTrainingSearchModalOpen(false)}
-          onSubmit={handleTrainingSearchSubmit}
-          userProfile={userProfile}
-        />
-      </main>
-    </div>
-  );
-};
-
+          <TrainingSearchModal
+            isOpen={isTrainingSearchModalOpen}
+            onClose={() => setIsTrainingSearchModalOpen(false)}
+            onSubmit={handleTrainingSearchSubmit}
+            userProfile={userProfile}
+          />
+        </main>
+      </div>
+    );
+  };
+}
 export default Chat;
