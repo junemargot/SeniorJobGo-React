@@ -24,6 +24,7 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
 
   @media (max-width: 768px) {
     padding: 1.5rem;
@@ -578,5 +579,39 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+
+  span {
+    font-size: 1.5rem;
+    color: #666;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    
+    span {
+      color: #333;
+    }
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
   }
 } 

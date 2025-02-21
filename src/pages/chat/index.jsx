@@ -56,7 +56,12 @@ const Chat = () => {
   const [isPolicySearchModalOpen, setIsPolicySearchModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
 
-  const chatEndIndex = useRef(-1);
+  // 무료급식소 관련 상태 추가
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  // 정책 정보 관련 상태
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
+
+  const chatEndIndex = useRef(0);
   const limit = 10;
 
   // 메뉴 아이템
@@ -283,15 +288,25 @@ const Chat = () => {
         loading: true
       }]);
 
-      let response;
-      // 무료급식소 테스트 엔드포인트 사용
-      if(message.includes("급식소") || message.includes("무료급식소")) {
-        let query = message.replace("급식소", "").replace("무료급식소", "").trim();
-        response = await axios.post(`${API_BASE_URL}/meal-agent/`, {
-          query: query
-        }, { withCredentials: true });
-        
-        console.log('급식소 응답:', response.data);
+      const response = await axios.post(`${API_BASE_URL}/chat/`, {
+        user_message: message,
+        session_id: "default_session",
+        chat_history: chatHistory.map(msg => ({
+          role: msg.role,
+          content: msg.text
+        }))
+      }, { withCredentials: true });
+
+      // 빈 봇 메시지를 먼저 추가
+      const newBotMessage = {
+        role: "bot",
+        text: "",
+        type: response.data.type,
+        jobPostings: response.data.jobPostings || [],
+        trainingCourses: response.data.trainingCourses || [],
+        policyPostings: response.data.policyPostings || [],
+        mealPostings: response.data.mealPostings || []
+      };
 
         // 데이터 구조 변환
         const botMessage = {
@@ -635,6 +650,46 @@ const Chat = () => {
       });
   };
 
+ // 정책 클릭 핸들러
+ const handlePolicyClick = (policy) => {
+  setSelectedPolicy(prev => {
+    const newSelected = prev?.id === policy.id ? null : policy;
+    if (newSelected) {
+      setTimeout(() => {
+        const cardElement = document.querySelector(`[data-policy-id="${policy.id}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
+  // 무료급식소 클릭 핸들러 추가
+  const handleMealClick = (meal) => {
+    setSelectedMeal(prev => {
+      const newSelected = prev?.fcltyNm === meal.fcltyNm ? null : meal;
+      if (newSelected) {
+        setTimeout(() => {
+          const cardElement = document.querySelector(`[data-meal-id="${meal.fcltyNm}"]`);
+          if (cardElement) {
+            cardElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        }, 100);
+      }
+      return newSelected;
+    });
+  };
+
   return (
     <div className={styles.page}>
       <Header />
@@ -664,14 +719,19 @@ const Chat = () => {
           )}
           <div className={styles.chatsContainer}>
             {chatHistory.map((message, index) => (
-              <ChatMessage 
-                key={index} 
-                message={message} 
-                selectedJob={selectedJob} 
-                selectedTraining={selectedTraining} 
-                onJobClick={handleJobClick} 
-                onTrainingClick={handleTrainingClick} 
-                selectedCardRef={selectedCardRef} />
+              <ChatMessage
+                key={index}
+                message={message}
+                selectedJob={selectedJob}
+                selectedTraining={selectedTraining}
+                selectedPolicy={selectedPolicy}
+                selectedMeal={selectedMeal}
+                onJobClick={handleJobClick}
+                onTrainingClick={handleTrainingClick}
+                onMealClick={handleMealClick}
+                onPolicyClick={handlePolicyClick}
+                selectedCardRef={selectedCardRef}
+              />
             ))}
           </div>
 
@@ -713,9 +773,9 @@ const Chat = () => {
         />
 
         <PolicySearchModal 
-          isOpen={isPolicySearchModalOpen} 
-          onClose={() => setIsPolicySearchModalOpen(false)} 
-          userProfile={userProfile} 
+          isOpen={isPolicySearchModalOpen}
+          onClose={() => setIsPolicySearchModalOpen(false)}
+          userProfile={userProfile}
         />
       </main>
     </div>
