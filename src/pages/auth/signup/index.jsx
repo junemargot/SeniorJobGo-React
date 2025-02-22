@@ -1,5 +1,5 @@
 // pages/auth/signup/index.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import styles from './styles/signup.module.scss';
 import Header from '@components/Header/Header';

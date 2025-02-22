@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import styles from '../styles/chat.module.scss';
+// import styles from '../styles/commonCard.module.scss';
 import JobCard from './JobCard';
 import TrainingCard from './TrainingCard';
 import Avatar from '@assets/images/icon-robot.svg';
@@ -148,7 +149,14 @@ const ChatMessage = ({
                 {message.mealPostings.map((meal, index) => (
                   <MealCard
                     key={index}
-                    meal={meal}
+                    meal={{
+                      name: meal.name,
+                      address: meal.address,
+                      phoneNumber: meal.phone,
+                      operatingHours: meal.operatingHours,
+                      operatingDays: meal.description,  // description 필드를 operatingDays로 매핑
+                      targetGroup: meal.targetGroup
+                    }}
                     onClick={onMealClick}
                     isSelected={selectedMeal?.name === meal.name}
                     cardRef={selectedMeal?.name === meal.name ? selectedCardRef : null}

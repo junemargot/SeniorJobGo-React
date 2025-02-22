@@ -78,6 +78,35 @@
         flex: 1;
         color: $text-title-color;
         padding-left: 0.5rem;
+
+        // 요일 표시 스타일
+        .weekdayContainer {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 4px;
+
+          .weekdayBox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 40px;
+            
+            &.active {
+              background-color: #4CAF50;
+              color: #ffffff;
+            }
+            
+            &.inactive {
+              background-color: #e0e0e0;
+              color: #757575;
+            }
+          }
+        }
       }
     }
   }

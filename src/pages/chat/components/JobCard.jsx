@@ -1,5 +1,6 @@
 import React from 'react';
-import styles from '../styles/chat.module.scss';
+// import styles from '../styles/chat.module.scss';
+import styles from '../styles/commonCard.module.scss';
 
 const JobCard = ({ job, onClick, isSelected, cardRef }) => {
   console.log('JobCard 원본 데이터:', job);

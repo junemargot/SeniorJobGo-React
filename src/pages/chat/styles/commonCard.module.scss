@@ -1,0 +1,601 @@
+@use '@assets/styles/_variables' as *;
+
+// 색상 변수 추가
+$color-success: #4CAF50;
+$color-gray-200: #e0e0e0;
+$color-gray-600: #757575;
+
+/* 공통 카드 스타일 */
+.itemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 채용 공고 카드 */
+.jobCard {
+  background: $white-color;
+  border-radius: $radius-lg;
+  padding: 16px;
+  border: 1px solid $border-light-color;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+  width: 100%;
+  margin: 10px auto;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: $radius-lg;
+    border: 2px solid transparent;
+    transition: border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  &.selected {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(255, 188, 44, 0.15);
+    scroll-margin: 100px;
+
+    &::after {
+      border-color: $primary-color;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $primary-color;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+
+  &__company {
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+  }
+
+  &__title {
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+
+    .icon {
+      color: #888;
+    }
+  }
+
+  &__description {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background: $color-background-light;
+    border-radius: $radius-md;
+    transition: all 0.3s ease;
+
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      display: flex;
+      margin: 8px 0;
+      font-size: $font-size-sm;
+      line-height: 1.6;
+      color: $text-title-color;
+      word-break: break-all;
+
+      &[data-label] {
+        position: relative;
+        padding-left: 120px;
+        min-height: 24px;
+
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 0;
+          width: 110px;
+          font-weight: $font-weight-semibold;
+          color: #555;
+          
+          &::after {
+            content: ":";
+            position: absolute;
+            right: 8px;
+          }
+        }
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+
+    &.visible {
+      display: block;
+    }
+
+    .jobCard__button {
+      display: inline-block;
+      padding: 8px 16px;
+      background: $primary-color;
+      color: $white-color;
+      border-radius: $radius-md;
+      text-decoration: none;
+      font-weight: $font-weight-medium;
+      transition: background 0.3s ease;
+
+      &:hover {
+        background: #e6a926;
+      }
+    }
+  }
+}
+
+/* 훈련 정보 카드 */
+.trainingCard {
+  background: $white-color;
+  border-radius: $radius-lg;
+  padding: 16px;
+  border: 1px solid $border-light-color;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+  width: 100%;
+  margin: 10px auto;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: $radius-lg;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+    pointer-events: none;
+  }
+
+  &.selected {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(29, 126, 253, 0.15);
+
+    &::after {
+      border-color: #1d7efd;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__institute {
+    font-size: 14px;
+    color: $secondary-text-color;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__location {
+    font-size: $font-size-sm;
+    color: #0078d4;
+  }
+
+  &__title {
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+
+  &__details {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  &__detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: $font-size-sm;
+    color: $text-title-color;
+  }
+
+  &__description {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    border-top: 1px solid #eee;
+    background: $color-background-light;
+    border-radius: $radius-md;
+
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      display: flex;
+      margin: 8px 0;
+      font-size: $font-size-sm;
+      line-height: 1.6;
+      color: $text-title-color;
+      word-break: break-all;
+
+      &[data-label] {
+        position: relative;
+        padding-left: 120px;
+        min-height: 24px;
+
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 0;
+          width: 110px;
+          font-weight: $font-weight-semibold;
+          color: #555;
+          
+          &::after {
+            content: ":";
+            position: absolute;
+            right: 8px;
+          }
+        }
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    
+    &.visible {
+      display: block;
+    }
+  }
+
+  &__button {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #0078d4;
+    color: $white-color;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    text-align: center;
+    
+    &:hover {
+      background: #006cbd;
+      color: $white-color;
+    }
+
+    &:visited {
+      color: $white-color;
+    }
+  }
+}
+
+/* 정책 정보 카드 */
+.policyCard {
+  position: relative;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &.selected {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  &__department {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+
+    span {
+      font-size: 1.2rem;
+    }
+  }
+
+  &__date {
+    color: #888;
+    font-size: 0.8rem;
+  }
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.5rem 0;
+    color: #333;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+  }
+
+  &__tag {
+    padding: 0.2rem 0.8rem;
+    background-color: #f0f0f0;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  &__description {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    &.visible {
+      display: block;
+    }
+
+    p {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+      color: #444;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #333;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  &__footer {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    &.visible {
+      display: block;
+    }
+  }
+
+  &__button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+}
+
+/* 급식소 정보 카드 */
+.mealCard {
+  background: $white-color;
+  border: 1px solid $border-light-color;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin: 10px auto;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: $radius-lg;
+    border: 2px solid transparent;
+    transition: border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  &.selected {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(220, 53, 69, 0.15);
+    scroll-margin: 100px;
+
+    &::after {
+      border-color: #dc3545;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  &__facility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: $font-size-16;
+    font-weight: $font-weight-semibold;
+    color: $text-title-color;
+
+    span {
+      color: $primary-color;
+    }
+  }
+
+  &__basicInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  &__target {
+    color: $text-title-color;
+    font-size: $font-size-md;
+    margin: 0;
+  }
+
+  &__time {
+    color: $secondary-text-color;
+    font-size: $font-size-sm;
+    margin: 0;
+  }
+
+  &__weekdays {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+
+    .weekdayBox {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      
+      &.active {
+        background-color: $color-success;
+        color: $white-color;
+      }
+      
+      &.inactive {
+        background-color: $color-gray-200;
+        color: $color-gray-600;
+      }
+    }
+  }
+
+  &__description {
+    display: none;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid $border-light-color;
+
+    &.visible {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    p {
+      display: flex;
+      margin: 8px 0;
+      font-size: $font-size-sm;
+      line-height: 1.6;
+      color: $text-title-color;
+
+      &[data-label] {
+        position: relative;
+        padding-left: 120px;
+        min-height: 24px;
+
+        &::before {
+          content: attr(data-label);
+          position: absolute;
+          left: 0;
+          width: 110px;
+          font-weight: $font-weight-semibold;
+          color: #555;
+          
+          &::after {
+            content: ":";
+            position: absolute;
+            right: 8px;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* 애니메이션 */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

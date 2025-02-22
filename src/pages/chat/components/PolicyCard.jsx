@@ -1,5 +1,6 @@
 import React from 'react';
-import styles from '../styles/chat.module.scss';
+
+import styles from '../styles/commonCard.module.scss';
 
 const PolicyCard = ({ policy, onClick, isSelected, cardRef }) => {
   return (
