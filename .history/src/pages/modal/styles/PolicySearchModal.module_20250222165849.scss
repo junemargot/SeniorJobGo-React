@@ -1,0 +1,336 @@
+@use '@assets/styles/_variables' as *;
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;&display=swap');
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: $white-color;
+  padding: 2rem;
+  border-radius: $radius-lg;
+  width: 90%;
+  max-width: 500px;
+    
+  h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: $text-title-color;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+  }
+  
+}
+
+.modalBody {
+  .searchBox {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .searchInput {
+      height: 48px;
+      padding: 0 8px;
+      border: 1px solid $border-color;
+      border-radius: $radius-md;
+      font-size: $font-size-md;
+      color: $secondary-text-color;
+
+      &:focus {
+        border-color: $border-color;
+        outline: none;
+      }
+
+      &::placeholder {
+        color: $secondary-text-color;
+      }
+    }
+  }
+}
+
+.required {
+  color: $accent-color;
+  margin-left: 3px;
+  vertical-align: top;
+  font-size: $font-size-sm;
+}
+
+.policyList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.policyCard {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  .policyHeader {
+    padding: 1.5rem;
+    cursor: pointer;
+    
+    h3 {
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    
+    .policyMeta {
+      display: flex;
+      gap: 1rem;
+      color: #666;
+      font-size: 0.9rem;
+      
+      span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+    }
+  }
+  
+  .policyDetails {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    
+    &.expanded {
+      padding: 1.5rem;
+      max-height: 1000px;
+      border-top: 1px solid #eee;
+    }
+    
+    .detailsGrid {
+      display: grid;
+      gap: 1rem;
+      
+      .detailItem {
+        h4 {
+          font-size: 1rem;
+          color: #333;
+          margin-bottom: 0.5rem;
+        }
+        
+        p {
+          color: #666;
+          line-height: 1.5;
+        }
+      }
+    }
+    
+    .actionButtons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      
+      .viewButton {
+        flex: 1;
+        text-align: center;
+        padding: 0.8rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        background: #ffbc2c;
+        color: white;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: color.adjust(#ffbc2c, $lightness: -5%);
+        }
+      }
+    }
+  }
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.loadingSpinner {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  
+  &::before {
+    content: '조금만 기다려주세요~';
+    display: block;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    color: #ffbc2c;
+  }
+}
+
+.noResults {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.errorMessage {
+  text-align: center;
+  padding: 1.5rem;
+  background: #FFF5EE;
+  border: 2px solid #ffbc2c;
+  border-radius: 12px;
+  color: #ffbc2c;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+}
+
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+  width: 100%;
+  label {
+    font-size: $font-size-md;
+    color: $secondary-text-color;
+    font-weight: $font-weight-medium;
+  }
+
+  input, select {
+    height: 48px;
+    padding: 0 8px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    color: $secondary-text-color;
+    
+    &:disabled {
+      background: $color-background-light;
+      cursor: not-allowed;
+    }
+    
+    &:focus {
+      border-color: $border-color;
+      outline: none;
+    }
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: $font-size-md;
+    color: $secondary-text-color;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+  margin-top: 1rem;
+
+  button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-16;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.submitButton {
+  background: $primary-color;
+  color: $text-color;
+
+  &:hover {
+    background: color.adjust($primary-color, $lightness: -5%);
+  }
+}
+
+.cancelButton {
+  background: $white-color;
+  color: $secondary-text-color;
+  border: 1px solid $border-light-color;
+
+  &:hover {
+    background: $light-primary-color;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.searchTags {
+  width: 100% !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 1rem;
+  background-color: red;
+  align-self: stretch;
+  
+  
+  .tagButton {
+    outline: none;
+    padding: 0.5rem 1rem;
+    background: $color-background-light;
+    border: 1px solid $border-light-color;
+    border-radius: $radius-md;
+    color: $secondary-text-color;
+    font-size: $font-size-md;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    
+    &:hover {
+      background: $primary-color;
+      color: $text-color;
+      border-color: $primary-color;
+    }
+    
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+   
+    .tagButton {
+      flex: 0 0 calc(25% - 6px); // 각 버튼의 너비를 25%로 설정하여 4개씩 배치
+      min-width: 0;
+    }
+  }
+}
+
+.recommendationTitle {
+  margin-top: 1rem;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $secondary-text-color;
+} 
