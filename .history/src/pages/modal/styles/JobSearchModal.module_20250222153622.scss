@@ -244,9 +244,7 @@
       display: none;
     }
 
-    // 값이 선택되지 않은 경우 (첫 번째 옵션 선택 시)
-    &:not(:focus):invalid,
-    &[value=""] {
+    &:invalid {
       color: $placeholder-color;
     }
     
@@ -255,11 +253,6 @@
     }
     
     option {
-      color: $text-color;
-    }
-
-    // 값이 선택된 경우
-    &:valid {
       color: $text-color;
     }
   }

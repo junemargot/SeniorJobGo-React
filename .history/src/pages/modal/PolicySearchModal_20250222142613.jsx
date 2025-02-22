@@ -57,7 +57,7 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const searchTags = ['노인일자리', '노인복지', '기초연금', '장기요양', '돌봄서비스', '주거지원'];
+  const searchTags = ['고령층일자리', '노인복지', '기초연금', '노인복지'];
 
   const handleSearch = async (e) => {
     e.preventDefault();

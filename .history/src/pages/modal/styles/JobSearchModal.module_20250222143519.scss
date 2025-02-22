@@ -56,10 +56,6 @@
     font-size: $font-size-md;
     color: $placeholder-color;
     
-    &::placeholder {
-      color: $placeholder-color !important;
-    }
-    
     &:disabled {
       background: $color-background-light;
       cursor: not-allowed;
@@ -72,7 +68,6 @@
   }
 }
 
-// 에러 메세지
 .errorText {
   color: $accent-color;
   font-size: $font-size-sm;
@@ -96,7 +91,6 @@
   }
 }
 
-// 필수 항목 표시
 .required {
   color: $accent-color;
   margin-left: 3px;
@@ -104,7 +98,6 @@
   font-size: $font-size-sm;
 }
 
-// 하단 버튼
 .buttonGroup {
   display: flex;
   gap: 8px;
@@ -120,37 +113,36 @@
     cursor: pointer;
     transition: all 0.2s;
   }
+}
 
-  .submitButton {
-    background: $primary-color;
-    color: $text-color;
-    
-    &:hover {
-      background: color.adjust($primary-color, $lightness: -5%);
-    }
-  }
-
-  .editButton {
-    background: #4F6EF7;
-    color: $white-color;
-    
-    &:hover {
-      background: color.adjust(#4F6EF7, $lightness: -5%);
-    }
-  }
+.submitButton {
+  background: $primary-color;
+  color: $text-color;
   
-  .cancelButton {
-    background: $btn-cancel;
-    color: $secondary-text-color;
-    font-weight: $font-weight-medium;
-    
-    &:hover {
-      background: color.adjust($btn-cancel, $lightness: -5%);
-    }
+  &:hover {
+    background: color.adjust($primary-color, $lightness: -5%);
   }
 }
 
-// 옵션 버튼
+.editButton {
+  background: #4F6EF7;
+  color: $white-color;
+  
+  &:hover {
+    background: color.adjust(#4F6EF7, $lightness: -5%);
+  }
+}
+
+.cancelButton {
+  background: $button-grey-color;
+  color: $secondary-text-color;
+  font-weight: $font-weight-medium;
+  
+  &:hover {
+    background: color.adjust($color-background-light, $lightness: -5%);
+  }
+}
+
 .ageButtons {
   display: flex;
   gap: 8px;
@@ -166,11 +158,10 @@
     cursor: pointer;
     transition: all 0.2s;
     font-size: $font-size-md;
-    color: $secondary-text-color;
     
     &.active {
       background: $primary-color;
-      color: $text-color;
+      color: $white-color;
       border-color: $primary-color;
     }
     
@@ -198,11 +189,10 @@
     cursor: pointer;
     transition: all 0.2s;
     font-size: $font-size-md;
-    color: $secondary-text-color;
-
+    
     &.active {
       background: $primary-color;
-      color: $text-color;
+      color: $white-color;
       border-color: $primary-color;
     }
     
@@ -229,8 +219,7 @@
     font-size: $font-size-md;
     outline: none;
     cursor: pointer;
-    color: $text-color;
-
+    
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -242,25 +231,6 @@
     
     &::-ms-expand {
       display: none;
-    }
-
-    // 값이 선택되지 않은 경우 (첫 번째 옵션 선택 시)
-    &:not(:focus):invalid,
-    &[value=""] {
-      color: $placeholder-color;
-    }
-    
-    option[disabled] {
-      color: $placeholder-color;
-    }
-    
-    option {
-      color: $text-color;
-    }
-
-    // 값이 선택된 경우
-    &:valid {
-      color: $text-color;
     }
   }
 

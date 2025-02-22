@@ -231,9 +231,8 @@
   gap: 0.5rem;
 
   label {
-    font-size: $font-size-md;
-    color: $secondary-text-color;
-    font-weight: $font-weight-medium;
+    font-weight: 500;
+    color: $text-color;
   }
 }
 
@@ -345,8 +344,7 @@
     padding: 1rem;
     border: none;
     border-radius: $radius-md;
-    font-size: $font-size-16;
-    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -355,9 +353,10 @@
 .submitButton {
   background: $primary-color;
   color: $text-color;
+  border: none;
 
   &:hover {
-    background: color.adjust($primary-color, $lightness: -5%);
+    background: $primary-hover-color;
   }
 }
 
