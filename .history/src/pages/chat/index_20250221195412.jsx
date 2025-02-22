@@ -164,13 +164,11 @@ const Chat = () => {
             .find(row => row.startsWith('sjgpr='))
             .split('=')[1];
 
-          const response = await axios.get(`${API_BASE_URL}/auth/check`, {
+          if (!await axios.get(`${API_BASE_URL}/auth/check`, {
             withCredentials: true
-          });
-
-          if (!response.data) throw new Error();
+          })) throw new Error();
         } catch (error) {
-          alert('세션이 만료되었습니다.\n다시 로그인 해주세요.');
+          alert('쿠키에 로그인 정보가 부족하거나 서로 맞지 않습니다.');
           document.cookie = 'sjgid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           document.cookie = 'sjgpr=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           navigate('/');
@@ -310,11 +308,56 @@ const Chat = () => {
         mealPostings: response.data.mealPostings || []
       };
 
-      // 로딩 메시지 제거 및 빈 봇 메시지 추가
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, newBotMessage];
-      });
+        // 데이터 구조 변환
+        const botMessage = {
+          role: "bot",
+          // answer 객체에서 answer 필드 추출
+          text: response.data.answer.answer || "응답 메시지가 없습니다.",
+          type: "meal_service",
+          // data 배열 변환
+          data: Array.isArray(response.data.answer.data) 
+            ? response.data.answer.data.map(item => ({
+                name: item.fcltyNm,          // 시설명
+                location: item.lnmadr,       // 지번주소 전체
+                address: item.rdnmadr,       // 도로명 주소
+                date: item.mlsvDate,         // 급식 요일
+                time: item.mlsvTime || '',   // 급식 시간
+                target: item.mlsvTrget || '', // 급식 대상
+                phoneNumber: item.phoneNumber || '' // 전화번호 추가
+              })) 
+            : []
+        };
+
+        // 로딩 메시지 제거 및 응답 추가
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, botMessage];
+        });
+      } else {
+        // 기존 채팅 처리 로직
+        response = await axios.post(`${API_BASE_URL}/chat/`, {
+          user_message: message,
+          session_id: "default_session",
+          chat_history: chatHistory.map(msg => ({
+            role: msg.role,
+            content: msg.text
+          }))
+        }, { withCredentials: true });
+
+        // 빈 봇 메시지를 먼저 추가
+        const newBotMessage = {
+          role: "bot",
+          text: "",
+          type: response.data.type,
+          jobPostings: response.data.jobPostings || [],
+          trainingCourses: response.data.trainingCourses || []
+        };
+
+        // 로딩 메시지 제거 및 빈 봇 메시지 추가
+        setChatHistory(prev => {
+          const filtered = prev.filter(msg => !msg.loading);
+          return [...filtered, newBotMessage];
+        });
 
         // 타이핑 효과로 메시지 표시
         typingEffect(
@@ -333,6 +376,7 @@ const Chat = () => {
             scrollToBottom();
           }
         );
+      }
 
     } catch (error) {
       console.error("메시지 전송 오류:", error);
@@ -388,7 +432,6 @@ const Chat = () => {
   const handleDeleteChats = () => {
     setChatHistory([]);
     setIsBotResponding(false);
-    chatEndIndex.current = 0;
   };
 
   // =========== 채용 공고 클릭 핸들러 ===========
@@ -441,102 +484,62 @@ const Chat = () => {
   };
 
   // =========== 모달 핸들러 ===========
-  const handleIntentSubmit = (mode, text) => {
+  const handleModalSubmit = async (response) => {
     setIsModalOpen(false);
-    
-    if (!text?.trim()) return;
+    setUserMessage("");
 
-    // 모드에 따라 다르게 처리
-    if (mode === 'text') {
-      setIsVoiceMode(false);
-      setUserMessage(text);
-      handleMessageSubmit(text);
-    } else if (mode === 'voice') {
+    // 음성 모드 설정 업데이트
+    if (response.mode === 'voice') {
       setIsVoiceMode(true);
+      setInitialMode('voice');
+    } else if (response.mode === 'text') {
+      setIsVoiceMode(false);
+      setInitialMode(null);
+    }
+
+    // 채팅 기록 업데이트
+    setChatHistory(prev => {
+      // 이전 로딩 메시지 제거
+      const filtered = prev.filter(msg => !msg.loading);
       
-      // 음성 입력 텍스트를 채팅 기록에 추가하고 API 요청
-      handleMessageSubmit(text);
-    }
-  };
+      // 새 메시지 추가
+      const newMessage = {
+        role: response.role,
+        text: response.text,
+        loading: response.loading || false,
+        mode: response.mode  // 모드 정보 유지
+      };
 
-  // handleMessageSubmit 함수도 확인
-  const handleMessageSubmit = async (message) => {
-    try {
-      // 사용자 메시지 추가
-      setChatHistory(prev => [...prev, {
-        role: "user",
-        text: message
-      }]);
-
-      // 로딩 메시지 추가
-      setChatHistory(prev => [...prev, {
-        role: "bot",
-        text: "답변을 준비중입니다...",
-        loading: true
-      }]);
-
-      setIsBotResponding(true);
-
-      // API 요청 및 응답 처리
-      const response = await axios.post(`${API_BASE_URL}/chat/`, {
-        user_message: message,
-        session_id: "default_session",
-        chat_history: chatHistory.map(msg => ({
-          role: msg.role,
-          content: msg.text
-        }))
-      }, { withCredentials: true });
-
-      // 로딩 메시지 제거 및 실제 응답 추가
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, {
-          role: "bot",
-          text: response.data.message || "죄송합니다. 현재 조건에 맞는 정보를 찾지 못했습니다.", // 기본 메시지 추가
-          type: response.data.type,
-          jobPostings: response.data.jobPostings || [],
-          trainingCourses: response.data.trainingCourses || [],
-          policyPostings: response.data.policyPostings || [],
-          mealPostings: response.data.mealPostings || []
-        }];
-      });
-
-      setIsBotResponding(false);
-      setUserMessage("");
-
-    } catch (error) {
-      console.error("메시지 전송 오류:", error);
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, {
-          role: "bot",
-          text: "죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.",
-          type: "error"
-        }];
-      });
-      setIsBotResponding(false);
-    }
-  };
-
-  // 음성 입력 클릭 핸들러 수정
-  const handleVoiceInputClick = async (mode) => {
-    try {
-      if (mode === 'text') {
-        setIsVoiceMode(false);  // 텍스트 모드로 전환
-      } else {
-        // 마이크 권한 확인
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop()); // 스트림 해제
-        
-        setIsVoiceMode(true);   // 음성 모드로 전환
-        setInitialMode('voice'); // 초기 모드를 음성으로 설정
-        setIsModalOpen(true);   // 모달 열기
+      // 봇 메시지인 경우 추가 데이터 포함
+      if (response.role === "bot" && !response.loading) {
+        newMessage.jobPostings = response.jobPostings || [];
+        newMessage.trainingCourses = response.trainingCourses || [];
+        newMessage.type = response.type;
       }
-    } catch (error) {
-      console.error('마이크 권한 오류:', error);
-      alert('마이크 사용 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
-      setIsVoiceMode(false);  // 에러 발생 시 텍스트 모드로 유지
+
+      return [...filtered, newMessage];
+    });
+
+    // 봇 응답 상태 업데이트
+    setIsBotResponding(response.loading || false);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    if (!isVoiceMode) {
+      setInitialMode(null);
     }
+  };
+
+  const handleVoiceInputClick = () => {
+    setIsModalOpen(true);
+    setInitialMode('voice');
+    setTimeout(() => {
+      const voiceButton = document.querySelector(`.${styles.recordingIndicator}`);
+      if (voiceButton) {
+        voiceButton.click();
+      }
+    }, 100);
   };
 
   const handleInputChange = (e) => {
@@ -670,10 +673,10 @@ const Chat = () => {
   // 무료급식소 클릭 핸들러 추가
   const handleMealClick = (meal) => {
     setSelectedMeal(prev => {
-      const newSelected = prev?.name === meal.name ? null : meal;  // name으로 비교
+      const newSelected = prev?.fcltyNm === meal.fcltyNm ? null : meal;
       if (newSelected) {
         setTimeout(() => {
-          const cardElement = document.querySelector(`[data-meal-id="${meal.name}"]`);
+          const cardElement = document.querySelector(`[data-meal-id="${meal.fcltyNm}"]`);
           if (cardElement) {
             cardElement.scrollIntoView({
               behavior: 'smooth',
@@ -691,7 +694,7 @@ const Chat = () => {
     <div className={styles.page}>
       <Header />
       <main className={styles.content}>
-        <IntentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleIntentSubmit} initialMode={initialMode} />
+        <IntentModal isOpen={isModalOpen} onClose={handleModalClose} onSubmit={handleModalSubmit} initialMode={initialMode} />
 
         <div className={styles.container} ref={chatsContainerRef} onScroll={handleScroll}>
           {chatHistory.length === 0 && (
@@ -738,10 +741,9 @@ const Chat = () => {
             isVoiceMode={isVoiceMode} 
             onSubmit={handleFormSubmit} 
             onChange={handleInputChange} 
-            onVoiceInputClick={handleVoiceInputClick}
+            onVoiceInputClick={handleVoiceInputClick} 
             onStopResponse={handleStopResponse} 
-            onDeleteChats={handleDeleteChats}
-            setIsVoiceMode={setIsVoiceMode}
+            onDeleteChats={handleDeleteChats} 
           />
 
           {showScrollButton && chatHistory.length > 0 && (
