@@ -708,8 +708,8 @@ const Chat = () => {
         return [...filtered, {
           role: "bot",
           text: response.data.message || "검색 결과입니다.",
-          mealServices: response.data.mealServices || [],
-          type: "meal_search"
+          mealPostings: response.data.mealPostings || [],
+          type: response.data.type
         }];
       });
     })
@@ -764,9 +764,8 @@ const Chat = () => {
                 selectedMeal={selectedMeal}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
-                onMealClick={handleMealSearchSubmit}
-                onMealCardClick={handleMealClick}
                 onPolicyClick={handlePolicyClick}
+                onMealClick={handleMealClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}
