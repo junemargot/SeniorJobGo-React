@@ -57,7 +57,7 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const searchTags = ['노인일자리', '노인복지', '기초연금', '장기요양', '돌봄서비스', '주거지원'];
+  const searchTags = ['고령층취업', '노인일자리', '고령취업', '노인복지'];
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -115,7 +115,6 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          <h4 className={styles.recommendationTitle}>추천 검색어</h4>
           <div className={styles.searchTags}>
             {searchTags.map((tag) => (
               <button

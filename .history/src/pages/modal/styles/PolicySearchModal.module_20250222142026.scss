@@ -231,9 +231,8 @@
   gap: 0.5rem;
 
   label {
-    font-size: $font-size-md;
-    color: $secondary-text-color;
-    font-weight: $font-weight-medium;
+    font-weight: 500;
+    color: $text-color;
   }
 }
 
@@ -357,7 +356,7 @@
   color: $text-color;
 
   &:hover {
-    background: color.adjust($primary-color, $lightness: -5%);
+    background: $primary-hover-color;
   }
 }
 

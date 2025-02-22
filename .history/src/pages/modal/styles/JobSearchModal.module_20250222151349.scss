@@ -229,7 +229,7 @@
     font-size: $font-size-md;
     outline: none;
     cursor: pointer;
-    color: $text-color;
+    color: $placeholder-color;
 
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -244,22 +244,11 @@
       display: none;
     }
 
-    // 값이 선택되지 않은 경우 (첫 번째 옵션 선택 시)
-    &:not(:focus):invalid,
-    &[value=""] {
-      color: $placeholder-color;
-    }
-    
-    option[disabled] {
-      color: $placeholder-color;
-    }
-    
-    option {
+    option:not(:first-child) {
       color: $text-color;
     }
 
-    // 값이 선택된 경우
-    &:valid {
+    &:not([value=""]) {
       color: $text-color;
     }
   }
