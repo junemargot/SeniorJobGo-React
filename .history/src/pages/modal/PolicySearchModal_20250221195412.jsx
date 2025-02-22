@@ -51,7 +51,7 @@ const PolicyCard = ({ policy }) => {
   );
 };
 
-const PolicySearchModal = ({ isOpen, onClose }) => {
+const PolicySearchModal = ({ isOpen, onClose, userProfile }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -59,31 +59,40 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
 
   const searchTags = ['고령층취업', '노인일자리리', '고령취업', '노인복지'];
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async () => {
     try {
-      setLoading(true);
-      const response = await fetch('http://localhost:8000/api/v1/policy/search', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              user_message: searchQuery
-          })
-      });
+        setLoading(true);
+        const response = await fetch('http://localhost:8000/api/v1/policy/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_message: searchQuery
+            })
+        });
 
-      if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      const data = await response.json();
-      setPolicies(data.search_result.policies);
+        const data = await response.json();
+        setPolicies(data.search_result.policies);
     } catch (error) {
         console.error('정책 검색 오류:', error);
     } finally {
         setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setSearchQuery('');
+    setPolicies([]);
+    setError(null);
+    
+    onClose();
+    
+    window.location.reload();
   };
 
   const handleTagClick = (tag) => {
@@ -92,7 +101,7 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSearch(e);
+      handleSearch();
     }
   };
 
@@ -101,18 +110,31 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <h2>정책 정보 검색</h2>
-        <form onSubmit={handleSearch} className={styles.searchForm}>
-          <div className={`${styles.formGroup}`}>
-            <label>검색어<span className={styles.required}>*</span></label>
+        <div className={styles.modalHeader}>
+          <h2>정책 정보 검색</h2>
+          <button onClick={handleClose} className={styles.closeButton}>
+            ×
+          </button>
+        </div>
+        
+        <div className={styles.modalBody}>
+          <div className={styles.searchBox}>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="검색어를 입력해주세요"
+              placeholder="찾고 싶은 정책을 입력하세요"
               className={styles.searchInput}
-              required
+              onKeyPress={handleKeyPress}
             />
+            <button 
+              onClick={handleSearch}
+              className={styles.searchButton} 
+              disabled={loading}
+            >
+              <span className="material-symbols-rounded">search</span>
+              검색하기
+            </button>
           </div>
 
           <div className={styles.searchTags}>
@@ -127,15 +149,26 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
             ))}
           </div>
 
-          <div className={styles.buttonGroup}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
-              취소
-            </button>
-            <button type="submit" className={styles.submitButton}>
-              검색하기
-            </button>
+          {error && (
+            <div className={styles.errorMessage}>
+              {error}
+            </div>
+          )}
+
+          <div className={styles.policyList}>
+            {loading ? (
+              <div className={styles.loadingSpinner}>검색 중...</div>
+            ) : policies.length > 0 ? (
+              policies.map((policy, index) => (
+                <PolicyCard key={index} policy={policy} />
+              ))
+            ) : !error && (
+              <div className={styles.noResults}>
+                검색어를 입력하고 검색 버튼을 클릭하세요.
+              </div>
+            )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

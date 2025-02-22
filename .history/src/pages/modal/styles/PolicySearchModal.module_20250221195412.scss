@@ -17,53 +17,109 @@
 }
 
 .modalContent {
-  background: $white-color;
+  background: white;
   padding: 2rem;
-  border-radius: $radius-lg;
+  border-radius: 15px;
   width: 90%;
-  max-width: 500px;
-    
-  h2 {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: $text-title-color;
-    font-size: $font-size-lg;
-    font-weight: $font-weight-semibold;
-  }
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
   
-}
-
-.modalBody {
-  .searchBox {
+  .modalHeader {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-
-    .searchInput {
-      height: 48px;
-      padding: 0 8px;
-      border: 1px solid $border-color;
-      border-radius: $radius-md;
-      font-size: $font-size-md;
-      color: $secondary-text-color;
-
-      &:focus {
-        border-color: $border-color;
-        outline: none;
-      }
-
-      &::placeholder {
-        color: $secondary-text-color;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    h2 {
+      font-size: 1.5rem;
+      color: #333;
+      margin: 0;
+    }
+    
+    .closeButton {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      color: #666;
+      cursor: pointer;
+      padding: 0.5rem;
+      
+      &:hover {
+        color: #333;
       }
     }
   }
 }
 
-.required {
-  color: $accent-color;
-  margin-left: 3px;
-  vertical-align: top;
-  font-size: $font-size-sm;
+.modalBody {
+  .searchBox {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+    margin: -2rem -2rem 0 -2rem;
+    z-index: 10;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    
+    .searchInput {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #ffbc2c;
+        box-shadow: 0 0 0 3px rgba(255, 188, 44, 0.1);
+      }
+
+      &::placeholder {
+        color: #999;
+      }
+    }
+    
+    .searchButton {
+      padding: 1rem 2rem;
+      background: $primary-color;
+      color: $white-color;
+      border: none;
+      border-radius: $radius-lg;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      
+      span {
+        font-size: 1.5rem;
+      }
+      
+      &:hover:not(:disabled) {
+        background: #ffa500;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 188, 44, 0.2);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
 }
 
 .policyList {
@@ -197,32 +253,7 @@
 .searchForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-
-  label {
-    font-size: $font-size-md;
-    color: $secondary-text-color;
-    font-weight: $font-weight-medium;
-  }
-
-  input, select {
-    height: 48px;
-    padding: 0 8px;
-    border: 1px solid $border-color;
-    border-radius: $radius-md;
-    font-size: $font-size-md;
-    color: $secondary-text-color;
-    
-    &:disabled {
-      background: $color-background-light;
-      cursor: not-allowed;
-    }
-    
-    &:focus {
-      border-color: $border-color;
-      outline: none;
-    }
-  }
+  gap: 1.5rem;
 }
 
 .formGroup {
@@ -387,23 +418,24 @@
 .searchTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.8rem;
   padding: 1rem 0;
+  margin: 0 1rem;
   
   .tagButton {
     padding: 0.5rem 1rem;
-    background: $white-color;
-    border: 1px solid $border-color;
+    background: #f8f9fa;
+    border: 1px solid #eee;
     border-radius: 20px;
-    color: $text-color;
-    font-size: 14px;
+    color: #666;
+    font-size: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
     
     &:hover {
-      background: $primary-color;
-      color: $white-color;
-      border-color: $primary-color;
+      background: #ffbc2c;
+      color: white;
+      border-color: #ffbc2c;
     }
     
     &:active {
