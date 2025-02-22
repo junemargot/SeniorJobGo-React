@@ -26,7 +26,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   useEffect(() => {
     const initializeSpeechRecognition = () => {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
+
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
@@ -41,7 +41,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         recognition.onend = () => {
           console.log('음성 인식이 종료되었습니다.');
           setIsListening(false);  // 상태 업데이트
-          
+
           // 의도적으로 종료된 경우가 아니라면 재시작
           if (isListeningRef.current) {
             console.log('음성 인식 재시작 시도...');
@@ -70,7 +70,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         recognition.onresult = (event) => {
           let interimTranscript = '';
           let finalTranscript = '';
-          
+
           for (let i = 0; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
@@ -128,10 +128,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
 
     try {
       setIsProcessing(true);
-      
+
       // 음성 입력 텍스트를 바로 전달
       onSubmit('voice', text);
-      
+
       // 상태 초기화 및 모달 닫기
       setTranscript('');
       setFinalTranscript('');
@@ -148,7 +148,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   // 녹음 완료 버튼 클릭 핸들러
   const handleRecordingComplete = () => {
     if (!transcript.trim()) return;
-    
+
     stopListening();
     processTranscript(transcript);
   };
@@ -168,7 +168,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
     if (recognitionRef.current) {
       // 먼저 모든 음성 안내 중지
       stopAllAudio();
-      
+
       // 약간의 지연 후 녹음 시작 (음성 안내가 완전히 중지되도록)
       setTimeout(() => {
         try {
@@ -230,7 +230,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           originalText: summary.originalText
         });
         onClose();
-        
+
       } catch (error) {
         console.error('검색 중 오류:', error);
         alert('검색 중 오류가 발생했습니다.');
@@ -286,10 +286,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           console.error('음성 안내 재생 중 오류:', error);
         }
       };
-      
+
       playRecordingGuide();
     }
-    
+
     return () => {
       // 컴포넌트 정리 시 모든 음성 중지
       recordingAudioRef.current.pause();
@@ -307,9 +307,9 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           console.error('음성 안내 재생 중 오류:', error);
         }
       };
-      
+
       playIntroGuide();
-      
+
       return () => {
         introAudioRef.current.pause();
         introAudioRef.current.currentTime = 0;
@@ -323,10 +323,10 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       try {
         // sjgpr 쿠키 값 확인
         const provider = Cookies.get('sjgpr');
-        
+
         // provider가 'none'인 경우에만 true, 그 외에는 false
         setVoiceGuidanceEnabled(provider === 'none');
-        
+
       } catch (error) {
         console.error('음성 안내 설정 확인 중 오류:', error);
         // 에러 발생 시 기본값 false
@@ -358,26 +358,26 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const handleClose = () => {
     // 모든 음성 중지
     stopAllAudio();
-    
+
     // 녹음 중지
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       isListeningRef.current = false;
       setIsListening(false);
     }
-    
+
     // 상태 초기화
     setTranscript('');
     setFinalTranscript('');
     setSummary(null);
     setMode(null);
-    
+
     // 타이머 정리
     if (searchTimerRef.current) {
       clearInterval(searchTimerRef.current);
       searchTimerRef.current = null;
     }
-    
+
     // 모달 닫기
     onClose();
   };
@@ -387,7 +387,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
-        <button 
+        <button
           className={styles.closeButton}
           onClick={handleClose}
           aria-label="닫기"
@@ -400,7 +400,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           <div className={styles.modeSelection}>
             <div className={styles.introContainer}>
               <h2 className={styles.introTitle}>
-                시니어잡고는 AI 기술이 적용된 <br/>고령층을 위한 <span className={styles.highlighted}>대화형 도우미</span>입니다.
+                시니어잡고는 AI 기술이 적용된 <br />고령층을 위한 <span className={styles.highlighted}>대화형 도우미</span>입니다.
               </h2>
               <p className={styles.introSubtitle}>
                 AI가 맞춤 추천하는 채용정보와 교육과정을 만나보세요.<br />
@@ -410,15 +410,15 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
 
             <div className={styles.modeButtons}>
               <button className={styles.modeButton} onClick={async () => {
-                  setMode('voice');
-                  // 권한 확인 후 녹음 시작
-                  const hasPermission = await requestMicrophonePermission();
-                  if (hasPermission) {
-                    setTimeout(() => {
-                      startListening();
-                    }, 100);
-                  }
-                }}
+                setMode('voice');
+                // 권한 확인 후 녹음 시작
+                const hasPermission = await requestMicrophonePermission();
+                if (hasPermission) {
+                  setTimeout(() => {
+                    startListening();
+                  }, 100);
+                }
+              }}
               >
                 <span className="material-symbols-rounded">record_voice_over</span>
                 말로 주고 받는 대화
@@ -428,12 +428,24 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                 입력하는 채팅 대화
               </button>
             </div>
+            {/* 음성 안내 토글 스위치 추가 */}
+            <div className={styles.voiceToggleContainer}>
+              음성 안내
+              <label className={styles.toggleSwitch}>
+                <input
+                  type="checkbox"
+                  checked={voiceGuidanceEnabled}
+                  onChange={handleVoiceGuidanceToggle}
+                />
+                <span className={styles.slider}></span>
+              </label>
+            </div>
           </div>
         ) : mode === 'voice' ? (
           // 음성 입력 화면
           <div className={styles.voiceMode}>
             <div className={styles.recordingSection}>
-              <div 
+              <div
                 className={`${styles.recordingIndicator} ${isListening ? styles.active : ''}`}
                 onClick={async (e) => {
                   e.preventDefault();
@@ -458,7 +470,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                 <div className={styles.transcript}>
                   <h4>음성 인식 중...</h4>
                   <p>{transcript || "말씀해 주세요..."}</p>
-                  <button 
+                  <button
                     className={styles.confirmRecording}
                     onClick={handleRecordingComplete}
                     disabled={!transcript.trim()}
@@ -476,18 +488,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
           </div>
         ) : null}
 
-        {/* 음성 안내 토글 스위치 추가 */}
-        <div className={styles.voiceToggleContainer}>
-          음성 안내
-          <label className={styles.toggleSwitch}>
-            <input
-              type="checkbox"
-              checked={voiceGuidanceEnabled}
-              onChange={handleVoiceGuidanceToggle}
-            />
-            <span className={styles.slider}></span>
-          </label>
-        </div>
+
       </div>
     </div>
   );
