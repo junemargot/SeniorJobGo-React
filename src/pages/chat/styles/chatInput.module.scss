@@ -118,7 +118,7 @@
   height: 48px;
   border: none;
   border-radius: 50%;
-  background-color: $light-secondary-color;
+  background-color: none;
   color: $light-text-color;
   cursor: pointer;
   display: flex;
@@ -127,7 +127,7 @@
   transition: all 0.3s ease;
 
   &:hover:not(:disabled) {
-    background-color: $light-placeholder-color;
+    background-color: none;
   }
 
   &:disabled {
