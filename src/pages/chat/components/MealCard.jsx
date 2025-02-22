@@ -4,6 +4,61 @@ import PropTypes from 'prop-types';
 import styles from '../styles/commonCard.module.scss';
 
 const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
+  // 운영 상태를 계산하는 함수
+  const getOperationStatus = () => {
+    const now = new Date();
+    const currentDay = ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
+    
+    // 운영 요일 확인
+    const operatingDays = meal.operatingDays?.split('+').map(day => day.trim()) || [];
+    const isOperatingDay = operatingDays.includes(currentDay);
+    
+    if (!isOperatingDay) {
+      return 'closed'; // 휴무
+    }
+
+    // 운영 시간 파싱
+    const timeMatch = meal.operatingHours?.match(/(\d{1,2}):(\d{2})\s*~\s*(\d{1,2}):(\d{2})/);
+    if (!timeMatch) {
+      return 'operating'; // 시간 정보가 없으면 기본적으로 운영중으로 표시
+    }
+
+    const [_, startHour, startMin, endHour, endMin] = timeMatch;
+    const startTime = new Date();
+    startTime.setHours(parseInt(startHour), parseInt(startMin), 0);
+    
+    const endTime = new Date();
+    endTime.setHours(parseInt(endHour), parseInt(endMin), 0);
+
+    const currentTime = now;
+
+    if (currentTime < startTime) {
+      return 'preparing'; // 준비중
+    } else if (currentTime > endTime) {
+      return 'ended'; // 종료
+    } else {
+      return 'operating'; // 운영중
+    }
+  };
+
+  // 상태에 따른 라벨 텍스트
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'operating':
+        return '운영중';
+      case 'preparing':
+        return '준비중';
+      case 'ended':
+        return '종료';
+      case 'closed':
+        return '휴무';
+      default:
+        return '';
+    }
+  };
+
+  const operationStatus = getOperationStatus();
+
   const formatWeekDays = (dateStr) => {
     if (!dateStr) {
       console.log('운영요일 데이터가 없습니다:', dateStr);
@@ -62,6 +117,9 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
         <div className={styles.mealCard__facility}>
           <span className="material-symbols-rounded">restaurant</span>
           {meal.name}
+        </div>
+        <div className={`${styles.statusLabel} ${styles[operationStatus]}`}>
+          {getStatusLabel(operationStatus)}
         </div>
       </div>
 
