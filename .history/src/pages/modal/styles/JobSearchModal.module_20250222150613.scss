@@ -129,28 +129,27 @@
       background: color.adjust($primary-color, $lightness: -5%);
     }
   }
+}
 
-  .editButton {
-    background: #4F6EF7;
-    color: $white-color;
-    
-    &:hover {
-      background: color.adjust(#4F6EF7, $lightness: -5%);
-    }
-  }
+.editButton {
+  background: #4F6EF7;
+  color: $white-color;
   
-  .cancelButton {
-    background: $btn-cancel;
-    color: $secondary-text-color;
-    font-weight: $font-weight-medium;
-    
-    &:hover {
-      background: color.adjust($btn-cancel, $lightness: -5%);
-    }
+  &:hover {
+    background: color.adjust(#4F6EF7, $lightness: -5%);
   }
 }
 
-// 옵션 버튼
+.cancelButton {
+  background: $btn-cancel;
+  color: $secondary-text-color;
+  font-weight: $font-weight-medium;
+  
+  &:hover {
+    background: color.adjust($btn-cancel, $lightness: -5%);
+  }
+}
+
 .ageButtons {
   display: flex;
   gap: 8px;
@@ -229,8 +228,8 @@
     font-size: $font-size-md;
     outline: none;
     cursor: pointer;
-    color: $text-color;
-
+    color: $placeholder-color;
+    
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -244,22 +243,7 @@
       display: none;
     }
 
-    // 값이 선택되지 않은 경우 (첫 번째 옵션 선택 시)
-    &:not(:focus):invalid,
-    &[value=""] {
-      color: $placeholder-color;
-    }
-    
-    option[disabled] {
-      color: $placeholder-color;
-    }
-    
-    option {
-      color: $text-color;
-    }
-
-    // 값이 선택된 경우
-    &:valid {
+    &:not([value=""]) { // 값이 있을 때
       color: $text-color;
     }
   }
