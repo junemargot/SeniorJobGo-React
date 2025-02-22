@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import styles from '../styles/chat.module.scss';
 import styles from '../styles/commonCard.module.scss';
 
 const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
@@ -20,7 +19,7 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
     // 운영 시간 파싱
     const timeMatch = meal.operatingHours?.match(/(\d{1,2}):(\d{2})\s*~\s*(\d{1,2}):(\d{2})/);
     if (!timeMatch) {
-      return 'operating'; // 시간 정보가 없으면 기본적으로 운영중으로 표시
+      return 'ended'; // 시간 정보가 없으면 기본적으로 종료로 표시
     }
 
     const [_, startHour, startMin, endHour, endMin] = timeMatch;
