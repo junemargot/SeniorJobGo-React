@@ -143,41 +143,17 @@ const ChatMessage = ({
               </div>
             )}
 
-            {message.mealPostings?.length > 0 && (
-              <div className={styles.mealList}>
-                <ReactMarkdown
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <p {...props} className={styles.paragraph} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul {...props} className={styles.mealList} />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li {...props} className={styles.mealItem} />
-                    ),
-                    strong: ({ node, ...props }) => (
-                      <strong {...props} />
-                    )
-                  }}
-                >
-                  {message.text}
-                </ReactMarkdown>
-                <div className={styles.mealCards}>
-                  {message.mealPostings.map((meal, index) => (
-                    <div key={`${meal.fcltyNm}-${index}`} className={styles.itemGroup}>
-                      <MealCard
-                        meal={meal}
-                        onClick={onMealClick}
-                        isSelected={selectedMeal && selectedMeal.fcltyNm === meal.fcltyNm}
-                        cardRef={selectedMeal && selectedMeal.fcltyNm === meal.fcltyNm ? selectedCardRef : null}
-                      />
-                    </div>
-                  ))}
-                </div>
+            {message.mealPostings && message.mealPostings.length > 0 && (
+              <div className={styles.mealPostings}>
+                {message.mealPostings.map((meal, index) => (
+                  <MealCard
+                    key={index}
+                    meal={meal}
+                    onClick={onMealClick}
+                    isSelected={selectedMeal?.name === meal.name}
+                    cardRef={selectedMeal?.name === meal.name ? selectedCardRef : null}
+                  />
+                ))}
               </div>
             )}
           </div>

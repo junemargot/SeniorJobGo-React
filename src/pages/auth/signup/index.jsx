@@ -15,6 +15,16 @@ const Signup = () => {
     window.location.href = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
   };
 
+  // 쿠키에 로그인 정보가 있고 비회원이 아니면 채팅 페이지로 이동
+  useEffect(() => {
+    const cookie = document.cookie;
+    const sjgpr = cookie.split('; ').find(row => row.startsWith('sjgpr='));
+
+    if (cookie.includes("sjgid") && !sjgpr.includes("none")) {
+      navigate('/chat');
+    }
+  }, []);
+
   return (
     <div className={styles.page}>
       <Header />
