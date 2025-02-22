@@ -4,6 +4,7 @@ import { API_BASE_URL } from '@/config';
 import styles from './styles/IntentModal.module.scss';
 import choiceInputMethodVoice from '@/assets/voice/choice_input_method.mp3';
 import startRecordingVoice from '@/assets/voice/start_recording.mp3';
+import Cookies from 'js-cookie';
 
 const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const [mode, setMode] = useState(null); // 'voice' 또는 'text'
@@ -19,6 +20,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
   const isListeningRef = useRef(false);  // 녹음 중 여부 참조
   const introAudioRef = useRef(new Audio(choiceInputMethodVoice));
   const recordingAudioRef = useRef(new Audio(startRecordingVoice));
+  const [voiceGuidanceEnabled, setVoiceGuidanceEnabled] = useState(true);
 
   // 음성 인식 초기화
   useEffect(() => {
@@ -274,14 +276,11 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
 
   // mode가 변경될 때 음성 안내 재생
   useEffect(() => {
-    if (mode === 'voice') {
+    if (mode === 'voice' && voiceGuidanceEnabled) {
       const playRecordingGuide = async () => {
         try {
-          // 이전 음성 안내 중지
           introAudioRef.current.pause();
           introAudioRef.current.currentTime = 0;
-          
-          // 녹음 시작 안내 재생
           await recordingAudioRef.current.play();
         } catch (error) {
           console.error('음성 안내 재생 중 오류:', error);
@@ -296,11 +295,11 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
       recordingAudioRef.current.pause();
       recordingAudioRef.current.currentTime = 0;
     };
-  }, [mode]);
+  }, [mode, voiceGuidanceEnabled]);
 
-  // 초기 선택 화면 음성 안내
+  // 초기 선택 화면 음성 안내 수정
   useEffect(() => {
-    if (isOpen && !mode) {
+    if (isOpen && !mode && voiceGuidanceEnabled) {
       const playIntroGuide = async () => {
         try {
           await introAudioRef.current.play();
@@ -316,7 +315,44 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
         introAudioRef.current.currentTime = 0;
       };
     }
-  }, [isOpen, mode]);
+  }, [isOpen, mode, voiceGuidanceEnabled]);
+
+  // 컴포넌트 마운트 시 음성 안내 설정 확인
+  useEffect(() => {
+    const checkVoiceGuidanceSetting = () => {
+      try {
+        // sjgpr 쿠키 값 확인
+        const provider = Cookies.get('sjgpr');
+        
+        // provider가 'none'인 경우에만 true, 그 외에는 false
+        setVoiceGuidanceEnabled(provider === 'none');
+        
+      } catch (error) {
+        console.error('음성 안내 설정 확인 중 오류:', error);
+        // 에러 발생 시 기본값 false
+        setVoiceGuidanceEnabled(false);
+      }
+    };
+
+    if (isOpen) {
+      checkVoiceGuidanceSetting();
+    }
+  }, [isOpen]);
+
+  // 음성 안내 설정 변경 처리
+  const handleVoiceGuidanceToggle = () => {
+    try {
+      const newValue = !voiceGuidanceEnabled;
+      setVoiceGuidanceEnabled(newValue);
+
+      // 음성 안내 상태에 따라 오디오 처리
+      if (!newValue) {
+        stopAllAudio();
+      }
+    } catch (error) {
+      console.error('음성 안내 설정 변경 중 오류:', error);
+    }
+  };
 
   // handleClose 함수 수정
   const handleClose = () => {
@@ -439,6 +475,19 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
             </div>
           </div>
         ) : null}
+
+        {/* 음성 안내 토글 스위치 추가 */}
+        <div className={styles.voiceToggleContainer}>
+          음성 안내
+          <label className={styles.toggleSwitch}>
+            <input
+              type="checkbox"
+              checked={voiceGuidanceEnabled}
+              onChange={handleVoiceGuidanceToggle}
+            />
+            <span className={styles.slider}></span>
+          </label>
+        </div>
       </div>
     </div>
   );
