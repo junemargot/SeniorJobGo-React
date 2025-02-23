@@ -708,8 +708,8 @@ const Chat = () => {
         return [...filtered, {
           role: "bot",
           text: response.data.message || "검색 결과입니다.",
-          mealServices: response.data.mealServices || [],
-          type: "meal_search"
+          mealPostings: response.data.mealPostings || [],
+          type: response.data.type
         }];
       });
     })
@@ -720,6 +720,53 @@ const Chat = () => {
         return [...filtered, {
           role: "bot",
           text: "죄송합니다. 무료급식소 검색 중에 오류가 발생했습니다.",
+          type: "error"
+        }];
+      });
+    });
+  };
+
+  // 정책 검색 제출 핸들러 추가
+  const handlePolicySearchSubmit = (searchQuery) => {
+    setIsPolicySearchModalOpen(false);
+
+    // 채팅 기록에 사용자 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "user",
+      text: `정책 정보 검색: ${searchQuery}`,
+    }]);
+
+    // 로딩 메시지 추가
+    setChatHistory(prev => [...prev, {
+      role: "bot",
+      text: "정책 정보를 검색중입니다...",
+      loading: true
+    }]);
+
+    // 백엔드로 데이터 전송
+    axios.post(`${API_BASE_URL}/policy/search`, { 
+      user_message: searchQuery 
+    }, {
+      withCredentials: true
+    })
+    .then(response => {
+      setChatHistory(prev => {
+        const filtered = prev.filter(msg => !msg.loading);
+        return [...filtered, {
+          role: "bot",
+          text: response.data.message || "검색 결과입니다.",
+          policyPostings: response.data.policyPostings || [],
+          type: response.data.type
+        }];
+      });
+    })
+    .catch(error => {
+      console.error("정책 정보 검색 오류:", error);
+      setChatHistory(prev => {
+        const filtered = prev.filter(msg => !msg.loading);
+        return [...filtered, {
+          role: "bot",
+          text: "죄송합니다. 정책 정보 검색 중에 오류가 발생했습니다.",
           type: "error"
         }];
       });
@@ -764,9 +811,8 @@ const Chat = () => {
                 selectedMeal={selectedMeal}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
-                onMealClick={handleMealSearchSubmit}
-                onMealCardClick={handleMealClick}
                 onPolicyClick={handlePolicyClick}
+                onMealClick={handleMealClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}
@@ -813,6 +859,7 @@ const Chat = () => {
         <PolicySearchModal 
           isOpen={isPolicySearchModalOpen}
           onClose={() => setIsPolicySearchModalOpen(false)}
+          onSubmit={handlePolicySearchSubmit}
           userProfile={userProfile}
         />
 
