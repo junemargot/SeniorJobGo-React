@@ -37,9 +37,9 @@ const PolicyCard = ({ policy, onClick, isSelected, cardRef }) => {
         <p data-label="지원대상">{policy.target}</p>
         <p data-label="지원내용">{policy.content !== '정보 없음' ? policy.content : '상세 내용이 없습니다.'}</p>
         <p data-label="신청방법">{policy.applyMethod}</p>
-        <p data-label="신청기간">{policy.applicationPeriod}</p>
+{/*         <p data-label="신청기간">{policy.applicationPeriod}</p> */}
         <p data-label="문의처">{policy.contact}</p>
-        <p data-label="상세내용">{policy.description}</p>
+{/*         <p data-label="상세내용">{policy.description}</p> */}
       </div>
 
       {policy.url && (
