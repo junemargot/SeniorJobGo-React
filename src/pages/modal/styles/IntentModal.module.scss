@@ -182,21 +182,24 @@
   }
 
   &:first-child {
-    background-color: #f3bd72;
+    background-color: #816339;
+    // background-color: #9d8537;
+    // background-color: #8f7746;
+    background-color: #e26545;
     color: $white-color;
 
     &:hover {
-      background-color: $secondary-hover-color;
+      background-color: #cb5b3e;
       transform: translateY(-2px);
     }
   }
 
   &:last-child {
-    background-color: #8ab4db;
+    background-color: #36558e;
     color: $white-color;
 
     &:hover {
-      background-color: #92a0e1;
+      background-color: #314d80;
       transform: translateY(-2px);
     }
   }
