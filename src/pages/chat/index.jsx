@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { API_BASE_URL } from '@/config';
 import { useNavigate } from 'react-router-dom';
-import { samplePolicies } from '../../data/samplePolicies';
+
 import styles from './styles/chat.module.scss';
 import axios from 'axios';
 import PropTypes from 'prop-types';
@@ -15,7 +15,7 @@ import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 import PolicySearchModal from '@pages/modal/PolicySearchModal';
-import MealServiceMessage from './components/MealServiceMessage';
+import MealCard from './components/MealCard';
 import MealSearchModal from '@pages/modal/MealSearchModal';
 // import ReactMarkdown from 'react-markdown';
 
@@ -661,69 +661,29 @@ const Chat = () => {
     });
   };
 
-  // 무료급식소 클릭 핸들러 추가
-  const handleMealClick = (meal) => {
-    setSelectedMeal(prev => {
-      const newSelected = prev?.name === meal.name ? null : meal;  // name으로 비교
-      if (newSelected) {
-        setTimeout(() => {
-          const cardElement = document.querySelector(`[data-meal-id="${meal.name}"]`);
-          if (cardElement) {
-            cardElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'center'
-            });
-          }
-        }, 100);
-      }
-      return newSelected;
-    });
+  // 급식소 카드 클릭 핸들러
+  const handleMealCardClick = (meal) => {
+    setSelectedMeal(prev => prev?.name === meal.name ? null : meal);
+    // 카드가 선택되었을 때 스크롤
+    if (!prev || prev.name !== meal.name) {
+      setTimeout(() => {
+        const cardElement = document.querySelector(`[data-meal-id="${meal.name}"]`);
+        if (cardElement) {
+          cardElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+          });
+        }
+      }, 100);
+    }
   };
 
-  // 무료급식소 검색 제출 핸들러
+  // 급식소 검색 모달 submit 핸들러
   const handleMealSearchSubmit = (searchQuery) => {
     setIsMealSearchModalOpen(false);
-
-    // 채팅 기록에 사용자 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "user",
-      text: `무료급식소 검색: ${searchQuery}`,
-    }]);
-
-    // 로딩 메시지 추가
-    setChatHistory(prev => [...prev, {
-      role: "bot",
-      text: "무료급식소 정보를 검색중입니다...",
-      loading: true
-    }]);
-
-    // 백엔드로 데이터 전송 여기 axios.post(`${API_BASE_URL}/trainings/search
-    axios.post(`${API_BASE_URL}/meals/search`, { user_message: searchQuery }, {
-      withCredentials: true
-    })
-    .then(response => {
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, {
-          role: "bot",
-          text: response.data.message || "검색 결과입니다.",
-          mealServices: response.data.mealServices || [],
-          type: "meal_search"
-        }];
-      });
-    })
-    .catch(error => {
-      console.error("무료급식소 검색 오류:", error);
-      setChatHistory(prev => {
-        const filtered = prev.filter(msg => !msg.loading);
-        return [...filtered, {
-          role: "bot",
-          text: "죄송합니다. 무료급식소 검색 중에 오류가 발생했습니다.",
-          type: "error"
-        }];
-      });
-    });
+    setUserMessage(`${searchQuery} 무료 급식소 알려줘`);
+    handleFormSubmit({ preventDefault: () => {} });
   };
 
   return (
@@ -764,9 +724,8 @@ const Chat = () => {
                 selectedMeal={selectedMeal}
                 onJobClick={handleJobClick}
                 onTrainingClick={handleTrainingClick}
-                onMealClick={handleMealSearchSubmit}
-                onMealCardClick={handleMealClick}
                 onPolicyClick={handlePolicyClick}
+                onMealCardClick={handleMealCardClick}
                 selectedCardRef={selectedCardRef}
               />
             ))}

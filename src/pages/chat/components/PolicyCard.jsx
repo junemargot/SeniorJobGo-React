@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import styles from '../styles/commonCard.module.scss';
 
@@ -57,6 +58,25 @@ const PolicyCard = ({ policy, onClick, isSelected, cardRef }) => {
       )}
     </div>
   );
+};
+
+PolicyCard.propTypes = {
+  policy: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    source: PropTypes.string.isRequired,
+    target: PropTypes.string,
+    content: PropTypes.string,
+    description: PropTypes.string,
+    url: PropTypes.string,
+    tags: PropTypes.arrayOf(PropTypes.string)
+  }).isRequired,
+  onClick: PropTypes.func,
+  isSelected: PropTypes.bool,
+  cardRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+  ])
 };
 
 export default PolicyCard; 

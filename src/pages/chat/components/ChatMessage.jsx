@@ -17,10 +17,13 @@ const ChatMessage = ({
   onJobClick,
   onTrainingClick,
   onPolicyClick,
-  onMealClick,
+  onMealCardClick,
   selectedCardRef,
   isLast
 }) => {
+  console.log('ChatMessage - 전체 메시지 데이터:', message);
+  console.log('ChatMessage - 급식소 데이터:', message.mealPostings);
+
   const isBot = message.role === "bot";
   const isUser = message.role === "user";
   const isLoading = message.loading;
@@ -144,24 +147,22 @@ const ChatMessage = ({
               </div>
             )}
 
+            {/* 무료급식소 정보 카드 */}
             {message.mealPostings && message.mealPostings.length > 0 && (
-              <div className={styles.mealPostings}>
-                {message.mealPostings.map((meal, index) => (
-                  <MealCard
-                    key={index}
-                    meal={{
-                      name: meal.name,
-                      address: meal.address,
-                      phoneNumber: meal.phone,
-                      operatingHours: meal.operatingHours,
-                      operatingDays: meal.description,  // description 필드를 operatingDays로 매핑
-                      targetGroup: meal.targetGroup
-                    }}
-                    onClick={onMealClick}
-                    isSelected={selectedMeal?.name === meal.name}
-                    cardRef={selectedMeal?.name === meal.name ? selectedCardRef : null}
-                  />
-                ))}
+              <div className={styles.mealList}>
+                <div className={styles.messageText}>{message.text}</div>
+                <div className={styles.cardList}>
+                  {message.mealPostings.map((meal, index) => (
+                    <div key={`${meal.name}-${index}`} className={styles.itemGroup}>
+                      <MealCard
+                        meal={meal}
+                        onClick={() => onMealCardClick(meal)}
+                        isSelected={selectedMeal && selectedMeal.name === meal.name}
+                        cardRef={selectedMeal && selectedMeal.name === meal.name ? selectedCardRef : null}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 // import styles from '../styles/chat.module.scss';
 import styles from '../styles/commonCard.module.scss';
 
@@ -56,5 +57,24 @@ const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
     </div>
   </div>
 );
+
+TrainingCard.propTypes = {
+  training: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    institute: PropTypes.string.isRequired,
+    period: PropTypes.string,
+    cost: PropTypes.string,
+    target: PropTypes.string,
+    description: PropTypes.string,
+    titleLink: PropTypes.string
+  }).isRequired,
+  onClick: PropTypes.func,
+  isSelected: PropTypes.bool,
+  cardRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+  ])
+};
 
 export default TrainingCard; 
