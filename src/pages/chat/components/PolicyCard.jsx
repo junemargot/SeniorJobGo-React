@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 
 import styles from '../styles/commonCard.module.scss';
 
@@ -38,9 +37,9 @@ const PolicyCard = ({ policy, onClick, isSelected, cardRef }) => {
         <p data-label="지원대상">{policy.target}</p>
         <p data-label="지원내용">{policy.content !== '정보 없음' ? policy.content : '상세 내용이 없습니다.'}</p>
         <p data-label="신청방법">{policy.applyMethod}</p>
-        <p data-label="신청기간">{policy.applicationPeriod}</p>
+{/*         <p data-label="신청기간">{policy.applicationPeriod}</p> */}
         <p data-label="문의처">{policy.contact}</p>
-        <p data-label="상세내용">{policy.description}</p>
+{/*         <p data-label="상세내용">{policy.description}</p> */}
       </div>
 
       {policy.url && (
@@ -58,25 +57,6 @@ const PolicyCard = ({ policy, onClick, isSelected, cardRef }) => {
       )}
     </div>
   );
-};
-
-PolicyCard.propTypes = {
-  policy: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    source: PropTypes.string.isRequired,
-    target: PropTypes.string,
-    content: PropTypes.string,
-    description: PropTypes.string,
-    url: PropTypes.string,
-    tags: PropTypes.arrayOf(PropTypes.string)
-  }).isRequired,
-  onClick: PropTypes.func,
-  isSelected: PropTypes.bool,
-  cardRef: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
-  ])
 };
 
 export default PolicyCard; 

@@ -51,7 +51,7 @@ const PolicyCard = ({ policy }) => {
   );
 };
 
-const PolicySearchModal = ({ isOpen, onClose }) => {
+const PolicySearchModal = ({ isOpen, onClose, onSubmit }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [policies, setPolicies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +60,11 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
   });
 
   const searchTags = ['노인일자리', '노인복지', '기초연금', '장기요양', '돌봄서비스', '주거지원', '노후보장', '건강관리'];
+
+  const handleTagClick = (e, tag) => {
+    e.preventDefault();  // 버튼 기본 동작 방지
+    setSearchQuery(tag);  // 검색어 설정
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -75,33 +80,8 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:8000/api/v1/policy/search', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              user_message: searchQuery
-          })
-      });
-
-      if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setPolicies(data.search_result.policies);
-    } catch (error) {
-        console.error('정책 검색 오류:', error);
-    } finally {
-        setLoading(false);
-    }
-  };
-
-  const handleTagClick = (tag) => {
-    setSearchQuery(tag);
+    onSubmit(searchQuery);
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -122,7 +102,7 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
             />
           </div>
           {errors.searchQuery && 
-            <p className={styles.errorText}>검색어를 입력해주세요.</p>
+            <p className={styles.errorText}>검색어를 입력해주세요</p>
           }
           <h4 className={styles.recommendationTitle}>추천 검색어</h4>
           <div className={styles.searchTags}>
@@ -130,7 +110,8 @@ const PolicySearchModal = ({ isOpen, onClose }) => {
               {searchTags.map((tag) => (
                 <button
                   key={tag}
-                  onClick={() => handleTagClick(tag)}
+                  type="button"  // type을 button으로 변경
+                  onClick={(e) => handleTagClick(e, tag)}
                   className={styles.tagButton}
                 >
                   #{tag}

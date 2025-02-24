@@ -54,7 +54,8 @@
     border: 1px solid $border-color;
     border-radius: $radius-md;
     font-size: $font-size-md;
-    color: $placeholder-color;
+    // color: $placeholder-color;
+    color: $text-color;
     
     &::placeholder {
       color: $placeholder-color !important;
