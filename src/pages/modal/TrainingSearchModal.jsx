@@ -102,7 +102,7 @@ const TrainingSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
               />
             </div>
             {errors.city && 
-              <p className={styles.errorText}>희망 교육지역을 선택해주세요.</p>
+              <p className={styles.errorText}>희망 교육지역을 선택해주세요</p>
             }
           </div>
 

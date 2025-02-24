@@ -430,14 +430,18 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
             </div>
             {/* 음성 안내 토글 스위치 추가 */}
             <div className={styles.voiceToggleContainer}>
-              음성 안내
+              음성안내 듣기
               <label className={styles.toggleSwitch}>
                 <input
                   type="checkbox"
                   checked={voiceGuidanceEnabled}
                   onChange={handleVoiceGuidanceToggle}
                 />
-                <span className={styles.slider}></span>
+                <span className={styles.slider}>
+                  <span className={styles.toggleText}>
+                    {voiceGuidanceEnabled ? '켬' : '끔'}
+                  </span>
+                </span>
               </label>
             </div>
           </div>
