@@ -439,7 +439,7 @@ const IntentModal = ({ isOpen, onClose, onSubmit, initialMode }) => {
                 />
                 <span className={styles.slider}>
                   <span className={styles.toggleText}>
-                    {voiceGuidanceEnabled ? '켬' : '끔'}
+                    {voiceGuidanceEnabled ? '킴' : '끔'}
                   </span>
                 </span>
               </label>
