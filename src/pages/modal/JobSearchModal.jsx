@@ -106,7 +106,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 </button>
               ))}
             </div>
-            {errors.ageGroup && <p className={styles.errorText}>연령대를 선택해주세요.</p>}
+            {errors.ageGroup && <p className={styles.errorText}>연령대를 선택해주세요</p>}
           </div>
 
           <div className={`${styles.formGroup} ${errors.gender ? styles.hasError : ''}`}>
@@ -135,7 +135,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 여자
               </button>
             </div>
-            {errors.gender && <p className={styles.errorText}>성별을 선택해주세요.</p>}
+            {errors.gender && <p className={styles.errorText}>성별을 선택해주세요</p>}
           </div>
 
           <div className={`${styles.formGroup} ${errors.city || errors.district ? styles.hasError : ''}`}>
@@ -166,7 +166,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
               />
             </div>
             {(errors.city || errors.district) && 
-              <p className={styles.errorText}>희망근무지역을 입력해주세요.</p>
+              <p className={styles.errorText}>희망근무지역을 입력해주세요</p>
             }
           </div>
 
