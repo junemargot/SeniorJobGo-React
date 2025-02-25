@@ -65,10 +65,10 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
 
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     const operatingDays = dateStr.split('+').map(day => day.trim());
-    
+
     return weekdays.map(day => ({
       day,
-      isOperating: operatingDays.includes(day)
+      isOperating: operatingDays.some(d => d.includes(day))
     }));
   };
 
@@ -109,12 +109,10 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
 
       <div className={styles.mealCard__details}>
         <div className={styles.mealCard__detail}>
-          <span className="material-symbols-rounded">schedule</span>
-          {meal.operatingHours}
+          {meal.address}
         </div>
         <div className={styles.mealCard__detail}>
-          <span className="material-symbols-rounded">location_on</span>
-          {meal.address}
+          <WeekdayDisplay dateStr={meal.description} />
         </div>
       </div>
 

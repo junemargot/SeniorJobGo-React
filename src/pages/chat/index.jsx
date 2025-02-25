@@ -662,7 +662,8 @@ const Chat = () => {
   const handleMealClick = (meal) => {
     setSelectedMeal(prev => {
       const newSelected = prev?.name === meal.name ? null : meal;  // name으로 비교
-      if (newSelected) {
+      // 카드가 선택되었을 때 스크롤
+      if (!prev || prev.name !== meal.name) {
         setTimeout(() => {
           const cardElement = document.querySelector(`[data-meal-id="${meal.name}"]`);
           if (cardElement) {
