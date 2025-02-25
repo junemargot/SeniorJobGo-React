@@ -17,7 +17,7 @@ const ChatMessage = ({
   onJobClick,
   onTrainingClick,
   onPolicyClick,
-  onMealCardClick,
+  onMealClick,
   selectedCardRef,
   isLast
 }) => {
@@ -84,8 +84,16 @@ const ChatMessage = ({
           </div>
         ) : (
           <div className={styles.messageText}>
-            {/* 정책 정보 카드 먼저 체크 */}
-            {message.policyPostings?.length > 0 ? (
+            {/* 일반 메시지 (카드가 없을 때만 표시) */}
+            {!message.policyPostings?.length && 
+             !message.jobPostings?.length && 
+             !message.trainingCourses?.length && 
+             !message.mealPostings?.length && 
+             <ReactMarkdown>{message.text}</ReactMarkdown>
+            }
+
+            {/* 정책 정보 카드 */}
+            {message.policyPostings?.length > 0 && (
               <div className={styles.policyList}>
                 <ReactMarkdown>{message.text}</ReactMarkdown>
                 <div className={styles.policyCards}>
@@ -106,10 +114,7 @@ const ChatMessage = ({
                   ))}
                 </div>
               </div>
-            ) : !message.jobPostings?.length && !message.trainingCourses?.length ? (
-              // 다른 카드 타입이 없을 때만 일반 텍스트 표시
-              <ReactMarkdown>{message.text}</ReactMarkdown>
-            ) : null}
+            )}
 
             {/* 채용 정보 카드 */}
             {message.jobPostings?.length > 0 && (
@@ -148,15 +153,15 @@ const ChatMessage = ({
             )}
 
             {/* 무료급식소 정보 카드 */}
-            {message.mealPostings && message.mealPostings.length > 0 && (
+            {message.mealPostings?.length > 0 && (
               <div className={styles.mealList}>
-                <div className={styles.messageText}>{message.text}</div>
+                <ReactMarkdown>{message.text}</ReactMarkdown>
                 <div className={styles.cardList}>
                   {message.mealPostings.map((meal, index) => (
                     <div key={`${meal.name}-${index}`} className={styles.itemGroup}>
                       <MealCard
                         meal={meal}
-                        onClick={() => onMealCardClick(meal)}
+                        onClick={() => onMealClick(meal)}
                         isSelected={selectedMeal && selectedMeal.name === meal.name}
                         cardRef={selectedMeal && selectedMeal.name === meal.name ? selectedCardRef : null}
                       />

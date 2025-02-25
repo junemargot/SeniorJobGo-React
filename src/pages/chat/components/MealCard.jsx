@@ -7,7 +7,8 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
 
   // 운영 상태를 계산하는 함수
   const getOperationStatus = () => {
-    const now = new Date();
+    // 한국 시간으로 현재 시간 설정
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
     const currentDay = ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
     
     // 운영 요일 확인
@@ -25,13 +26,15 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
     }
 
     const [_, startHour, startMin, endHour, endMin] = timeMatch;
-    const startTime = new Date();
-    startTime.setHours(parseInt(startHour), parseInt(startMin), 0);
     
-    const endTime = new Date();
-    endTime.setHours(parseInt(endHour), parseInt(endMin), 0);
+    // 현재 시간
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    const currentTime = currentHour * 60 + currentMin;  // 분 단위로 변환
 
-    const currentTime = now;
+    // 운영 시작/종료 시간을 분 단위로 변환
+    const startTime = parseInt(startHour) * 60 + parseInt(startMin);
+    const endTime = parseInt(endHour) * 60 + parseInt(endMin);
 
     if (currentTime < startTime) {
       return 'preparing'; // 준비중
@@ -96,6 +99,7 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
       ref={cardRef}
       className={`${styles.mealCard} ${isSelected ? styles.selected : ''}`}
       onClick={onClick}
+      data-meal-id={meal.name}
     >
       <div className={styles.mealCard__header}>
         <div className={styles.mealCard__facility}>

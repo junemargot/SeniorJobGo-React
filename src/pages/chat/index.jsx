@@ -385,7 +385,7 @@ const Chat = () => {
   // =========== 채용 공고 클릭 핸들러 ===========
   const handleJobClick = (job) => {
     setSelectedJob(prev => {
-      const newSelected = prev?.id === job.id ? null : job;
+      const newSelected = prev?.id === job.id ? null : job;  // id로 비교
       if (newSelected) {
         setTimeout(() => {
           const cardElement = document.querySelector(`[data-job-id="${job.id}"]`);
@@ -414,7 +414,7 @@ const Chat = () => {
   // =========== 훈련 공고 클릭 핸들러 ===========
   const handleTrainingClick = (training) => {
     setSelectedTraining(prev => {
-      const newSelected = prev?.id === training.id ? null : training;
+      const newSelected = prev?.id === training.id ? null : training;  // id로 비교
       if (newSelected) {
         setTimeout(() => {
           const cardElement = document.querySelector(`[data-training-id="${training.id}"]`);
@@ -658,7 +658,7 @@ const Chat = () => {
     });
   };
 
-  // 무료급식소 클릭 핸들러 추가
+  // 무료급식소 클릭 핸들러
   const handleMealClick = (meal) => {
     setSelectedMeal(prev => {
       const newSelected = prev?.name === meal.name ? null : meal;  // name으로 비교
@@ -810,7 +810,14 @@ const Chat = () => {
                 onTrainingClick={handleTrainingClick}
                 onPolicyClick={handlePolicyClick}
                 onMealClick={handleMealClick}
-                selectedCardRef={selectedCardRef}
+                selectedCardRef={
+                  (selectedJob && message.jobPostings?.find(job => job.id === selectedJob.id)) ||
+                  (selectedTraining && message.trainingCourses?.find(course => course.id === selectedTraining.id)) ||
+                  (selectedPolicy && message.policyPostings?.find(policy => policy.url === selectedPolicy.url)) ||
+                  (selectedMeal && message.mealPostings?.find(meal => meal.name === selectedMeal.name))
+                    ? selectedCardRef
+                    : null
+                }
               />
             ))}
           </div>
