@@ -150,7 +150,6 @@ const ChatMessage = ({
             {/* 무료급식소 정보 카드 */}
             {message.mealPostings && message.mealPostings.length > 0 && (
               <div className={styles.mealList}>
-                <div className={styles.messageText}>{message.text}</div>
                 <div className={styles.cardList}>
                   {message.mealPostings.map((meal, index) => (
                     <div key={`${meal.name}-${index}`} className={styles.itemGroup}>
