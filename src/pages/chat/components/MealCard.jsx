@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import styles from '../styles/commonCard.module.scss';
 
 const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
+  console.log('MealCard - 받은 급식소 데이터:', meal);
+
   // 운영 상태를 계산하는 함수
   const getOperationStatus = () => {
     const now = new Date();
@@ -59,15 +61,10 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
   const operationStatus = getOperationStatus();
 
   const formatWeekDays = (dateStr) => {
-    if (!dateStr) {
-      console.log('운영요일 데이터가 없습니다:', dateStr);
-      return null;
-    }
+    if (!dateStr) return null;
 
-    console.log('운영요일 데이터:', dateStr);
     const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
     const operatingDays = dateStr.split('+').map(day => day.trim());
-    console.log('파싱된 운영요일:', operatingDays);
     
     return weekdays.map(day => ({
       day,
@@ -76,15 +73,10 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
   };
 
   const WeekdayDisplay = ({ dateStr }) => {
-    console.log('WeekdayDisplay에 전달된 데이터:', dateStr);
     const weekdayInfo = formatWeekDays(dateStr);
     
-    if (!weekdayInfo) {
-      console.log('weekdayInfo가 null입니다');
-      return null;
-    }
+    if (!weekdayInfo) return null;
 
-    console.log('최종 요일 정보:', weekdayInfo);
     return (
       <div className={styles.mealCard__weekdays}>
         {weekdayInfo.map(({ day, isOperating }) => (
@@ -99,18 +91,11 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
     );
   };
 
-  const handleClick = (e) => {
-    e.stopPropagation();
-    if (onClick) {
-      onClick(meal);
-    }
-  };
-
   return (
-    <div 
+    <div
       ref={cardRef}
       className={`${styles.mealCard} ${isSelected ? styles.selected : ''}`}
-      onClick={handleClick}
+      onClick={onClick}
     >
       <div className={styles.mealCard__header}>
         <div className={styles.mealCard__facility}>
@@ -122,21 +107,25 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
         </div>
       </div>
 
-      {/* 기본 정보 (항상 표시) */}
-      <div className={styles.mealCard__basicInfo}>
-        <p data-label="주소">{meal.address}</p>
-        <WeekdayDisplay dateStr={meal.operatingDays} />
+      <div className={styles.mealCard__details}>
+        <div className={styles.mealCard__detail}>
+          <span className="material-symbols-rounded">schedule</span>
+          {meal.operatingHours}
+        </div>
+        <div className={styles.mealCard__detail}>
+          <span className="material-symbols-rounded">location_on</span>
+          {meal.address}
+        </div>
       </div>
 
-      {/* 상세 정보 (선택된 경우에만 표시) */}
       <div className={`${styles.mealCard__description} ${isSelected ? styles.visible : ''}`}>
         <p data-label="시설명">{meal.name}</p>
         <p data-label="주소">{meal.address}</p>
-        <p data-label="전화번호">{meal.phoneNumber || '정보 없음'}</p>
+        <p data-label="전화번호">{meal.phone || '정보 없음'}</p>
         <p data-label="운영시간">{meal.operatingHours}</p>
         <p data-label="급식대상">{meal.targetGroup}</p>
         <p data-label="운영요일">
-          <WeekdayDisplay dateStr={meal.operatingDays} />
+          <WeekdayDisplay dateStr={meal.description} />
         </p>
       </div>
     </div>
@@ -147,9 +136,9 @@ MealCard.propTypes = {
   meal: PropTypes.shape({
     name: PropTypes.string.isRequired,
     address: PropTypes.string.isRequired,
-    phoneNumber: PropTypes.string,
+    phone: PropTypes.string,
     operatingHours: PropTypes.string,
-    operatingDays: PropTypes.string,
+    description: PropTypes.string,
     targetGroup: PropTypes.string
   }).isRequired,
   onClick: PropTypes.func,

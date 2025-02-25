@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 // import styles from '../styles/chat.module.scss';
 import styles from '../styles/commonCard.module.scss';
 
@@ -56,6 +57,25 @@ const JobCard = ({ job, onClick, isSelected, cardRef }) => {
       </div>
     </div>
   );
+};
+
+JobCard.propTypes = {
+  job: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    company: PropTypes.string.isRequired,
+    location: PropTypes.string.isRequired,
+    salary: PropTypes.string,
+    workingHours: PropTypes.string,
+    description: PropTypes.string,
+    posting_url: PropTypes.string
+  }).isRequired,
+  onClick: PropTypes.func,
+  isSelected: PropTypes.bool,
+  cardRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(Element) })
+  ])
 };
 
 export default JobCard; 

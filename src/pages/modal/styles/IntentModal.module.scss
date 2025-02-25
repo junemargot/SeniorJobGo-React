@@ -731,16 +731,4 @@
     font-weight: $font-weight-medium;
     transition: left 0.4s, right 0.4s; // 위치 이동 애니메이션
   }
-
-  // input:checked + .slider .toggleText {
-  //   content: "켬"; // 활성화 상태일 때
-  //   color: $white-color;
-  //   text-transform: uppercase;
-  // }
-
-  // input:not(:checked) + .slider .toggleText {
-  //   content: "끔"; // 비활성화 상태일 때
-  //   color: $secondary-text-grey;
-  //   text-transform: uppercase;
-  // }
 } 
