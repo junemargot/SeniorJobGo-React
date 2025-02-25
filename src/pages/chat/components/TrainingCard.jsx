@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 // import styles from '../styles/chat.module.scss';
 import styles from '../styles/commonCard.module.scss';
+import PropTypes from 'prop-types';
 
 const TrainingCard = ({ training, onClick, isSelected, cardRef }) => (
   <div

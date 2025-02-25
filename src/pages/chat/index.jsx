@@ -60,7 +60,7 @@ const Chat = () => {
   // 정책 정보 관련 상태
   const [selectedPolicy, setSelectedPolicy] = useState(null);
 
-  const chatEndIndex = useRef(0);
+  const chatEndIndex = useRef(-1);
   const limit = 10;
 
   // 메뉴 아이템
