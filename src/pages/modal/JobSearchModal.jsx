@@ -20,7 +20,6 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [errors, setErrors] = useState({
     ageGroup: false,
     gender: false,
-    district: false,
     city: false,
   });
 
@@ -38,7 +37,6 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
     const newErrors = {
       ageGroup: !formData.ageGroup,
       gender: !formData.gender,
-      district: !formData.district,
       city: !formData.city,
     };
 
@@ -138,7 +136,7 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
             {errors.gender && <p className={styles.errorText}>성별을 선택해주세요</p>}
           </div>
 
-          <div className={`${styles.formGroup} ${errors.city || errors.district ? styles.hasError : ''}`}>
+          <div className={`${styles.formGroup} ${errors.city ? styles.hasError : ''}`}>
           <label>희망근무지역<span className={styles.required}>*</span></label>
             <div className={styles.locationInputs}>
               <select
@@ -159,13 +157,12 @@ const JobSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 value={formData.district}
                 onChange={(e) => {
                   setFormData(prev => ({ ...prev, district: e.target.value }));
-                  setErrors(prev => ({ ...prev, district: false }));
                 }}
                 disabled={!isEditing}
                 placeholder="군/구 입력"
               />
             </div>
-            {(errors.city || errors.district) && 
+            {(errors.city) && 
               <p className={styles.errorText}>희망근무지역을 입력해주세요</p>
             }
           </div>
