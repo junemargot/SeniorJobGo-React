@@ -102,7 +102,7 @@ const PolicySearchModal = ({ isOpen, onClose, onSubmit }) => {
             />
           </div>
           {errors.searchQuery && 
-            <p className={styles.errorText}>검색어를 입력해주세요.</p>
+            <p className={styles.errorText}>검색어를 입력해주세요</p>
           }
           <h4 className={styles.recommendationTitle}>추천 검색어</h4>
           <div className={styles.searchTags}>

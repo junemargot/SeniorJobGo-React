@@ -72,6 +72,7 @@
 .modeSelection {
   text-align: center;
   padding: 2rem 0;
+  margin-bottom: 1.3rem;
 
   .introContainer {
     text-align: center;
@@ -648,14 +649,14 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #666;
+  color: $secondary-text-grey;
 }
 
 .toggleSwitch {
   position: relative;
   display: inline-block;
-  width: 51px;
-  height: 31px;
+  width: 68px;
+  height: 36px;
 
   input {
     opacity: 0;
@@ -664,6 +665,18 @@
 
     &:checked + .slider {
       background-color: #34C759;
+
+      // 활성화 상태일 때 텍스트 위치 조정
+      .toggleText {
+        left: 12px;
+      }
+    }
+
+    &:not(:checked) + .slider {
+      // 비활성화 상태일 때 텍스트 위치 조정
+      .toggleText {
+        right: 12px;
+      }
     }
 
     &:checked + .slider:before {
@@ -680,19 +693,44 @@
     bottom: 0;
     background-color: #e9e9ea;
     transition: .4s;
-    border-radius: 34px;
+    border-radius: 36px;
 
     &:before {
       position: absolute;
       content: "";
-      height: 27px;
-      width: 27px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
+      height: 30px;
+      width: 30px;
+      left: 15px;
+      bottom: 3px;
+      background-color: $white-color;
       transition: .4s;
       border-radius: 50%;
       box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
+  }
+
+  // 추가된 코드: 텍스트 표시
+  .toggleText {
+    position: absolute;
+    top: 50%;
+    // left: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: $white-color;
+    pointer-events: none; // 텍스트 클릭 방지
+    font-weight: $font-weight-medium;
+    transition: left 0.4s, right 0.4s; // 위치 이동 애니메이션
+  }
+
+  input:checked + .slider .toggleText {
+    content: "켬"; // 활성화 상태일 때
+    color: $white-color;
+    text-transform: uppercase;
+  }
+
+  input:not(:checked) + .slider .toggleText {
+    content: "끔"; // 비활성화 상태일 때
+    color: $secondary-text-grey;
+    text-transform: uppercase;
   }
 } 

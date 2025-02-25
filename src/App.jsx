@@ -8,7 +8,7 @@ import Intro from '@pages/index';
 import Signin from '@pages/auth/signin';
 import Signup from '@pages/auth/signup';
 import SignupWithId from '@pages/auth/signup/components/SignupWithId'; // 추가
-import Main from '@pages/main';
+// import Main from '@pages/main';
 import Chat from '@pages/chat';
 import FindAccount from '@pages/auth/find';
 
@@ -24,7 +24,7 @@ function App() {
         <Route path='/signup' element={<Signup />}></Route>
         <Route path='/signup/id' element={<SignupWithId />}></Route>
         <Route path='/find-account' element={<FindAccount />}></Route>
-        <Route path='/main' element={<Main />}></Route>
+        {/* <Route path='/main' element={<Main />}></Route> */}
         <Route path='/chat' element={<Chat />}></Route>
       </Routes>
     </BrowserRouter>

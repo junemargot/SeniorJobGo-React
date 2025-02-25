@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import styles from './styles/JobSearchModal.module.scss';
-import MealCard from '../chat/components/MealCard';
+
+import modalStyles from './styles/MealSearchModal.module.scss';
+
 
 const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -8,7 +9,7 @@ const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [currentField, setCurrentField] = useState(null);
 
-  const searchTags = ['#강남구무료급식소', '#종로구무료급식소', '#영등포구무료급식소', '#용산구무료급식소'];
+  const searchTags = ['종로구', '강남구', '영등포구', '관악구', '용산구'];
 
   const [errors, setErrors] = useState({
     searchQuery: false,
@@ -20,6 +21,11 @@ const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
       setIsEditing(false);
     }
   }, [userProfile]);
+
+  const handleTagClick = (e, tag) => {
+    e.preventDefault();  // 버튼 기본 동작 방지
+    setSearchQuery(tag);  // 검색어 설정
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -82,7 +88,7 @@ const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={!isEditing}
-                placeholder="지역명을 입력해주세요. (예: 강남구)"
+                placeholder="지역명을 입력해주세요"
               />
               <button
                 type="button"
@@ -95,7 +101,22 @@ const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
                 </span>
               </button>
             </div>
-            {errors.searchQuery && <p className={styles.errorText}>지역명을 입력해주세요.</p>}
+            {errors.searchQuery && <p className={styles.errorText}>지역명을 입력해주세요</p>}
+          </div>
+          <h4 className={modalStyles.recommendationTitle}>추천 검색어</h4>
+          <div className={modalStyles.searchTags}>
+            <div className={modalStyles.searchTagsInner}>
+              {searchTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"  // type을 button으로 변경
+                  onClick={(e) => handleTagClick(e, tag)}
+                  className={modalStyles.tagButton}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
           </div>
           <div className={styles.buttonGroup}>
             <button type="button" onClick={onClose} className={styles.cancelButton}>
