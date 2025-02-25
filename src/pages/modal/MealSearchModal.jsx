@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-
+import styles from './styles/JobSearchModal.module.scss';
 import modalStyles from './styles/MealSearchModal.module.scss';
-
+import MealCard from '../chat/components/MealCard';
 
 const MealSearchModal = ({ isOpen, onClose, onSubmit, userProfile }) => {
   const [searchQuery, setSearchQuery] = useState('');

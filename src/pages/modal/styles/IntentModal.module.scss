@@ -72,7 +72,7 @@
 .modeSelection {
   text-align: center;
   padding: 2rem 0;
-  margin-bottom: 1.3rem;
+  margin-bottom: 2rem;
 
   .introContainer {
     text-align: center;
@@ -182,21 +182,24 @@
   }
 
   &:first-child {
-    background-color: #f3bd72;
+    background-color: #816339;
+    // background-color: #9d8537;
+    // background-color: #8f7746;
+    background-color: #e26545;
     color: $white-color;
 
     &:hover {
-      background-color: $secondary-hover-color;
+      background-color: #cb5b3e;
       transform: translateY(-2px);
     }
   }
 
   &:last-child {
-    background-color: #8ab4db;
+    background-color: #36558e;
     color: $white-color;
 
     &:hover {
-      background-color: #92a0e1;
+      background-color: #314d80;
       transform: translateY(-2px);
     }
   }
@@ -648,7 +651,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: $font-size-16;
   color: $secondary-text-grey;
 }
 
@@ -668,19 +671,27 @@
 
       // 활성화 상태일 때 텍스트 위치 조정
       .toggleText {
-        left: 12px;
+        left: 34%;
+        top: 12px;
+        transform: translateX(-50%);
+        color: $white-color;
       }
     }
 
     &:not(:checked) + .slider {
       // 비활성화 상태일 때 텍스트 위치 조정
       .toggleText {
-        right: 12px;
+        left: 57%;
+        color: $secondary-text-grey;
       }
     }
 
     &:checked + .slider:before {
-      transform: translateX(20px);
+      transform: translateX(32px);
+    }
+
+    &:not(:checked) + .slider:before {
+      transform: translateX(0); // 비활성화 상태일 때 슬라이더 왼쪽으로 이동
     }
   }
 
@@ -700,7 +711,7 @@
       content: "";
       height: 30px;
       width: 30px;
-      left: 15px;
+      left: 4px;
       bottom: 3px;
       background-color: $white-color;
       transition: .4s;
@@ -713,24 +724,11 @@
   .toggleText {
     position: absolute;
     top: 50%;
-    // left: 50%;
     transform: translateY(-50%);
     font-size: 14px;
     color: $white-color;
     pointer-events: none; // 텍스트 클릭 방지
     font-weight: $font-weight-medium;
     transition: left 0.4s, right 0.4s; // 위치 이동 애니메이션
-  }
-
-  input:checked + .slider .toggleText {
-    content: "켬"; // 활성화 상태일 때
-    color: $white-color;
-    text-transform: uppercase;
-  }
-
-  input:not(:checked) + .slider .toggleText {
-    content: "끔"; // 비활성화 상태일 때
-    color: $secondary-text-grey;
-    text-transform: uppercase;
   }
 } 
