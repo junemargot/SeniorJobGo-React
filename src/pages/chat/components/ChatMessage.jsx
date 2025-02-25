@@ -17,7 +17,7 @@ const ChatMessage = ({
   onJobClick,
   onTrainingClick,
   onPolicyClick,
-  onMealCardClick,
+  onMealClick,
   selectedCardRef,
   isLast
 }) => {
@@ -156,7 +156,7 @@ const ChatMessage = ({
                     <div key={`${meal.name}-${index}`} className={styles.itemGroup}>
                       <MealCard
                         meal={meal}
-                        onClick={() => onMealCardClick(meal)}
+                        onClick={() => onMealClick(meal)}
                         isSelected={selectedMeal && selectedMeal.name === meal.name}
                         cardRef={selectedMeal && selectedMeal.name === meal.name ? selectedCardRef : null}
                       />
