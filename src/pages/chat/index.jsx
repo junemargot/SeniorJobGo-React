@@ -2,10 +2,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { API_BASE_URL } from '@/config';
 import { useNavigate } from 'react-router-dom';
-import { samplePolicies } from '../../data/samplePolicies';
 import styles from './styles/chat.module.scss';
 import axios from 'axios';
-import PropTypes from 'prop-types';
 
 import Header from '@components/Header/Header';
 import IntentModal from '@pages/modal/IntentModal';
@@ -15,7 +13,6 @@ import GuideModal from '@pages/modal/GuideModal';
 import JobSearchModal from '@pages/modal/JobSearchModal';
 import TrainingSearchModal from '@pages/modal/TrainingSearchModal';
 import PolicySearchModal from '@pages/modal/PolicySearchModal';
-import MealServiceMessage from './components/MealServiceMessage';
 import MealSearchModal from '@pages/modal/MealSearchModal';
 // import ReactMarkdown from 'react-markdown';
 
