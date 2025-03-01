@@ -519,9 +519,10 @@ $color-gray-600: #757575;
     transform: scale(1.02);
     box-shadow: 0 8px 24px rgba(220, 53, 69, 0.15);
     scroll-margin: 100px;
+    border: none;
 
     &::after {
-      border-color: #dc3545;
+      border-color: $primary-color;
     }
   }
 
@@ -541,7 +542,7 @@ $color-gray-600: #757575;
     color: $text-title-color;
 
     span {
-      color: $primary-color;
+      color: $primary-color-2;
     }
   }
 
@@ -574,11 +575,11 @@ $color-gray-600: #757575;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 32px;
+      width: 54px;
       height: 32px;
-      border-radius: 4px;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
+      border-radius: $radius-md;
+      font-size: $font-size-md;
+      font-weight: $font-weight-normal;
       
       &.active {
         background-color: $color-success;
@@ -606,7 +607,7 @@ $color-gray-600: #757575;
     p {
       display: flex;
       margin: 8px 0;
-      font-size: $font-size-sm;
+      font-size: $font-size-md;
       line-height: 1.6;
       color: $text-title-color;
 
@@ -636,7 +637,7 @@ $color-gray-600: #757575;
   // 상태 라벨 스타일 추가
   .statusLabel {
     padding: 4px 12px;
-    border-radius: 12px;
+    border-radius: $radius-md;
     font-size: 14px;
     font-weight: 500;
     
