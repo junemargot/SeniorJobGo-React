@@ -52,7 +52,7 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
       case 'ended':
         return '종료';
       case 'closed':
-        return '휴무';
+        return '오늘휴무';
       default:
         return '';
     }
@@ -63,8 +63,22 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
   const formatWeekDays = (dateStr) => {
     if (!dateStr) return null;
 
-    const weekdays = ['월', '화', '수', '목', '금', '토', '일'];
-    const operatingDays = dateStr.split('+').map(day => day.trim());
+    const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+    // const operatingDays = dateStr.split('+').map(day => day.trim());
+    const operatingDays = dateStr.split('+').map(day => {
+      const dayMap = {
+        '월': '월요일',
+        '화': '화요일',
+        '수': '수요일',
+        '목': '목요일',
+        '금': '금요일',
+        '토': '토요일',
+        '일': '일요일'
+      };
+
+      return dayMap[day.trim()] || day.trim();
+    })
+    
 
     return weekdays.map(day => ({
       day,
@@ -99,7 +113,7 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
     >
       <div className={styles.mealCard__header}>
         <div className={styles.mealCard__facility}>
-          <span className="material-symbols-rounded">restaurant</span>
+          <span className="material-symbols-rounded">fork_spoon</span>
           {meal.name}
         </div>
         <div className={`${styles.statusLabel} ${styles[operationStatus]}`}>
@@ -112,7 +126,7 @@ const MealCard = ({ meal, onClick, isSelected, cardRef }) => {
           {meal.address}
         </div>
         <div className={styles.mealCard__detail}>
-          <WeekdayDisplay dateStr={meal.description} />
+          {/* <WeekdayDisplay dateStr={meal.description} /> */}
         </div>
       </div>
 
