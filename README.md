@@ -1,89 +1,50 @@
-### 개발환경
+# SeniorJobGo 시니어잡고
+![시니어잡고 이미지](./images/Senior_JobGo.png)
+## 📋 개요
+SeniorJobGo는 FastAPI와 React로 구축된 시니어 취업 플랫폼으로, 고령자들에게 적합한 일자리 정보과 관련 서비스를 제공합니다. 직업 훈련 프로그램, 정부지원사업 소식, 지역별 무료 급식소 정보 등 고령자들에게 필요한 종합적인 정보를 제공합니다.  
 
-1. 프로젝트 환경설정(vite를 활용한 React 설치) : `npm install vite@latest` <br />
+<br/>
 
-2. React 중앙집중식 상태관리 라이브러리 Recoil 설치: `npm install recoil` <br />
+## 🌟 주요 기능
+- **고령자 적합 일자리 검색**: 다양한 취업 사이트에서 고령자가 지원 가능한 채용공고만을 제공합니다.
+- **직업훈련 정보 제공**: 시니어의 역량 강화와 재취업을 위한 직업훈련 및 교육 프로그램 정보를 제공합니다.
+- **정부지원사업 정보**: 고령자 대상 정부지원사업에 대한 최신 뉴스와 정보를 확인할 수 있습니다.
+- **지역별 무료 급식소 찾기**: 사용자가 선택한 지역 정보를 바탕으로, 맞춤형 급식소 정보를 제공합니다.
+<br/>
 
-3. 외부 오픈 API 통신을 위한 라이브러리 Axios 설치: `npm install axios` <br />
+## 📅 프로젝트 진행 기간
+- 2025.01.08 ~ 2025.02.21
+<br/>
 
-4. CSS 스타일링을 위한 SASS/SCSS 설치: `npm install -D sass` <br />
-
-5. React Router 설치: `npm install react-router-dom localforage match-sorter sort-by` <br />
-
-6. TypeScript에서 Node.js 모듈을 쓸 수 있는 환경 구축: `npm i @types/node` <br />
-
-7. React Toast Popup 모듈 설치: `npm install react-simple-toasts` <br />
-
-## Backend (FastAPI)
-
-### 프로젝트 구조
-mermaid
-graph TD
-A[FastApi_SeniorJobGo/] --> B[app/]
-A --> C[documents/]
-A --> D[jobs_collection/]
-A --> E[requirements.txt]
-A --> F[.env]
-A --> G[README.md]
-B --> B1[init.py]
-B --> B2[main.py]
-B --> H[routes/]
-H --> H1[init.py]
-H --> H2[chat_router.py]
-B --> I[services/]
-I --> I1[init.py]
-I --> I2[vector_store.py]
-I --> I3[conversation.py]
-B --> J[agents/]
-J --> J1[init.py]
-J --> J2[job_advisor.py]
-B --> K[models/]
-K --> K1[init.py]
-K --> K2[schemas.py]
-B --> L[core/]
-L --> L1[init.py]
-L --> L2[config.py]
-L --> L3[prompts.py]
-B --> M[utils/]
-M --> M1[init.py]
-M --> M2[constants.py]
-C --> C1[jobs.json]
-style A fill:#f9f9f9,stroke:#333,stroke-width:2px
-style B,H,I,J,K,L,M fill:#e1f5fe,stroke:#333,stroke-width:2px
-style C,D fill:#fff3e0,stroke:#333,stroke-width:2px
-style E,F,G fill:#f5f5f5,stroke:#333,stroke-width:2px
-style B1,B2,H1,H2,I1,I2,I3,J1,J2,K1,K2,L1,L2,L3,M1,M2,C1 fill:#ffffff,stroke:#333,stroke-width:1px
-
-### 디렉토리 설명
-
-- `app/`: 메인 애플리케이션 코드
-  - `routes/`: API 엔드포인트 정의
-  - `services/`: 비즈니스 로직 구현
-  - `agents/`: LangGraph 에이전트 구현
-  - `models/`: Pydantic 모델 정의
-  - `core/`: 핵심 설정 및 프롬프트
-  - `utils/`: 유틸리티 함수 및 상수
-
-- `documents/`: 데이터 파일 저장소
-- `jobs_collection/`: 벡터 데이터베이스 저장소
-
-### 백엔드 설치 및 실행
-
-1. 환경 설정
-bash
-python -m venv venv
-source venv/bin/activate # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-2. 환경 변수 설정
-bash
-cp .env.example .env
-
-3. 서버 실행
-bash
-uvicorn app.main:app --reload
-
-### API 문서
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+## Frontend(React)
+```plaintext
+SeniorJobGo-React/
+├── public/              # 정적 파일 (이미지, 폰트 등)
+├── src/
+│   ├── assets/          # 이미지, 폰트 등의 에셋
+│   ├── components/      # 헤더, 푸터 등 공통 컴포넌트
+│   ├── pages/           # 각 기능별 페이지
+│   │   ├── auth/        # 로그인, 로그아웃, 회원가입
+│   │   ├── chat/        # 채팅 기능 관련 페이지
+│   │   │   ├── components/ # 채팅 내 사용되는 컴포넌트들
+│   │   │   │   ├── InputComponent/   # 입력 컴포넌트
+│   │   │   │   ├── MessageComponent/ # 메시지 컴포넌트
+│   │   │   │   ├── JobCard/          # 일자리 카드 컴포넌트
+│   │   │   │   ├── MealCard/         # 급식소 카드 컴포넌트
+│   │   │   │   ├── PolicyCard/       # 정책 카드 컴포넌트
+│   │   │   │   └── TrainingComponent/ # 직업훈련 컴포넌트
+│   │   ├── index/       # 메인 페이지
+│   │   └── modal/       # 모달 관련 컴포넌트
+│   ├── api/             # API 통신 함수
+│   ├── store/           # Recoil 상태 관리
+│   ├── styles/          # 전역 스타일
+│   ├── App.tsx          # 앱 진입점
+│   └── main.tsx         # React 렌더링 진입점
+├── .gitignore
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
+<br/>
